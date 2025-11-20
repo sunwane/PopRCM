@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
+import ServiceChecker from "@/services/ServiceChecker";
 
 const geistInter = Inter({
   variable: "--font-inter",
@@ -15,16 +16,18 @@ export const metadata: Metadata = {
   },
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  // Gọi ServiceChecker trên server
+  const checked = await ServiceChecker.checkServiceAvailability();
+  console.log("Service availability:", checked);
+
   return (
     <html lang="en">
-      <body
-        className={`${geistInter.variable} antialiased`}
-      >
+      <body className={`${geistInter.variable} antialiased`}>
         {children}
       </body>
     </html>

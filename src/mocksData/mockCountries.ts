@@ -1,19 +1,19 @@
 import { Country } from '@/types/Country';
 
 export const mockCountries: Country[] = [
-  { id: '1', countryName: 'Việt Nam' },
-  { id: '2', countryName: 'Hàn Quốc' },
-  { id: '3', countryName: 'Trung Quốc' },
-  { id: '4', countryName: 'Nhật Bản' },
-  { id: '5', countryName: 'Thái Lan' },
-  { id: '6', countryName: 'Hoa Kỳ' },
-  { id: '7', countryName: 'Anh' },
-  { id: '8', countryName: 'Pháp' },
-  { id: '9', countryName: 'Đức' },
-  { id: '10', countryName: 'Ý' },
-  { id: '11', countryName: 'Nga' },
-  { id: '12', countryName: 'Canada' },
-  { id: '13', countryName: 'Úc' },
-  { id: '14', countryName: 'Ấn Độ' },
-  { id: '15', countryName: 'Brazil' }
+  { id: '1', name: 'Việt Nam' },
+  { id: '2', name: 'Hàn Quốc' },
+  { id: '3', name: 'Trung Quốc' },
+  { id: '4', name: 'Nhật Bản' },
+  { id: '5', name: 'Thái Lan' },
+  { id: '6', name: 'Hoa Kỳ' },
+  { id: '7', name: 'Anh' },
+  { id: '8', name: 'Pháp' },
+  { id: '9', name: 'Đức' },
+  { id: '10', name: 'Ý' },
+  { id: '11', name: 'Nga' },
+  { id: '12', name: 'Canada' },
+  { id: '13', name: 'Úc' },
+  { id: '14', name: 'Ấn Độ' },
+  { id: '15', name: 'Brazil' }
 ];

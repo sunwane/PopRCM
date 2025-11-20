@@ -13,7 +13,7 @@ export interface Episode {
 }
 
 export interface Movie {
-    id: number;
+    id: string;
     title: string;
     originalName: string;
     description: string;

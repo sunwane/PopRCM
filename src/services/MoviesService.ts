@@ -5,10 +5,19 @@ import { mockMovieActors } from '@/mocksData/mockMovieActors';
 
 export class MoviesService {
   private static movies: Movie[] = [...mockMovies]; // Initialize with mock data
-  private static isDataLoaded = true; // Set to true since we're using mock data
+  private static isDataLoaded = false; // Changed to false to force loading
+  private static readonly API_BASE_URL = 'http://localhost:8088/api/movies';
+
+  // Kiểm tra service availability từ localStorage
+  private static isServiceAvailable(): boolean {
+    if (typeof window !== 'undefined') {
+      return localStorage.getItem('serviceAvailable') !== 'false';
+    }
+    return true;
+  }
 
   // Helper method to populate movie actors
-  private static populateMovieActors(movieId: number) {
+  private static populateMovieActors(movieId: string) {
     return mockMovieActors
       .filter(ma => ma.movieId === movieId)
       .map(ma => ({
@@ -18,22 +27,108 @@ export class MoviesService {
       }));
   }
 
-  // Load data from mock (can be extended to API later)
-  private static loadMoviesData(): void {
+  // Load data from API or mock
+  private static async loadMoviesData(): Promise<void> {
     if (this.isDataLoaded) return;
-    
-    // Populate movies with actors relationship
-    this.movies = mockMovies.map(movie => ({
-      ...movie,
-      actors: this.populateMovieActors(movie.id)
-    }));
-    
-    this.isDataLoaded = true;
+
+    if (!this.isServiceAvailable()) {
+      console.info('API not available, using mock data');
+      this.movies = mockMovies.map(movie => ({
+        ...movie,
+        actors: this.populateMovieActors(movie.id)
+      }));
+      this.isDataLoaded = true;
+      return;
+    }
+
+    try {
+      const authToken = localStorage.getItem('authToken');
+      const response = await fetch(`${this.API_BASE_URL}?page=0&size=10`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${authToken}`
+        }
+      });
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const apiResponse = await response.json();
+      
+      if (apiResponse.result && apiResponse.result.content && Array.isArray(apiResponse.result.content)) {
+        this.movies = apiResponse.result.content.map((movieResponse: any) => 
+          this.mapMovieResponseToMovie(movieResponse)
+        );
+        this.isDataLoaded = true;
+        console.log('Loaded movies from API:', this.movies.length);
+        console.log('List movies: ',this.movies);
+      } else {
+        throw new Error('Invalid API response structure');
+      }
+      
+    } catch (error) {
+      console.warn('Failed to load movies from API, using mock data:', error);
+      // Fallback to mock data nếu API fail
+      this.movies = mockMovies.map(movie => ({
+        ...movie,
+        actors: this.populateMovieActors(movie.id)
+      }));
+      this.isDataLoaded = true;
+    }
+  }
+
+  // Chuyển đổi MovieResponse từ API sang Movie interface
+  private static mapMovieResponseToMovie(movieResponse: any): Movie {
+    return {
+      id: movieResponse.id,
+      title: movieResponse.title,
+      originalName: movieResponse.originName || movieResponse.title,
+      description: movieResponse.description || '',
+      releaseYear: movieResponse.releaseYear,
+      type: movieResponse.type,
+      duration: movieResponse.duration || '',
+
+      //phải nhờ BE chỉnh lại thumbUrl và posterUrl
+      posterUrl: "https://img.ophim.live/uploads/movies/" + movieResponse.thumbUrl,
+      thumbnailUrl: "https://img.ophim.live/uploads/movies/" + movieResponse.posterUrl,
+
+      trailerUrl: movieResponse.trailerUrl,
+      totalEpisodes: movieResponse.totalEpisodes ? parseInt(movieResponse.totalEpisodes) : undefined,
+      director: movieResponse.director || '',
+      status: movieResponse.status,
+      createdAt: new Date(movieResponse.createdAt),
+      modifiedAt: new Date(movieResponse.modifiedAt),
+      view: movieResponse.views || 0,
+      slug: movieResponse.slug,
+      tmdbScore: movieResponse.tmdbScore,
+      imdbScore: movieResponse.imdbScore,
+      lang: movieResponse.lang,
+      country: [], // Will be populated separately if needed
+      actors: movieResponse.actors ? movieResponse.actors.map((actor: any) => ({
+        id: actor.id,
+        actorId: actor.actorId,
+        movieId: parseInt(movieResponse.id),
+        characterName: actor.characterName,
+        actor: {
+          id: actor.actorId,
+          name: actor.name || '',
+          birthDate: actor.birthDate ? new Date(actor.birthDate) : new Date(),
+          nationality: actor.nationality || '',
+          biography: actor.biography || '',
+          profileImageUrl: actor.profileImageUrl,
+          createdAt: new Date(),
+        }
+      })) : [],
+      genres: [], // Will be populated separately if needed
+      episodes: [] // Will be populated separately if needed
+    };
   }
 
   // Get all movies
   static async getAllMovies(): Promise<Movie[]> {
-    this.loadMoviesData();
+    await this.loadMoviesData();
     return this.movies.map(movie => ({
       ...movie,
       actors: this.populateMovieActors(movie.id)
@@ -41,8 +136,8 @@ export class MoviesService {
   }
 
   // Get movie by ID
-  static async getMovieById(id: number): Promise<Movie | null> {
-    this.loadMoviesData();
+  static async getMovieById(id: string): Promise<Movie | null> {
+    await this.loadMoviesData();
     const movie = this.movies.find(movie => movie.id === id);
     if (!movie) return null;
 
@@ -66,61 +161,8 @@ export class MoviesService {
     };
   }
 
-  // Add new movie
-  static async addMovie(movieData: Omit<Movie, 'id' | 'createdAt' | 'modifiedAt' | 'slug'>): Promise<Movie> {
-    this.loadMoviesData();
-    
-    const newMovie: Movie = {
-      id: Math.max(...this.movies.map(m => m.id), 0) + 1,
-      ...movieData,
-      createdAt: new Date(),
-      modifiedAt: new Date(),
-      slug: this.generateSlug(movieData.title),
-      view: 0,
-      actors: []
-    };
-    
-    this.movies.push(newMovie);
-    return newMovie;
-  }
-
-  // Update movie
-  static async updateMovie(id: number, movieData: Partial<Movie>): Promise<Movie | null> {
-    this.loadMoviesData();
-    
-    const index = this.movies.findIndex(movie => movie.id === id);
-    if (index === -1) return null;
-    
-    // Update slug if title changed
-    if (movieData.title && movieData.title !== this.movies[index].title) {
-      movieData.slug = this.generateSlug(movieData.title);
-    }
-    
-    this.movies[index] = {
-      ...this.movies[index],
-      ...movieData,
-      modifiedAt: new Date()
-    };
-    
-    return {
-      ...this.movies[index],
-      actors: this.populateMovieActors(id)
-    };
-  }
-
-  // Delete movie
-  static async deleteMovie(id: number): Promise<boolean> {
-    this.loadMoviesData();
-    
-    const index = this.movies.findIndex(movie => movie.id === id);
-    if (index === -1) return false;
-    
-    this.movies.splice(index, 1);
-    return true;
-  }
-
   // Check if movie title exists
-  static async checkMovieTitleExists(title: string, excludeId?: number): Promise<boolean> {
+  static async checkMovieTitleExists(title: string, excludeId?: string): Promise<boolean> {
     this.loadMoviesData();
     
     return this.movies.some(movie => 
@@ -129,24 +171,168 @@ export class MoviesService {
     );
   }
 
-  // Search movies
+  // Search movies with API integration
   static async searchMovies(query: string): Promise<Movie[]> {
-    this.loadMoviesData();
-    
-    if (!query.trim()) return this.getAllMovies();
-    
-    const searchTerm = query.toLowerCase().trim();
-    const filteredMovies = this.movies.filter(movie => 
-      movie.title.toLowerCase().includes(searchTerm) ||
-      movie.originalName.toLowerCase().includes(searchTerm) ||
-      movie.director.toLowerCase().includes(searchTerm) ||
-      movie.description.toLowerCase().includes(searchTerm)
-    );
+    if (!query.trim()) {
+      return await this.getAllMovies();
+    }
 
-    return filteredMovies.map(movie => ({
-      ...movie,
-      actors: this.populateMovieActors(movie.id)
-    }));
+    if (!this.isServiceAvailable()) {
+      console.info('API not available, using local search');
+      await this.loadMoviesData();
+      const searchTerm = query.toLowerCase().trim();
+      const filteredMovies = this.movies.filter(movie => 
+        movie.title.toLowerCase().includes(searchTerm) ||
+        movie.originalName.toLowerCase().includes(searchTerm) ||
+        movie.director.toLowerCase().includes(searchTerm) ||
+        movie.description.toLowerCase().includes(searchTerm)
+      );
+
+      return filteredMovies.map(movie => ({
+        ...movie,
+        actors: this.populateMovieActors(movie.id)
+      }));
+    }
+
+    try {
+      const authToken = localStorage.getItem('authToken');
+      const response = await fetch(`${this.API_BASE_URL}/search?query=${encodeURIComponent(query)}&page=0&size=100`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${authToken}`
+        }
+      });
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const apiResponse = await response.json();
+      
+      if (apiResponse.result && apiResponse.result.content && Array.isArray(apiResponse.result.content)) {
+        return apiResponse.result.content.map((movieResponse: any) => 
+          this.mapMovieResponseToMovie(movieResponse)
+        );
+      }
+      return [];
+      
+    } catch (error) {
+      console.warn('Search API failed, falling back to local search:', error);
+      // Fallback to local search
+      await this.loadMoviesData();
+      const searchTerm = query.toLowerCase().trim();
+      const filteredMovies = this.movies.filter(movie => 
+        movie.title.toLowerCase().includes(searchTerm) ||
+        movie.originalName.toLowerCase().includes(searchTerm) ||
+        movie.director.toLowerCase().includes(searchTerm) ||
+        movie.description.toLowerCase().includes(searchTerm)
+      );
+
+      return filteredMovies.map(movie => ({
+        ...movie,
+        actors: this.populateMovieActors(movie.id)
+      }));
+    }
+  }
+
+  // Auto import movies (POST /api/movies/add-new)
+  static async autoImportMovies(slug: string, movieCount: number): Promise<{ success: boolean; message: string }> {
+    if (!this.isServiceAvailable()) {
+      console.info('API not available, simulating movie import');
+      // Simulate adding mock movies
+      const newMovies = mockMovies.slice(0, movieCount).map((movie, index) => ({
+        ...movie,
+        id: (Date.now() + index).toString(),
+        title: `${movie.title} (Imported ${index + 1})`,
+        createdAt: new Date()
+      }));
+      
+      this.movies.push(...newMovies);
+      return { 
+        success: true, 
+        message: `Đã thêm ${movieCount} phim thành công (Mock)` 
+      };
+    }
+
+    try {
+      const authToken = localStorage.getItem('authToken');
+      const response = await fetch(`${this.API_BASE_URL}/add-new?slug=${encodeURIComponent(slug)}&moviesToAdd=${movieCount}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${authToken}`
+        }
+      });
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const apiResponse = await response.json();
+      
+      // Reload movies after import
+      this.isDataLoaded = false;
+      await this.loadMoviesData();
+      
+      return { 
+        success: true, 
+        message: apiResponse.message || `Đã thêm phim thành công từ slug: ${slug}` 
+      };
+      
+    } catch (error) {
+      console.error('Auto import movies error:', error);
+      return { 
+        success: false, 
+        message: error instanceof Error ? error.message : 'Lỗi khi thêm phim tự động' 
+      };
+    }
+  }
+
+  // Update existing movies (POST /api/movies/update-existing)
+  static async updateExistingMovies(slug: string, maxPages: number = 5): Promise<{ success: boolean; message: string }> {
+    if (!this.isServiceAvailable()) {
+      console.info('API not available, simulating movie update');
+      // Simulate updating existing movies
+      const updatedCount = Math.min(this.movies.length, maxPages * 10);
+      return { 
+        success: true, 
+        message: `Đã cập nhật ${updatedCount} phim thành công (Mock)` 
+      };
+    }
+
+    try {
+      const authToken = localStorage.getItem('authToken');
+      const response = await fetch(`${this.API_BASE_URL}/update-existing?slug=${encodeURIComponent(slug)}&maxPages=${maxPages}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${authToken}`
+        }
+      });
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const apiResponse = await response.json();
+      
+      // Reload movies after update
+      this.isDataLoaded = false;
+      await this.loadMoviesData();
+      
+      return { 
+        success: true, 
+        message: apiResponse.message || `Đã cập nhật phim thành công từ slug: ${slug}` 
+      };
+      
+    } catch (error) {
+      console.error('Update existing movies error:', error);
+      return { 
+        success: false, 
+        message: error instanceof Error ? error.message : 'Lỗi khi cập nhật phim' 
+      };
+    }
   }
 
   // Filter by release year
@@ -336,7 +522,7 @@ export class MoviesService {
   }
 
   // Increment view count
-  static async incrementViewCount(id: number): Promise<Movie | null> {
+  static async incrementViewCount(id: string): Promise<Movie | null> {
     this.loadMoviesData();
     
     const index = this.movies.findIndex(movie => movie.id === id);
@@ -376,50 +562,14 @@ export class MoviesService {
     return [...new Set(this.movies.map(movie => movie.lang))];
   }
 
-  // Helper method to generate slug
-  private static generateSlug(title: string): string {
-    return title
-      .toLowerCase()
-      .trim()
-      .replace(/[^\w\s-]/g, '')
-      .replace(/[\s_-]+/g, '-')
-      .replace(/^-+|-+$/g, '');
-  }
-
   // Refresh data
   static refreshData(): void {
     this.movies = [...mockMovies];
     this.isDataLoaded = true;
   }
 
-  // Bulk operations
-  static async bulkUpdateStatus(movieIds: number[], status: string): Promise<Movie[]> {
-    this.loadMoviesData();
-    
-    const updatedMovies: Movie[] = [];
-    for (const id of movieIds) {
-      const updatedMovie = await this.updateMovie(id, { status });
-      if (updatedMovie) {
-        updatedMovies.push(updatedMovie);
-      }
-    }
-    
-    return updatedMovies;
-  }
-
-  // Bulk delete
-  static async bulkDeleteMovies(movieIds: number[]): Promise<boolean> {
-    this.loadMoviesData();
-    
-    for (const id of movieIds) {
-      await this.deleteMovie(id);
-    }
-    
-    return true;
-  }
-
   // Get actors for a specific movie
-  static async getMovieActors(movieId: number) {
+  static async getMovieActors(movieId: string) {
     return this.populateMovieActors(movieId);
   }
 
