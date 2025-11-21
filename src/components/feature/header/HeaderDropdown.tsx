@@ -3,6 +3,8 @@ interface HeaderDropdownProps {
   items: Array<{
     label: string;
     id: string;
+    link?: string;
+    icon?: string;
   }>;
 }
 
@@ -12,7 +14,7 @@ export default function HeaderDropdown({ items, type }: HeaderDropdownProps) {
 
   return (
     <div
-      className={`bg-black/80 px-5 py-4 rounded-lg grid gap-5 items-left shadow-md animate-fadeIn shrink-0`}
+      className={`bg-black/85 px-5 py-4 rounded-lg grid gap-5 items-left shadow-md animate-fadeIn shrink-0`}
       style={{
         gridTemplateColumns: `repeat(${columnCount}, minmax(140px, 1fr))`, // Tùy chỉnh số cột
       }}
@@ -29,9 +31,9 @@ export default function HeaderDropdown({ items, type }: HeaderDropdownProps) {
         ))
       ) : (
         items.map((item) => (
-          <button key={item.id} className="hover:text-(--hover) cursor-pointer text-left text-sm">
+          <a href={`${item.link}`} key={item.id} className="hover:text-(--hover) cursor-pointer text-left text-sm">
             {item.label}
-          </button>
+          </a>
         ))
       )}
     </div>

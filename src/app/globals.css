@@ -29,7 +29,7 @@
   --gradient-primary-end: #5093FF;
   --number-gradient-start: #FFFFFF;
   --number-gradient-end: #0084FF;
-  --shadow-red: rgba(255, 80, 80, 0.25);
+  --shadow-red: rgba(255, 80, 80, 0.3);
   --border-blue: #004DC8;
   --hover: #A2C9FF;
   --text-primary: #FFFFFF;
@@ -43,5 +43,5 @@
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: SegoeUI, Arial, Helvetica, sans-serif;
+  font-family: var(--font-inter);
 }

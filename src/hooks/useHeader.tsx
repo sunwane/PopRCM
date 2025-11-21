@@ -1,6 +1,6 @@
-import { useEffect, useState } from "react";
-import { GenresService } from "@/services/GenresService";
-import { CountryService } from "@/services/CountryService";
+import { useMemo } from "react";
+import { useGenreData } from "./useGenreData";
+import { useCountryData } from "./useCountryData";
 
 export interface DropdownItem {
   label: string;
@@ -10,40 +10,33 @@ export interface DropdownItem {
 }
 
 export function useHeaderDropdownItems(type: string): DropdownItem[] {
-  const [items, setItems] = useState<DropdownItem[]>([]);
+  const { allGenres, loading: genreLoading } = useGenreData();
+  const { allCountries, loading: countryLoading } = useCountryData();
 
-  useEffect(() => {
-    const fetchItems = async () => {
-      if (type === "genre") {
-        // Lấy danh sách genres từ API
-        const genres = await GenresService.getAllGenres();
-        setItems(
-          genres.map((genre) => ({
-            label: genre.genresName,
-            id: genre.id,
-          }))
-        );
-      } else if (type === "country") {
-        const countries = await CountryService.getAllCountries();
-        setItems(
-          countries.map((country) => ({
-            label: country.name,
-            id: country.id,
-          }))
-        );
-      } else if (type === "more") {
-        // Dữ liệu tĩnh cho more
-        setItems([
-          { label: "Series", id: "series" },
-          { label: "Hoạt hình", id: "hoathinh" },
-          { label: "Diễn viên", id: "actors" },
-          { label: "Về chúng tôi", id: "aboutUs" },
-        ]);
-      }
-    };
-
-    fetchItems();
-  }, [type]);
+  const items = useMemo(() => {
+    if (type === "genre") {
+      if (genreLoading) return [];
+      return allGenres.map((genre) => ({
+        label: genre.genresName,
+        id: genre.id,
+      }));
+    } else if (type === "country") {
+      if (countryLoading) return [];
+      return allCountries.map((country) => ({
+        label: country.name,
+        id: country.id,
+      }));
+    } else if (type === "more") {
+      // Dữ liệu tĩnh cho more
+      return [
+        { label: "Series", link: "/allSeries", id: "series" },
+        { label: "Hoạt hình", link: "/hoathinh", id: "hoathinh" },
+        { label: "Diễn viên", link: "/actors", id: "actors" },
+        { label: "Về chúng tôi", link: "/about", id: "about" },
+      ];
+    }
+    return [];
+  }, [type, allGenres, allCountries, genreLoading, countryLoading]);
 
   return items;
 }

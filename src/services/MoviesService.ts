@@ -161,37 +161,35 @@ export class MoviesService {
     };
   }
 
-  // Check if movie title exists
-  static async checkMovieTitleExists(title: string, excludeId?: string): Promise<boolean> {
-    this.loadMoviesData();
-    
-    return this.movies.some(movie => 
-      movie.title.toLowerCase() === title.toLowerCase() && 
-      movie.id !== excludeId
+  // Helper method for local search
+  private static async localSearch(query: string): Promise<Movie[]> {
+    await this.loadMoviesData(); // Đảm bảo dữ liệu đã được tải
+    const searchTerm = query.toLowerCase().trim();
+
+    // Lọc phim dựa trên tiêu chí tìm kiếm
+    const filteredMovies = this.movies.filter(movie =>
+      movie.title.toLowerCase().includes(searchTerm) ||
+      movie.originalName.toLowerCase().includes(searchTerm) ||
+      movie.director.toLowerCase().includes(searchTerm) ||
+      movie.description.toLowerCase().includes(searchTerm)
     );
+
+    // Thêm thông tin diễn viên vào kết quả
+    return filteredMovies.map(movie => ({
+      ...movie,
+      actors: this.populateMovieActors(movie.id)
+    }));
   }
 
   // Search movies with API integration
   static async searchMovies(query: string): Promise<Movie[]> {
     if (!query.trim()) {
-      return await this.getAllMovies();
+      return await this.getAllMovies(); // Nếu không có query, trả về tất cả phim
     }
 
     if (!this.isServiceAvailable()) {
       console.info('API not available, using local search');
-      await this.loadMoviesData();
-      const searchTerm = query.toLowerCase().trim();
-      const filteredMovies = this.movies.filter(movie => 
-        movie.title.toLowerCase().includes(searchTerm) ||
-        movie.originalName.toLowerCase().includes(searchTerm) ||
-        movie.director.toLowerCase().includes(searchTerm) ||
-        movie.description.toLowerCase().includes(searchTerm)
-      );
-
-      return filteredMovies.map(movie => ({
-        ...movie,
-        actors: this.populateMovieActors(movie.id)
-      }));
+      return await this.localSearch(query); // Gọi hàm localSearch
     }
 
     try {
@@ -219,190 +217,85 @@ export class MoviesService {
       
     } catch (error) {
       console.warn('Search API failed, falling back to local search:', error);
-      // Fallback to local search
-      await this.loadMoviesData();
-      const searchTerm = query.toLowerCase().trim();
-      const filteredMovies = this.movies.filter(movie => 
+      return await this.localSearch(query); // Fallback to local search
+    }
+  }
+
+  // Hàm tổng quát để lọc phim
+  static async getFilteredMovies({
+    query = "",
+    year,
+    type,
+    status,
+    language,
+    genreIds = [],
+    countryId,
+    sortBy,
+  }: {
+    query?: string;
+    year?: number;
+    type?: string;
+    status?: string;
+    language?: string;
+    genreIds?: string[];
+    countryId?: string;
+    sortBy?: string;
+  }): Promise<Movie[]> {
+    await this.loadMoviesData(); // Đảm bảo dữ liệu đã được tải
+
+    const searchTerm = query.toLowerCase().trim();
+
+    // Normalize filters: nếu truyền "all" => coi như không lọc (ignore)
+    const filterType = type === "all" ? undefined : type;
+    const filterStatus = status === "all" ? undefined : status;
+    const filterLanguage = language === "all" ? undefined : language;
+    const filterCountryId = countryId === "all" ? undefined : countryId;
+    const effectiveGenreIds = Array.isArray(genreIds) ? genreIds.filter(id => id !== "all") : [];
+
+    // Lọc phim dựa trên các tiêu chí
+    const filteredMovies = this.movies.filter((movie) => {
+      // Lọc theo từ khóa tìm kiếm
+      const matchesQuery =
+        !searchTerm ||
         movie.title.toLowerCase().includes(searchTerm) ||
         movie.originalName.toLowerCase().includes(searchTerm) ||
         movie.director.toLowerCase().includes(searchTerm) ||
-        movie.description.toLowerCase().includes(searchTerm)
-      );
+        movie.description.toLowerCase().includes(searchTerm);
 
-      return filteredMovies.map(movie => ({
-        ...movie,
-        actors: this.populateMovieActors(movie.id)
-      }));
-    }
-  }
+      // Lọc theo năm phát hành
+      const matchesYear = !year || movie.releaseYear === year;
 
-  // Auto import movies (POST /api/movies/add-new)
-  static async autoImportMovies(slug: string, movieCount: number): Promise<{ success: boolean; message: string }> {
-    if (!this.isServiceAvailable()) {
-      console.info('API not available, simulating movie import');
-      // Simulate adding mock movies
-      const newMovies = mockMovies.slice(0, movieCount).map((movie, index) => ({
-        ...movie,
-        id: (Date.now() + index).toString(),
-        title: `${movie.title} (Imported ${index + 1})`,
-        createdAt: new Date()
-      }));
-      
-      this.movies.push(...newMovies);
-      return { 
-        success: true, 
-        message: `Đã thêm ${movieCount} phim thành công (Mock)` 
-      };
-    }
+      // Lọc theo loại phim (ignore nếu filterType undefined)
+      const matchesType = !filterType || movie.type === filterType;
 
-    try {
-      const authToken = localStorage.getItem('authToken');
-      const response = await fetch(`${this.API_BASE_URL}/add-new?slug=${encodeURIComponent(slug)}&moviesToAdd=${movieCount}`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${authToken}`
-        }
-      });
-      
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
+      // Lọc theo trạng thái
+      const matchesStatus = !filterStatus || movie.status === filterStatus;
 
-      const apiResponse = await response.json();
-      
-      // Reload movies after import
-      this.isDataLoaded = false;
-      await this.loadMoviesData();
-      
-      return { 
-        success: true, 
-        message: apiResponse.message || `Đã thêm phim thành công từ slug: ${slug}` 
-      };
-      
-    } catch (error) {
-      console.error('Auto import movies error:', error);
-      return { 
-        success: false, 
-        message: error instanceof Error ? error.message : 'Lỗi khi thêm phim tự động' 
-      };
-    }
-  }
+      // Lọc theo ngôn ngữ
+      const matchesLanguage = !filterLanguage || movie.lang === filterLanguage;
 
-  // Update existing movies (POST /api/movies/update-existing)
-  static async updateExistingMovies(slug: string, maxPages: number = 5): Promise<{ success: boolean; message: string }> {
-    if (!this.isServiceAvailable()) {
-      console.info('API not available, simulating movie update');
-      // Simulate updating existing movies
-      const updatedCount = Math.min(this.movies.length, maxPages * 10);
-      return { 
-        success: true, 
-        message: `Đã cập nhật ${updatedCount} phim thành công (Mock)` 
-      };
-    }
+      // Lọc theo thể loại (effectiveGenreIds là mảng string)
+      const matchesGenres =
+        effectiveGenreIds.length === 0 ||
+        effectiveGenreIds.every((genreId) => movie.genres.some((genre) => genre.id === genreId));
 
-    try {
-      const authToken = localStorage.getItem('authToken');
-      const response = await fetch(`${this.API_BASE_URL}/update-existing?slug=${encodeURIComponent(slug)}&maxPages=${maxPages}`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${authToken}`
-        }
-      });
-      
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
+      // Lọc theo quốc gia
+      const matchesCountry = !filterCountryId || movie.country.some((c) => c.id === filterCountryId);
 
-      const apiResponse = await response.json();
-      
-      // Reload movies after update
-      this.isDataLoaded = false;
-      await this.loadMoviesData();
-      
-      return { 
-        success: true, 
-        message: apiResponse.message || `Đã cập nhật phim thành công từ slug: ${slug}` 
-      };
-      
-    } catch (error) {
-      console.error('Update existing movies error:', error);
-      return { 
-        success: false, 
-        message: error instanceof Error ? error.message : 'Lỗi khi cập nhật phim' 
-      };
-    }
-  }
+      // Kết hợp tất cả các điều kiện
+      return matchesQuery && matchesYear && matchesType && matchesStatus && matchesLanguage && matchesGenres && matchesCountry;
+    });
 
-  // Filter by release year
-  static async filterByYear(year: number): Promise<Movie[]> {
-    this.loadMoviesData();
-    const filteredMovies = this.movies.filter(movie => movie.releaseYear === year);
-    return filteredMovies.map(movie => ({
+    
+
+    // Thêm thông tin diễn viên vào kết quả
+    return filteredMovies.map((movie) => ({
       ...movie,
-      actors: this.populateMovieActors(movie.id)
+      actors: this.populateMovieActors(movie.id),
     }));
   }
 
-  // Filter by type
-  static async filterByType(type: string): Promise<Movie[]> {
-    this.loadMoviesData();
-    if (type === 'all') return this.getAllMovies();
-    const filteredMovies = this.movies.filter(movie => movie.type === type);
-    return filteredMovies.map(movie => ({
-      ...movie,
-      actors: this.populateMovieActors(movie.id)
-    }));
-  }
-
-  // Filter by status
-  static async filterByStatus(status: string): Promise<Movie[]> {
-    this.loadMoviesData();
-    if (status === 'all') return this.getAllMovies();
-    const filteredMovies = this.movies.filter(movie => movie.status === status);
-    return filteredMovies.map(movie => ({
-      ...movie,
-      actors: this.populateMovieActors(movie.id)
-    }));
-  }
-
-  // Filter by language
-  static async filterByLanguage(lang: string): Promise<Movie[]> {
-    this.loadMoviesData();
-    if (lang === 'all') return this.getAllMovies();
-    const filteredMovies = this.movies.filter(movie => movie.lang === lang);
-    return filteredMovies.map(movie => ({
-      ...movie,
-      actors: this.populateMovieActors(movie.id)
-    }));
-  }
-
-  // Get movies by genre
-  static async getMoviesByGenre(genreId: string): Promise<Movie[]> {
-    this.loadMoviesData();
-    const filteredMovies = this.movies.filter(movie => 
-      movie.genres.some(genre => genre.id === genreId)
-    );
-    return filteredMovies.map(movie => ({
-      ...movie,
-      actors: this.populateMovieActors(movie.id)
-    }));
-  }
-
-  // Get movies by country
-  static async getMoviesByCountry(countryId: string): Promise<Movie[]> {
-    this.loadMoviesData();
-    const filteredMovies = this.movies.filter(movie => 
-      movie.country.some(country => country.id === countryId)
-    );
-    return filteredMovies.map(movie => ({
-      ...movie,
-      actors: this.populateMovieActors(movie.id)
-    }));
-  }
-
-  // Get movies by actor
+  // Get movies by actor - should be in actor service but here for now
   static async getMoviesByActor(actorId: string): Promise<Movie[]> {
     this.loadMoviesData();
     
@@ -472,78 +365,6 @@ export class MoviesService {
     }));
   }
 
-  // Get movies statistics
-  static async getMoviesStats(): Promise<{
-    total: number;
-    totalMovies: number;
-    totalSeries: number;
-    totalAnime: number;
-    totalViews: number;
-    averageRating: number;
-    recentlyAdded: number;
-    ongoingSeries: number;
-    completedMovies: number;
-  }> {
-    this.loadMoviesData();
-    
-    const total = this.movies.length;
-    const totalMovies = this.movies.filter(m => m.type === 'Movie').length;
-    const totalSeries = this.movies.filter(m => m.type === 'Series').length;
-    const totalAnime = this.movies.filter(m => m.type === 'hoathinh').length;
-    const totalViews = this.movies.reduce((sum, movie) => sum + movie.view, 0);
-    const averageRating = total > 0 
-    ? this.movies.reduce((sum, movie) => {
-        const imdbScore = movie.imdbScore || 0; // Nếu không có imdbScore, dùng 0
-        const tmdbScore = movie.tmdbScore || 0; // Nếu không có tmdbScore, dùng 0
-        const scoreCount = (movie.imdbScore ? 1 : 0) + (movie.tmdbScore ? 1 : 0); // Đếm số điểm hợp lệ
-        const averageScore = scoreCount > 0 ? (imdbScore + tmdbScore) / scoreCount : 0; // Tính trung bình nếu có điểm
-        return sum + averageScore; // Cộng vào tổng
-      }, 0) / total // Chia cho tổng số phim
-    : 0;
-    
-    const thirtyDaysAgo = new Date();
-    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-    const recentlyAdded = this.movies.filter(m => new Date(m.createdAt) >= thirtyDaysAgo).length;
-    
-    const ongoingSeries = this.movies.filter(m => m.status === 'Ongoing').length;
-    const completedMovies = this.movies.filter(m => m.status === 'Completed').length;
-    
-    return {
-      total,
-      totalMovies,
-      totalSeries,
-      totalAnime,
-      totalViews,
-      averageRating: Math.round(averageRating * 10) / 10,
-      recentlyAdded,
-      ongoingSeries,
-      completedMovies
-    };
-  }
-
-  // Increment view count
-  static async incrementViewCount(id: string): Promise<Movie | null> {
-    this.loadMoviesData();
-    
-    const index = this.movies.findIndex(movie => movie.id === id);
-    if (index === -1) return null;
-    
-    this.movies[index].view += 1;
-    this.movies[index].modifiedAt = new Date();
-    
-    return {
-      ...this.movies[index],
-      actors: this.populateMovieActors(id)
-    };
-  }
-
-  // Get unique release years
-  static async getUniqueReleaseYears(): Promise<number[]> {
-    this.loadMoviesData();
-    const years = [...new Set(this.movies.map(movie => movie.releaseYear))];
-    return years.sort((a, b) => b - a);
-  }
-
   // Get unique types
   static async getUniqueTypes(): Promise<string[]> {
     this.loadMoviesData();
@@ -562,20 +383,9 @@ export class MoviesService {
     return [...new Set(this.movies.map(movie => movie.lang))];
   }
 
-  // Refresh data
-  static refreshData(): void {
-    this.movies = [...mockMovies];
-    this.isDataLoaded = true;
-  }
-
   // Get actors for a specific movie
   static async getMovieActors(movieId: string) {
     return this.populateMovieActors(movieId);
-  }
-
-  // Get all actors
-  static async getAllActors() {
-    return [...mockActors];
   }
 
   // Get all movie-actor relationships

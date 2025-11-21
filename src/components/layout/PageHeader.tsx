@@ -1,5 +1,5 @@
 "use client";
-import SearchBar from "@/components/feature/searchBar/SearchBar";
+import SearchBar from "@/components/feature/search/SearchBar";
 import { useRouter } from "next/navigation";
 import HeaderDropdown from "../feature/header/HeaderDropdown";
 import { useState } from "react";
@@ -30,7 +30,10 @@ export default function PageHeader() {
   };
 
   return (
-    <div className="flex space-x-[3vw] mx-auto py-3 px-2" onClick={handleClickOutside}>
+    <div 
+      className="flex space-x-[3vw] mx-auto py-3 px-4" 
+      onClick={handleClickOutside}
+    >
       <button className="flex items-center shrink-0 cursor-pointer" onClick={goHome}>
         <img src="/logo.png" alt="PopRCM Logo" className="h-[60px] w-auto" />
       </button>
@@ -39,10 +42,10 @@ export default function PageHeader() {
       <div className="flex items-center">
         {/* Navigation Links */}
         <nav className="flex shrink-0 items-center space-x-[2.5vw] text-white/70 text-sm text-nowrap">
-          <a href="#" className="hover:text-white transition">
+          <a href="/single" className="hover:text-white transition">
             Phim lẻ
           </a>
-          <a href="#" className="hover:text-white transition">
+          <a href="/series" className="hover:text-white transition">
             Phim bộ
           </a>
 

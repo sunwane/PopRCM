@@ -6,6 +6,7 @@ import ServiceChecker from "@/services/ServiceChecker";
 const geistInter = Inter({
   variable: "--font-inter",
   subsets: ["latin"],
+  display: "swap",
 });
 
 export const metadata: Metadata = {

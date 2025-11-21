@@ -1,4 +1,4 @@
-import { Country, OphimCountryResponse } from '@/types/Country';
+import { Country } from '@/types/Country';
 
 // Format tên quốc gia
 export const formatCountryName = (name: string): string => {
@@ -35,8 +35,8 @@ export const sortCountries = (countries: Country[], sortBy: 'name' | 'id' = 'id'
     let bValue: string | number;
     
     if (sortBy === 'name') {
-      aValue = a.countryName.toLowerCase();
-      bValue = b.countryName.toLowerCase();
+      aValue = a.name.toLowerCase();
+      bValue = b.name.toLowerCase();
     } else {
       // Convert string id to number for proper sorting
       aValue = parseInt(a.id) || 0;
@@ -56,7 +56,7 @@ export const filterCountriesByName = (countries: Country[], searchQuery: string)
   
   const query = searchQuery.toLowerCase().trim();
   return countries.filter(country => 
-    country.countryName.toLowerCase().includes(query)
+    country.name.toLowerCase().includes(query)
   );
 };
 
@@ -67,44 +67,6 @@ export const getMovieCountColor = (count: number): string => {
   if (count < 50) return 'text-blue-700 bg-blue-100';
   if (count < 100) return 'text-green-700 bg-green-100';
   return 'text-purple-700 bg-purple-100';
-};
-
-// Chuyển đổi từ API response sang Country type
-export const normalizeCountryFromApi = (apiCountry: OphimCountryResponse, index: number): Country => {
-  return {
-    id: (index + 1).toString(),
-    countryName: apiCountry.name,
-  };
-};
-
-// Chuyển đổi danh sách countries từ API
-export const normalizeCountriesFromApi = (apiCountries: OphimCountryResponse[]): Country[] => {
-  if (!Array.isArray(apiCountries)) {
-    console.error('Expected array but got:', typeof apiCountries, apiCountries);
-    throw new Error('API response items is not an array');
-  }
-  
-  console.log('Normalizing', apiCountries.length, 'countries from API');
-  
-  return apiCountries.map((apiCountry, index) => {
-    if (!apiCountry || typeof apiCountry !== 'object') {
-      console.warn('Invalid country item at index', index, ':', apiCountry);
-      return {
-        id: (index + 1).toString(),
-        countryName: 'Unknown Country'
-      };
-    }
-    
-    if (!apiCountry.name) {
-      console.warn('Country missing name at index', index, ':', apiCountry);
-      return {
-        id: (index + 1).toString(),
-        countryName: 'Unnamed Country'
-      };
-    }
-    
-    return normalizeCountryFromApi(apiCountry, index);
-  });
 };
 
 // Utility để gọi API với error handling

@@ -1,4 +1,4 @@
-import { Genre, OphimGenreResponse } from '@/types/Genres';
+import { Genre } from '@/types/Genres';
 
 // Format tên thể loại
 export const formatGenreName = (name: string): string => {
@@ -66,46 +66,6 @@ export const getMovieCountColor = (count: number): string => {
   if (count < 20) return 'text-blue-700 bg-blue-100';
   if (count < 50) return 'text-green-700 bg-green-100';
   return 'text-purple-700 bg-purple-100';
-};
-
-// Chuyển đổi từ API response sang Genre type
-export const normalizeGenreFromApi = (apiGenre: OphimGenreResponse, index: number): Genre => {
-  return {
-    id: (index + 1).toString(), // Vì API không có id số, ta tạo id từ index
-    genresName: apiGenre.name,
-  };
-};
-
-// Chuyển đổi danh sách genres từ API - CẬP NHẬT với validation tốt hơn
-export const normalizeGenresFromApi = (apiGenres: OphimGenreResponse[]): Genre[] => {
-  // Kiểm tra nếu apiGenres không phải là array
-  if (!Array.isArray(apiGenres)) {
-    console.error('Expected array but got:', typeof apiGenres, apiGenres);
-    throw new Error('API response items is not an array');
-  }
-  
-  console.log('Normalizing', apiGenres.length, 'genres from API');
-  
-  return apiGenres.map((apiGenre, index) => {
-    // Validate từng item
-    if (!apiGenre || typeof apiGenre !== 'object') {
-      console.warn('Invalid genre item at index', index, ':', apiGenre);
-      return {
-        id: (index + 1).toString(),
-        genresName: 'Unknown Genre'
-      };
-    }
-    
-    if (!apiGenre.name) {
-      console.warn('Genre missing name at index', index, ':', apiGenre);
-      return {
-        id: (index + 1).toString(),
-        genresName: 'Unnamed Genre'
-      };
-    }
-    
-    return normalizeGenreFromApi(apiGenre, index);
-  });
 };
 
 // Utility để gọi API với error handling
