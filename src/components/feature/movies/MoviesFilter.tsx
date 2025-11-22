@@ -3,8 +3,10 @@
 import { useEffect, useState } from "react";
 import { useFilterOptions } from "@/hooks/useFilter";
 import { getMovieTypesText, getStatusText } from "@/utils/getText";
+import { useRouter } from "next/navigation";
 
 export interface MoviesFilterProps {
+  query?: string;
   typeProps?: string;
   genresProps?: string[];
   countryProps?: string;
@@ -15,6 +17,7 @@ export interface MoviesFilterProps {
 }
 
 export default function MoviesFilter({
+  query = "",
   typeProps = "Tất cả",
   genresProps = [],
   countryProps = "Tất cả",
@@ -24,6 +27,7 @@ export default function MoviesFilter({
   sortByProps = "Mới cập nhật",
 }:  MoviesFilterProps) {
   const [isActive, setIsActive] = useState(false);
+  const route = useRouter();
 
   // Gọi useFilter trực tiếp ở top level của component
   const {
@@ -66,6 +70,10 @@ export default function MoviesFilter({
     updateYear(yearProps || null);
     updateStatus(statusProps);
     updateSortBy(sortByProps);
+
+    console.log("countryProps:", countryProps);
+    console.log("genresProps:", genresProps);
+
   }, []);
 
   const handleClick = () => {
@@ -292,7 +300,16 @@ export default function MoviesFilter({
                   <button
                     className="px-4 py-2 bg-(--hover) rounded-lg text-black hover:bg-(--text-highlight) hover:text-white transition"
                     onClick={() => {
-                      // Logic áp dụng bộ lọc
+                      route.replace("/filterResult/?"+ new URLSearchParams({
+                        query: query || "",
+                        country: country.id !== "all" ? country.id : "",
+                        genres: genres.length > 0 ? genres.map(g => g.id).join(",") : "",
+                        type: type !== "Tất cả" ? type : "",
+                        language: language !== "Tất cả" ? language : "",
+                        year: year || "",
+                        status: status !== "Tất cả" ? status : "",
+                        sortBy: sortBy !== "Mới cập nhật" ? sortBy : "",
+                      }).toString());
                     }}
                   >
                     Áp dụng

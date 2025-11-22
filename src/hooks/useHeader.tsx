@@ -1,6 +1,6 @@
 import { useMemo } from "react";
-import { useGenreData } from "./useGenreData";
-import { useCountryData } from "./useCountryData";
+import { useGenreData } from "@/hooks/useData/useGenreData";
+import { useCountryData } from "@/hooks/useData/useCountryData";
 
 export interface DropdownItem {
   label: string;

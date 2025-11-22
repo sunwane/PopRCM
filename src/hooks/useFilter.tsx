@@ -2,21 +2,18 @@ import { useState, useEffect, useMemo } from "react";
 import { MoviesService } from "../services/MoviesService";
 import { Country } from "@/types/Country";
 import { Genre } from "@/types/Genres";
-import { useGenreData } from "./useGenreData";
-import { useCountryData } from "./useCountryData";
+import { useGenreData } from "@/hooks/useData/useGenreData";
+import { useCountryData } from "@/hooks/useData/useCountryData";
+import { useMoviesData } from "@/hooks/useData/useMoviesData";
 
 export function useFilterOptions() {
   const { allGenres: allgenres } = useGenreData();
   const { allCountries: countries } = useCountryData();
-  
-  const [languages, setLanguages] = useState<string[]>([]);
-  const [types, setTypes] = useState<string[]>([]);
-  const [statuses, setStatuses] = useState<string[]>([]);
+  const { languages, types, statuses } = useMoviesData();
   
   const sortOptions = [
     "Mới cập nhật",
     "Nhiều lượt xem", 
-    "Đánh giá POPRCM",
     "Điểm IMDB",
     "Điểm TMDB",
   ];
@@ -29,27 +26,6 @@ export function useFilterOptions() {
   const [year, setYear] = useState<string | null>(null);
   const [sortBy, setSortBy] = useState<string>("Mới cập nhật");
   const [status, setStatus] = useState<string>("Tất cả");
-
-  // Tải dữ liệu cho languages, types, statuses
-  useEffect(() => {
-    const fetchFilterData = async () => {
-      try {
-        const [languagesData, typesData, statusesData] = await Promise.all([
-          MoviesService.getUniqueLanguages(),
-          MoviesService.getUniqueTypes(), 
-          MoviesService.getUniqueStatuses()
-        ]);
-
-        setLanguages(languagesData);
-        setTypes(typesData);
-        setStatuses(statusesData);
-      } catch (error) {
-        console.error("Lỗi khi tải dữ liệu bộ lọc:", error);
-      }
-    };
-
-    fetchFilterData();
-  }, []);
 
   // Hàm để cập nhật giá trị bộ lọc
   const updateCountry = (value: Country) => setCountry(value);
@@ -96,6 +72,7 @@ export function useFilterOptions() {
 }
 
 export function useFilterResults(
+  query: string,
   countryId?: string,
   genreIds?: string[],
   type?: string,
@@ -122,8 +99,8 @@ export function useFilterResults(
     year: year ? parseInt(year, 10) : undefined,
     status: status || undefined,
     sortBy: sortBy || undefined,
-    query: "",
-  }), [countryId, stableGenreIds, type, language, year, status, sortBy]);
+    query: query || undefined,
+  }), [countryId, stableGenreIds, type, language, year, status, sortBy, query]);
 
   useEffect(() => {
     const fetchFilteredMovies = async () => {
@@ -142,6 +119,8 @@ export function useFilterResults(
 
     fetchFilteredMovies();
   }, [filterParams]); // Chỉ phụ thuộc vào filterParams đã được memo
+
+  console.log("Filtered Movies:", filteredMovies);
 
   return { filteredMovies, loading, error };
 }

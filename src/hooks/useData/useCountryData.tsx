@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { CountryService } from "../services/CountryService";
+import { CountryService } from "@/services/CountryService";
 import { Country } from "@/types/Country";
 
 export function useCountryData() {

@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { GenresService } from "../services/GenresService";
+import { GenresService } from "../../services/GenresService";
 import { Genre } from "@/types/Genres";
 
 export function useGenreData() {

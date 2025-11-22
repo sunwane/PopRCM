@@ -45,7 +45,7 @@ export default function MovieGridLayout({ filteredMovies }: MovieGridLayoutProps
         isAlignLeft ? "flex gap-6 justify-start" 
         : `grid lg:grid-cols-[repeat(auto-fit,minmax(180px,1fr))] 
         md:grid-cols-[repeat(auto-fit,minmax(180px,1fr))] 
-        sm:grid-cols-[repeat(auto-fit,minmax(140px,1fr))] gap-y-8 justify-items-stretch`
+        sm:grid-cols-[repeat(auto-fit,minmax(140px,1fr))] gap-y-6 justify-items-stretch`
       }`}
     >
       {filteredMovies.map((movie) => (

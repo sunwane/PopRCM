@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import HeaderDropdown from "../feature/header/HeaderDropdown";
 import { useState } from "react";
 import { useHeaderDropdownItems } from "@/hooks/useHeader";
+import { useSearchQuery } from "@/hooks/useSearch";
 
 export default function PageHeader() {
   const route = useRouter();
@@ -29,15 +30,18 @@ export default function PageHeader() {
     setOpenDropdown(null);
   };
 
+  // Use the useSearch hook
+  const { query, onSearch } = useSearchQuery();
+
   return (
     <div 
-      className="flex space-x-[3vw] mx-auto py-3 px-4" 
+      className="flex space-x-[3vw] mx-auto py-3 px-5" 
       onClick={handleClickOutside}
     >
       <button className="flex items-center shrink-0 cursor-pointer" onClick={goHome}>
         <img src="/logo.png" alt="PopRCM Logo" className="h-[60px] w-auto" />
       </button>
-      <SearchBar />
+      <SearchBar onSearch={onSearch} value={query} />
 
       <div className="flex items-center">
         {/* Navigation Links */}

@@ -12,6 +12,7 @@ export default function TypePage() {
   const type = params.type; // Lấy giá trị của [type]
 
   const result = useFilterResults(
+    "",
     undefined,
     undefined,
     type?.toString(),
@@ -20,6 +21,10 @@ export default function TypePage() {
     undefined,
     undefined,
   );
+
+  if (result.loading) {
+    return <div className="text-center text-white">Đang tải...</div>;
+  }
 
   return (
     <div className="max-w-[2000px]">

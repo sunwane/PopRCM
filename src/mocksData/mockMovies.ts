@@ -1,4 +1,4 @@
-import { Movie} from '@/types/Movies';
+import { Movie } from '@/types/Movies';
 import { mockGenres } from './mockGenres';
 import { mockCountries } from './mockCountries';
 import { mockEpisodes } from './mockEpisodes';
@@ -6,7 +6,7 @@ import { mockEpisodes } from './mockEpisodes';
 // Mock Movies
 export const mockMovies: Movie[] = [
   {
-    id: 1,
+    id: "1",
     title: 'Avengers: Endgame',
     originalName: 'Avengers: Endgame',
     description: 'Sau sự kiện tàn khốc trong Infinity War, vũ trụ đang hỗn loạn và bị hủy diệt bởi hành động của Thanos. Với sự trợ giúp của các đồng minh còn lại, Avengers tập hợp một lần nữa để hoàn tác hành động của Thanos và khôi phục lại sự cân bằng của vũ trụ.',
@@ -33,7 +33,7 @@ export const mockMovies: Movie[] = [
   },
   
   {
-    id: 2,
+    id: "2",
     title: 'Stranger Things',
     originalName: 'Stranger Things',
     description: 'Khi một cậu bé mất tích trong thị trấn nhỏ Hawkins, bạn bè của cậu, một cảnh sát trưởng và mẹ của cậu đã hợp sức tìm kiếm cậu và khám phá ra một bí ẩn siêu nhiên đầy nguy hiểm.',
@@ -61,7 +61,7 @@ export const mockMovies: Movie[] = [
   },
   
   {
-    id: 3,
+    id: "3",
     title: 'Mắt Biếc',
     originalName: 'Mắt Biếc',
     description: 'Dựa trên tiểu thuyết cùng tên của nhà văn Nguyễn Nhật Ánh, phim kể về câu chuyện tình đầu trong sáng của Ngạn và cô bạn thơ ấu Hà Lan mắt biếc trong khung cảnh nông thôn Việt Nam.',
@@ -88,7 +88,7 @@ export const mockMovies: Movie[] = [
   },
   
   {
-    id: 4,
+    id: "4",
     title: 'Parasite',
     originalName: '기생충',
     description: 'Gia đình Ki-taek sống trong một căn hầm bẩn thỉu. Họ làm những công việc tạm bợ để kiếm sống, cho đến khi con trai cả Ki-woo được giới thiệu làm gia sư cho con gái của gia đình Park giàu có.',
@@ -115,7 +115,7 @@ export const mockMovies: Movie[] = [
   },
   
   {
-    id: 5,
+    id: "5",
     title: 'Kingdom',
     originalName: '킹덤',
     description: 'Trong thời Joseon, thái tử Lee Chang phải điều tra về một dịch bệnh bí ẩn lan rộng khắp vương quốc. Anh khám phá ra một âm mưu chính trị đen tối đứng sau đại dịch zombie này.',
@@ -143,12 +143,12 @@ export const mockMovies: Movie[] = [
   },
   
   {
-    id: 6,
+    id: "6",
     title: 'Spirited Away',
     originalName: '千と千尋の神隠し',
     description: 'Chihiro, một cô bé 10 tuổi, cùng gia đình chuyển đến một thị trấn mới. Trên đường đi, họ lạc vào một thế giới kỳ lạ bị chi phối bởi các thần linh, phù thủy và quái vật, nơi con người bị biến thành động vật.',
     releaseYear: 2001,
-    type: 'single',
+    type: 'hoathinh',
     duration: '125 min',
     posterUrl: 'https://image.tmdb.org/t/p/w500/39wmItIWsg5sZMyRUHLkWBcuVCM.jpg',
     thumbnailUrl: 'https://image.tmdb.org',
@@ -170,7 +170,7 @@ export const mockMovies: Movie[] = [
   },
   
   {
-    id: 7,
+    id: "7",
     title: 'The Dark Knight',
     originalName: 'The Dark Knight',
     description: 'Batman phải chấp nhận một trong những thử thách tâm lý và thể chất lớn nhất trong cuộc chiến chống tội phạm khi đối mặt với một thiên tài tội phạm được biết đến với cái tên Joker.',
@@ -197,12 +197,12 @@ export const mockMovies: Movie[] = [
   },
   
   {
-    id: 8,
+    id: "8",
     title: 'One Piece',
     originalName: 'ワンピース',
     description: 'Monkey D. Luffy, một cậu bé có thể căng giãn cơ thể như cao su sau khi vô tình ăn phải trái ác quỷ, khám phá đại dương Grand Line cùng băng hải tặc Mũ Rơm để tìm kiếm kho báu huyền thoại One Piece.',
     releaseYear: 1999,
-    type: 'series',
+    type: 'hoathinh',
     duration: '24 min/ep',
     posterUrl: 'https://image.tmdb.org/t/p/w500/cMD9Ygz11zjJzAovURpO75Qg7rT.jpg',
     thumbnailUrl: 'https://image.tmdb.org/t/p/w500/e3NBjKqVT2BjWpAdb2CReqKEDbJ.jpg',
@@ -225,7 +225,7 @@ export const mockMovies: Movie[] = [
   },
   
   {
-    id: 9,
+    id: "9",
     title: 'Cô Ba Sài Gòn',
     originalName: 'Cô Ba Sài Gòn',
     description: 'Câu chuyện về cô Ba - một cô gái xinh đẹp, tài năng trong thời kỳ Sài Gòn thập niên 1960, giữa tình yêu đôi lứa và những xung đột của thời đại.',
@@ -252,7 +252,7 @@ export const mockMovies: Movie[] = [
   },
   
   {
-    id: 10,
+    id: "10",
     title: 'Train to Busan',
     originalName: '부산행',
     description: 'Một dịch bệnh virus zombie bùng phát trên toàn Hàn Quốc. Seok-woo và con gái Soo-an đang trên chuyến tàu đến Busan, khi zombie tấn công tàu hỏa. Những hành khách phải chiến đấu để sống sót.',
@@ -279,12 +279,12 @@ export const mockMovies: Movie[] = [
   },
   
   {
-    id: 11,
+    id: "11",
     title: 'Your Name',
     originalName: '君の名は。',
     description: 'Mitsuha sống ở một thị trấn nhỏ ở vùng núi và mơ ước được sống ở Tokyo. Taki là một học sinh trung học ở Tokyo. Hai người chưa bao giờ gặp nhau, nhưng họ bắt đầu hoán đổi cơ thể trong giấc mơ.',
     releaseYear: 2016,
-    type: 'single',
+    type: 'hoathinh',
     duration: '106 min',
     posterUrl: 'https://image.tmdb.org/t/p/w500/xq1Ugd62d23K2knRUx6xxuALTZB.jpg',
     thumbnailUrl: 'https://image.tmdb.org/t/p/w500/mMtUybQ6hL24FXo0F3Z4j2KG7kZ.jpg',
@@ -306,7 +306,7 @@ export const mockMovies: Movie[] = [
   },
   
   {
-    id: 12,
+    id: "12",
     title: 'Squid Game',
     originalName: '오징어 게임',
     description: 'Một nhóm người mắc nợ tham gia vào một game show bí ẩn để giành giải thưởng khổng lồ. Nhưng họ sớm phát hiện ra rằng cái giá phải trả cho việc thua cuộc là mạng sống của họ.',
@@ -334,7 +334,7 @@ export const mockMovies: Movie[] = [
   },
 
   {
-    id: 13,
+    id: "13",
     title: 'Spider-Man: Homecoming',
     originalName: 'Spider-Man: Homecoming',
     description: 'Peter Parker cân bằng cuộc sống học đường với việc trở thành siêu anh hùng Spider-Man khi anh phải đối mặt với Vulture.',
@@ -361,7 +361,7 @@ export const mockMovies: Movie[] = [
   },
 
   {
-    id: 14,
+    id: "14",
     title: 'Spider-Man: Far From Home',
     originalName: 'Spider-Man: Far From Home',
     description: 'Peter Parker và bạn bè đi du lịch châu Âu, nhưng kế hoạch bị phá hỏng khi Nick Fury xuất hiện và nhờ Spider-Man giúp đỡ.',
@@ -388,7 +388,7 @@ export const mockMovies: Movie[] = [
   },
 
   {
-    id: 15,
+    id: "15",
     title: 'Spider-Man: No Way Home',
     originalName: 'Spider-Man: No Way Home',
     description: 'Sau khi danh tính bị lộ, Peter Parker nhờ Doctor Strange giúp đỡ nhưng một phép thuật sai lệch đã mở ra đa vũ trụ.',
@@ -415,7 +415,7 @@ export const mockMovies: Movie[] = [
   },
 
   {
-    id: 16,
+    id: "16",
     title: 'The Fast and the Furious',
     originalName: 'The Fast and the Furious',
     description: 'Một cảnh sát chìm phải thâm nhập vào thế giới đua xe bất hợp pháp để điều tra một loạt vụ cướp xe tải.',
@@ -442,7 +442,7 @@ export const mockMovies: Movie[] = [
   },
 
   {
-    id: 17,
+    id: "17",
     title: 'Fast & Furious 6',
     originalName: 'Fast & Furious 6',
     description: 'Hobbs nhờ Dom và nhóm của anh ta giúp đỡ để bắt một tổ chức tội phạm lái xe khéo léo ở London.',
@@ -469,7 +469,7 @@ export const mockMovies: Movie[] = [
   },
 
   {
-    id: 18,
+    id: "18",
     title: 'Gia Đình Là Số 1 - Phần 1',
     originalName: 'Gia Đình Là Số 1 - Phần 1',
     description: 'Phần đầu tiên của loạt phim sitcom nổi tiếng về cuộc sống hài hước của một gia đình đa thế hệ.',
@@ -497,7 +497,7 @@ export const mockMovies: Movie[] = [
   },
 
   {
-    id: 19,
+    id: "19",
     title: 'Gia Đình Là Số 1 - Phần 2',
     originalName: 'Gia Đình Là Số 1 - Phần 2',
     description: 'Phần tiếp theo với những câu chuyện hài hước mới của gia đình và những nhân vật quen thuộc.',
@@ -525,7 +525,7 @@ export const mockMovies: Movie[] = [
   },
 
   {
-    id: 20,
+    id: "20",
     title: 'John Wick',
     originalName: 'John Wick',
     description: 'Một sát thủ đã về hưu phải trở lại thế giới ngầm để trả thù cho cái chết của con chó yêu quý.',
@@ -552,7 +552,7 @@ export const mockMovies: Movie[] = [
   },
 
   {
-    id: 21,
+    id: "21",
     title: 'John Wick: Chapter 2',
     originalName: 'John Wick: Chapter 2',
     description: 'John Wick bị buộc phải trở lại để thực hiện một lời thề máu cũ, dẫn anh ta đến Rome.',
@@ -579,7 +579,7 @@ export const mockMovies: Movie[] = [
   },
 
   {
-    id: 22,
+    id: "22",
     title: 'John Wick: Chapter 3 - Parabellum',
     originalName: 'John Wick: Chapter 3 - Parabellum',
     description: 'John Wick đang chạy trốn với mức tiền thưởng 14 triệu đô la trên đầu và một đội quân sát thủ đang săn lùng anh ta.',
@@ -603,5 +603,5 @@ export const mockMovies: Movie[] = [
     actors: [], // MovieActors for John Wick: Chapter 3
     genres: [mockGenres[0], mockGenres[7]], // Hành động, Tội phạm
     episodes: [] // No specific episode for this movie
-  }
+  },
 ];

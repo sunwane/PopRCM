@@ -6,10 +6,10 @@ import PageHeader from "@/components/layout/PageHeader";
 import { useParams } from "next/navigation";
 import { useFilterResults } from "@/hooks/useFilter";
 import MovieGridLayout from "@/components/feature/movies/MoviesGridLayout";
-import { useGenreData } from "@/hooks/useGenreData";
+import { useGenreData } from "@/hooks/useData/useGenreData";
 import { Genre } from "@/types/Genres";
 
-export default function TypePage() {
+export default function GenrePage() {
   const params = useParams();
   const genre = params.genre as string;
 
@@ -31,6 +31,7 @@ export default function TypePage() {
 
   // Gọi useFilterResults với genreIds thay vì Genre objects
   const result = useFilterResults(
+    "",
     undefined, // countryId
     genreIds, // genreIds
     undefined, // type
@@ -40,7 +41,7 @@ export default function TypePage() {
     undefined, // sortBy
   );
 
-  if (genreLoading) {
+  if (result.loading) {
     return <div className="text-center text-white">Đang tải...</div>;
   }
 
@@ -52,7 +53,7 @@ export default function TypePage() {
       <div className="mx-6">
         <div className="my-4">
         {/* {Tiêu đề} */}
-          <h1 className="text-2xl uppercase font-extrabold tracking-wider">
+          <h1 className="text-2xl font-bold tracking-wide">
             Phim {filterGenre ? filterGenre.genresName : "Không xác định"}
           </h1>
         </div>

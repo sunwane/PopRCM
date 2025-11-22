@@ -1,3 +1,6 @@
+"use client";
+import { useRouter } from "next/navigation";
+
 export interface SearchBarProps {
   placeholder?: string;
   onSearch?: (query: string) => void;
@@ -6,6 +9,14 @@ export interface SearchBarProps {
 }
 
 export default function SearchBar({ placeholder = "Tìm kiếm phim, diễn viên...", onSearch, value, adjustStyle = "" }: SearchBarProps) {
+  const route = useRouter();
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter") {
+      route.replace(`/searchresult?query=${encodeURIComponent(value?.toString() || "")}`);
+    }
+  };
+
   return (
     <div className="relative flex grow items-center">
         <input
@@ -14,6 +25,7 @@ export default function SearchBar({ placeholder = "Tìm kiếm phim, diễn viê
           className={`"w-auto lg:grow pl-12 pr-5 py-4 bg-white/15 rounded-lg text-white/80 text-sm placeholder-white/50 placeholder:font-light focus:outline-none focus:bg-white/25 transition" ${adjustStyle}`}
           onChange={(e) => onSearch && onSearch(e.target.value)}
           value={value}
+          onKeyDown={handleKeyDown}
         />
         <svg
           xmlns="http://www.w3.org/2000/svg"
