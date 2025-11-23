@@ -120,7 +120,5 @@ export function useFilterResults(
     fetchFilteredMovies();
   }, [filterParams]); // Chỉ phụ thuộc vào filterParams đã được memo
 
-  console.log("Filtered Movies:", filteredMovies);
-
   return { filteredMovies, loading, error };
 }

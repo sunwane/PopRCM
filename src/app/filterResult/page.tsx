@@ -43,13 +43,13 @@ export default function SearchResultPage() {
         <div className="my-4">
         {/* {Tiêu đề} */}
           <h1 className="text-2xl font-bold tracking-wide">
-            Kết quả tìm kiếm cho "{query}"
+            Kết quả lọc {query? `với từ khóa "${query}"` : ""}
           </h1>
         </div>
 
         {/* {Bộ lọc} */}
         <MoviesFilter query={query} countryProps={countryId} genresProps={genreIds} typeProps={type}
-          languageProps={language} statusProps={status} sortByProps={sortBy}/>
+          languageProps={language} statusProps={status} sortByProps={sortBy} active={true}/>
 
         {/* {Phim} */}
         <div className="mt-6">

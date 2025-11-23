@@ -36,7 +36,7 @@ export default function CountryPage() {
     undefined, // sortBy
   );
 
-  if (result.loading) {
+  if (result.loading || filtercountry === null) {
     return <div className="text-center text-white">Đang tải...</div>;
   }
 
@@ -54,7 +54,7 @@ export default function CountryPage() {
         </div>
 
         {/* {Bộ lọc} */}
-        <MoviesFilter countryProps={filtercountry ? filtercountry.name : "Không xác định"} />
+        <MoviesFilter countryProps={filtercountry ? filtercountry.id : ""} />
 
         {/* {Phim} */}
         <div className="mt-6">

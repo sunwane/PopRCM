@@ -14,6 +14,7 @@ export interface MoviesFilterProps {
   yearProps?: string;
   statusProps?: string;
   sortByProps?: string;
+  active?: boolean;
 }
 
 export default function MoviesFilter({
@@ -25,6 +26,7 @@ export default function MoviesFilter({
   yearProps = "",
   statusProps = "Tất cả",
   sortByProps = "Mới cập nhật",
+  active = false,
 }:  MoviesFilterProps) {
   const [isActive, setIsActive] = useState(false);
   const route = useRouter();
@@ -56,25 +58,25 @@ export default function MoviesFilter({
   useEffect(() => {
     // Khởi tạo giá trị bộ lọc từ props
     updateType(typeProps);
-    genresProps.forEach((genreName) => {
-      const genre = allgenres.find((g) => g.genresName === genreName);
-      if (genre) {
-        updateGenres(genre);
+    
+    genresProps.forEach((genreId) => {
+      const genreProps = allgenres.find((g) => g.id == genreId);
+      if (genreProps) {
+        updateGenres(genreProps);
       }
     });
-    const countryObj = countries.find((c) => c.name === countryProps);
+
+    const countryObj = countries.find((c) => c.id === countryProps);
     if (countryObj) {
       updateCountry(countryObj);
     }
+
     updateLanguage(languageProps);
     updateYear(yearProps || null);
     updateStatus(statusProps);
     updateSortBy(sortByProps);
-
-    console.log("countryProps:", countryProps);
-    console.log("genresProps:", genresProps);
-
-  }, []);
+    setIsActive(active);
+  }, [countries, allgenres]);
 
   const handleClick = () => {
     setIsActive((prev) => !prev);

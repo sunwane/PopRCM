@@ -59,7 +59,7 @@ export default function GenrePage() {
         </div>
 
         {/* {Bộ lọc} */}
-        <MoviesFilter genresProps={filterGenre ? [filterGenre.genresName] : []} />
+        <MoviesFilter genresProps={filterGenre ? [filterGenre.id] : ["all"]} />
 
         {/* {Phim} */}
         <div className="mt-6">
