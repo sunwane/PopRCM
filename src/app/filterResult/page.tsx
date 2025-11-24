@@ -3,8 +3,9 @@
 import MoviesFilter from "@/components/feature/movies/MoviesFilter";
 import PageHeader from "@/components/layout/PageHeader";
 import { useSearchParams } from "next/navigation";
-import { useFilterResults } from "@/hooks/useFilter";
+import { usePagination } from "@/hooks/usePagination";
 import MovieGridLayout from "@/components/feature/movies/MoviesGridLayout";
+import PageFooter from "@/components/layout/PageFooter";
 
 export default function SearchResultPage() {
   const params = useSearchParams();
@@ -18,8 +19,16 @@ export default function SearchResultPage() {
   const status = params.get("status") || undefined;
   const sortBy = params.get("sortBy") || undefined;
 
-  // Gọi useFilterResults với genreIds thay vì Genre objects
-  const result = useFilterResults(
+  // Use pagination with filter
+  const {
+    movies,
+    loading,
+    currentPage,
+    totalPages,
+    hasNextPage,
+    hasPrevPage,
+    goToPage,
+  } = usePagination({
     query,
     countryId,
     genreIds,
@@ -28,11 +37,7 @@ export default function SearchResultPage() {
     year,
     status,
     sortBy,
-  );
-
-  if (result.loading) {
-    return <div className="text-center text-white">Đang tải...</div>;
-  }
+  });
 
   return (
     <div className="max-w-[2000px]">
@@ -53,9 +58,18 @@ export default function SearchResultPage() {
 
         {/* {Phim} */}
         <div className="mt-6">
-          <MovieGridLayout filteredMovies={result.filteredMovies} />
+          <MovieGridLayout 
+            filteredMovies={movies} 
+            loading={loading}
+            currentPage={currentPage}
+            totalPages={totalPages}
+            onPageChange={goToPage}
+            hasNextPage={hasNextPage}
+            hasPrevPage={hasPrevPage}
+          />
         </div>
       </div>
+      <PageFooter />
     </div>
   );
 }

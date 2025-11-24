@@ -1,13 +1,15 @@
 "use client";
 
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useState} from "react";
 import MoviesFilter from "@/components/feature/movies/MoviesFilter";
 import PageHeader from "@/components/layout/PageHeader";
 import { useParams } from "next/navigation";
-import { useFilterResults } from "@/hooks/useFilter";
+import { usePagination } from "@/hooks/usePagination";
 import MovieGridLayout from "@/components/feature/movies/MoviesGridLayout";
 import { useCountryData } from "@/hooks/useData/useCountryData";
 import { Country } from "@/types/Country";
+import PageFooter from "@/components/layout/PageFooter";
+import { LoadingPage } from "@/components/ui/LoadingPage";
 
 export default function CountryPage() {
   const params = useParams();
@@ -24,20 +26,25 @@ export default function CountryPage() {
     }
   }, [country, countryLoading, findCountryById]);
 
-  // Gọi useFilterResults với countryIds thay vì country objects
-  const result = useFilterResults(
-    "",
-    country, // countryId
-    undefined,
-    undefined, // type
-    undefined, // language
-    undefined, // year
-    undefined, // status
-    undefined, // sortBy
-  );
+  // Use pagination with filter
+  const {
+    movies,
+    loading,
+    currentPage,
+    totalPages,
+    hasNextPage,
+    hasPrevPage,
+    goToPage,
+  } = usePagination({
+    countryId: country,
+  });
 
-  if (result.loading || filtercountry === null) {
-    return <div className="text-center text-white">Đang tải...</div>;
+  if (filtercountry === null) {
+    return (
+      <div className="max-w-[2000px]">
+        <LoadingPage />
+      </div>
+    );
   }
 
   return (
@@ -58,9 +65,18 @@ export default function CountryPage() {
 
         {/* {Phim} */}
         <div className="mt-6">
-          <MovieGridLayout filteredMovies={result.filteredMovies} />
+          <MovieGridLayout 
+            filteredMovies={movies} 
+            loading={loading}
+            currentPage={currentPage}
+            totalPages={totalPages}
+            onPageChange={goToPage}
+            hasNextPage={hasNextPage}
+            hasPrevPage={hasPrevPage}
+          />
         </div>
       </div>
+      <PageFooter />
     </div>
   );
 }

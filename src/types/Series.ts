@@ -2,7 +2,7 @@ import { Movie } from "./Movies";
 
 export interface SeriesMovie {
     id: string;
-    movieId: number;
+    movieId: string;
     seriesId: string;
     seasonNumber: number;
     movie?: Movie; // Optional populated movie data

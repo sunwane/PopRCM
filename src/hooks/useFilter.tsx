@@ -80,8 +80,12 @@ export function useFilterResults(
   year?: string | null,
   status?: string,
   sortBy?: string,
+  page?: number,
+  size?: number,
 ) {
   const [filteredMovies, setFilteredMovies] = useState<any[]>([]);
+  const [totalCount, setTotalCount] = useState<number>(0);
+  const [totalPages, setTotalPages] = useState<number>(1);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -100,15 +104,19 @@ export function useFilterResults(
     status: status || undefined,
     sortBy: sortBy || undefined,
     query: query || undefined,
-  }), [countryId, stableGenreIds, type, language, year, status, sortBy, query]);
+    page: page || 0,
+    size: size || 20,
+  }), [countryId, stableGenreIds, type, language, year, status, sortBy, query, page, size]);
 
   useEffect(() => {
     const fetchFilteredMovies = async () => {
       setLoading(true);
       setError(null);
       try {
-        const movies = await MoviesService.getFilteredMovies(filterParams);
-        setFilteredMovies(movies);
+        const result = await MoviesService.getFilteredMovies(filterParams);
+        setFilteredMovies(result.movies);
+        setTotalCount(result.totalCount);
+        setTotalPages(result.totalPages);
       } catch (err) {
         console.error("Lỗi khi lọc phim:", err);
         setError("Lỗi khi tải phim. Vui lòng thử lại.");
@@ -120,5 +128,5 @@ export function useFilterResults(
     fetchFilteredMovies();
   }, [filterParams]); // Chỉ phụ thuộc vào filterParams đã được memo
 
-  return { filteredMovies, loading, error };
+  return { filteredMovies, totalCount, totalPages, loading, error };
 }

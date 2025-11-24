@@ -45,3 +45,10 @@ body {
   color: var(--foreground);
   font-family: var(--font-inter);
 }
+
+.stroke-text-hollow {
+  color: transparent; /* Làm chữ trong suốt (rỗng ruột) */
+  -webkit-text-stroke: 3px var(--color-gray-400); /* Viền trắng dày 3px */
+  text-stroke: 3px var(--color-gray-400); /* Fallback cho các trình duyệt khác */
+  font-family: 'Arial Black', sans-serif; /* Font đậm để viền rõ hơn */
+}

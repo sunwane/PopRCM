@@ -42,12 +42,11 @@ export class MoviesService {
     }
 
     try {
-      const authToken = localStorage.getItem('authToken');
-      const response = await fetch(`${this.API_BASE_URL}?page=0&size=10`, {
+      // Load all movies for filtering (we'll implement server-side pagination later)
+      const response = await fetch(`${this.API_BASE_URL}?page=0&size=1000`, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${authToken}`
         }
       });
       
@@ -62,8 +61,6 @@ export class MoviesService {
           this.mapMovieResponseToMovie(movieResponse)
         );
         this.isDataLoaded = true;
-        console.log('Loaded movies from API:', this.movies.length);
-        console.log('List movies: ',this.movies);
       } else {
         throw new Error('Invalid API response structure');
       }
@@ -79,149 +76,63 @@ export class MoviesService {
     }
   }
 
-  // Chuyển đổi MovieResponse từ API sang Movie interface
-  private static mapMovieResponseToMovie(movieResponse: any): Movie {
+  // Optimized mapping function with concise handling of arrays and defaults
+  private static mapMovieResponseToMovie(res: any): Movie {
+    const { 
+      id, title, originName, description = '', releaseYear, type = [], duration = '',
+      posterUrl, thumbUrl, trailerUrl, totalEpisodes, director = [], status = [],
+      createdAt, modifiedAt, views = 0, slug, tmdbScore, imdbScore, lang = [],
+      actors = [], genres = [], countries = [], episodes = []
+    } = res;
+
     return {
-      id: movieResponse.id,
-      title: movieResponse.title,
-      originalName: movieResponse.originName || movieResponse.title,
-      description: movieResponse.description || '',
-      releaseYear: movieResponse.releaseYear,
-      type: movieResponse.type,
-      duration: movieResponse.duration || '',
-
-      //phải nhờ BE chỉnh lại thumbUrl và posterUrl
-      posterUrl: "https://img.ophim.live/uploads/movies/" + movieResponse.thumbUrl,
-      thumbnailUrl: "https://img.ophim.live/uploads/movies/" + movieResponse.posterUrl,
-
-      trailerUrl: movieResponse.trailerUrl,
-      totalEpisodes: movieResponse.totalEpisodes ? parseInt(movieResponse.totalEpisodes) : undefined,
-      director: movieResponse.director || '',
-      status: movieResponse.status,
-      createdAt: new Date(movieResponse.createdAt),
-      modifiedAt: new Date(movieResponse.modifiedAt),
-      view: movieResponse.views || 0,
-      slug: movieResponse.slug,
-      tmdbScore: movieResponse.tmdbScore,
-      imdbScore: movieResponse.imdbScore,
-      lang: movieResponse.lang,
-      country: [], // Will be populated separately if needed
-      actors: movieResponse.actors ? movieResponse.actors.map((actor: any) => ({
-        id: actor.id,
-        actorId: actor.actorId,
-        movieId: parseInt(movieResponse.id),
-        characterName: actor.characterName,
-        actor: {
-          id: actor.actorId,
-          name: actor.name || '',
-          birthDate: actor.birthDate ? new Date(actor.birthDate) : new Date(),
-          nationality: actor.nationality || '',
-          biography: actor.biography || '',
-          profileImageUrl: actor.profileImageUrl,
-          createdAt: new Date(),
-        }
-      })) : [],
-      genres: [], // Will be populated separately if needed
-      episodes: [] // Will be populated separately if needed
+      id,
+      title,
+      originalName: originName || title,
+      description,
+      releaseYear,
+      type: Array.isArray(type) ? type[0] || '' : type,
+      duration,
+      posterUrl: `https://img.ophim.live/uploads/movies/${thumbUrl}`,
+      thumbnailUrl: `https://img.ophim.live/uploads/movies/${posterUrl}`,
+      trailerUrl,
+      totalEpisodes: totalEpisodes ? parseInt(totalEpisodes) : undefined,
+      director: Array.isArray(director) ? director.join(', ') : director,
+      status: Array.isArray(status) ? status[0] || '' : status,
+      createdAt: new Date(createdAt),
+      modifiedAt: new Date(modifiedAt),
+      view: views,
+      slug,
+      tmdbScore,
+      imdbScore,
+      lang: Array.isArray(lang) ? lang[0] || '' : lang,
+      country: countries?.map((c: any) => ({ id: c.id, name: c.name })) || [],
+      actors: actors?.map((a: any) => ({
+        actorId: a.actorId,
+        originName: a.originName,
+        characterName: a.characterName,
+        profilePath: a.profilePath,
+      })) || [],
+      genres: genres?.map((g: any) => ({ id: g.id, genresName: g.genresName })) || [],
+      episodes: episodes?.map((e: any) => ({
+        id: e.id,
+        title: e.title || '',
+        episodeNumber: e.episodeNumber || 0,
+        createdAt: new Date(e.createdAt || Date.now()),
+        videoUrl: e.videoUrl || '',
+        m3u8Url: e.m3u8Url,
+        serverName: e.serverName || ''
+      })) || []
     };
   }
 
   // Get all movies
   static async getAllMovies(): Promise<Movie[]> {
     await this.loadMoviesData();
-    return this.movies.map(movie => ({
-      ...movie,
-      actors: this.populateMovieActors(movie.id)
-    }));
+    return this.movies;
   }
 
-  // Get movie by ID
-  static async getMovieById(id: string): Promise<Movie | null> {
-    await this.loadMoviesData();
-    const movie = this.movies.find(movie => movie.id === id);
-    if (!movie) return null;
-
-    // Add actors relationship
-    return {
-      ...movie,
-      actors: this.populateMovieActors(id)
-    };
-  }
-
-  // Get movie by slug
-  static async getMovieBySlug(slug: string): Promise<Movie | null> {
-    this.loadMoviesData();
-    const movie = this.movies.find(movie => movie.slug === slug);
-    if (!movie) return null;
-
-    // Add actors relationship
-    return {
-      ...movie,
-      actors: this.populateMovieActors(movie.id)
-    };
-  }
-
-  // Helper method for local search
-  private static async localSearch(query: string): Promise<Movie[]> {
-    await this.loadMoviesData(); // Đảm bảo dữ liệu đã được tải
-    const searchTerm = query.toLowerCase().trim();
-
-    // Lọc phim dựa trên tiêu chí tìm kiếm
-    const filteredMovies = this.movies.filter(movie =>
-      movie.title.toLowerCase().includes(searchTerm) ||
-      movie.originalName.toLowerCase().includes(searchTerm) ||
-      movie.director.toLowerCase().includes(searchTerm) ||
-      movie.description.toLowerCase().includes(searchTerm)
-    );
-
-    // Thêm thông tin diễn viên vào kết quả
-    return filteredMovies.map(movie => ({
-      ...movie,
-      actors: this.populateMovieActors(movie.id)
-    }));
-  }
-
-  // Search movies with API integration
-  static async searchMovies(query: string): Promise<Movie[]> {
-    if (!query.trim()) {
-      return await this.getAllMovies(); // Nếu không có query, trả về tất cả phim
-    }
-
-    if (!this.isServiceAvailable()) {
-      console.info('API not available, using local search');
-      return await this.localSearch(query); // Gọi hàm localSearch
-    }
-
-    try {
-      const authToken = localStorage.getItem('authToken');
-      const response = await fetch(`${this.API_BASE_URL}/search?query=${encodeURIComponent(query)}&page=0&size=100`, {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${authToken}`
-        }
-      });
-      
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      const apiResponse = await response.json();
-      
-      if (apiResponse.result && apiResponse.result.content && Array.isArray(apiResponse.result.content)) {
-        return apiResponse.result.content.map((movieResponse: any) => 
-          this.mapMovieResponseToMovie(movieResponse)
-        );
-      }
-      return [];
-      
-    } catch (error) {
-      console.warn('Search API failed, falling back to local search:', error);
-      return await this.localSearch(query); // Fallback to local search
-    }
-  }
-
-  // Hàm tổng quát để lọc phim
+    // Hàm tổng quát để lọc phim
   static async getFilteredMovies({
     query = "",
     year,
@@ -231,6 +142,8 @@ export class MoviesService {
     genreIds = [],
     countryId,
     sortBy,
+    page = 0,
+    size = 20,
   }: {
     query?: string;
     year?: number;
@@ -240,7 +153,9 @@ export class MoviesService {
     genreIds?: string[];
     countryId?: string;
     sortBy?: string;
-  }): Promise<Movie[]> {
+    page?: number;
+    size?: number;
+  }): Promise<{ movies: Movie[], totalCount: number, totalPages: number }> {
     await this.loadMoviesData(); // Đảm bảo dữ liệu đã được tải
 
     const searchTerm = query.toLowerCase().trim();
@@ -286,16 +201,117 @@ export class MoviesService {
       return matchesQuery && matchesYear && matchesType && matchesStatus && matchesLanguage && matchesGenres && matchesCountry;
     });
 
-    
+      // Sắp xếp nếu cần
+    if (sortBy === "Nhiều lượt xem") {
+      filteredMovies.sort((a, b) => b.view - a.view);
+    } else if (sortBy === "Điểm IMDB") {
+      filteredMovies.sort((a, b) => (b.imdbScore || 0) - (a.imdbScore || 0));
+    } else if (sortBy === "Điểm TMDB") {
+      filteredMovies.sort((a, b) => (b.tmdbScore || 0) - (a.tmdbScore || 0));
+    } else if (sortBy === "Mới nhất") {
+      filteredMovies.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
+    }
 
-    // Thêm thông tin diễn viên vào kết quả
-    return filteredMovies.map((movie) => ({
-      ...movie,
-      actors: this.populateMovieActors(movie.id),
-    }));
+    // Tính toán phân trang
+    const totalCount = filteredMovies.length;
+    const totalPages = Math.ceil(totalCount / size);
+    const startIndex = page * size;
+    const endIndex = startIndex + size;
+    const movies = filteredMovies.slice(startIndex, endIndex);
+
+    return {
+      movies,
+      totalCount,
+      totalPages
+    };
   }
 
-  // Get movies by actor - should be in actor service but here for now
+  // Get movie by ID
+  static async getMovieById(id: string): Promise<Movie | null> {
+    await this.loadMoviesData();
+    const movie = this.movies.find(movie => movie.id === id);
+    if (!movie) return null;
+
+    // Chỉ populate actors khi dùng mock data
+    if (!this.isServiceAvailable()) {
+      return {
+        ...movie,
+        actors: this.populateMovieActors(id)
+      };
+    }
+    
+    // API đã có actors sẵn rồi
+    return movie;
+  }
+
+  // Search movies with API integration
+  static async searchMovies(query: string): Promise<Movie[]> {
+    if (!query.trim()) {
+      return await this.getAllMovies();
+    }
+
+    if (!this.isServiceAvailable()) {
+      // Mock data - cần populate actors
+      await this.loadMoviesData();
+      const searchTerm = query.toLowerCase().trim();
+      const filteredMovies = this.movies.filter(movie => {
+        const directors = Array.isArray(movie.director) ? movie.director.join(' ') : movie.director;
+        return (
+          movie.title.toLowerCase().includes(searchTerm) ||
+          movie.originalName.toLowerCase().includes(searchTerm) ||
+          directors.toLowerCase().includes(searchTerm) ||
+          movie.description.toLowerCase().includes(searchTerm)
+        );
+      });
+
+      return filteredMovies;
+    }
+
+    try {
+      // API call - actors đã có sẵn
+      const authToken = localStorage.getItem('authToken');
+      const response = await fetch(`${this.API_BASE_URL}/search?query=${encodeURIComponent(query)}&page=0&size=100`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${authToken}`
+        }
+      });
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const apiResponse = await response.json();
+      
+      if (apiResponse.result && apiResponse.result.content && Array.isArray(apiResponse.result.content)) {
+        // Trả về trực tiếp, không ghi đè actors
+        return apiResponse.result.content.map((movieResponse: any) => 
+          this.mapMovieResponseToMovie(movieResponse)
+        );
+      }
+      return [];
+      
+    } catch (error) {
+      // Fallback to mock - cần populate actors
+      console.warn('Search API failed, falling back to local search:', error);
+      await this.loadMoviesData();
+      const searchTerm = query.toLowerCase().trim();
+      const filteredMovies = this.movies.filter(movie => {
+        const directors = Array.isArray(movie.director) ? movie.director.join(' ') : movie.director;
+        return (
+          movie.title.toLowerCase().includes(searchTerm) ||
+          movie.originalName.toLowerCase().includes(searchTerm) ||
+          directors.toLowerCase().includes(searchTerm) ||
+          movie.description.toLowerCase().includes(searchTerm)
+        );
+      });
+
+      return filteredMovies;
+    }
+  }
+
+  // Get movies by actor
   static async getMoviesByActor(actorId: string): Promise<Movie[]> {
     this.loadMoviesData();
     
@@ -308,10 +324,7 @@ export class MoviesService {
       movieIdsWithActor.includes(movie.id)
     );
     
-    return filteredMovies.map(movie => ({
-      ...movie,
-      actors: this.populateMovieActors(movie.id)
-    }));
+    return filteredMovies;
   }
 
   // Get recent movies
@@ -321,10 +334,7 @@ export class MoviesService {
       .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
       .slice(0, limit);
     
-    return sortedMovies.map(movie => ({
-      ...movie,
-      actors: this.populateMovieActors(movie.id)
-    }));
+    return sortedMovies;
   }
 
   // Get popular movies (by view count)
@@ -334,10 +344,7 @@ export class MoviesService {
       .sort((a, b) => b.view - a.view)
       .slice(0, limit);
     
-    return sortedMovies.map(movie => ({
-      ...movie,
-      actors: this.populateMovieActors(movie.id)
-    }));
+    return sortedMovies;
   }
 
   // Get top rated movies
@@ -359,41 +366,45 @@ export class MoviesService {
       .sort((a, b) => b.averageScore - a.averageScore) // Sắp xếp theo điểm trung bình giảm dần
       .slice(0, limit); // Lấy số lượng phim theo limit
 
-    return sortedMovies.map(movie => ({
-      ...movie,
-      actors: this.populateMovieActors(movie.id) // Thêm thông tin diễn viên
-    }));
+    return sortedMovies;
   }
 
-  // Get unique types
+  // Get unique release years
+  static async getUniqueReleaseYears(): Promise<number[]> {
+    this.loadMoviesData();
+    const years = [...new Set(this.movies.map(movie => movie.releaseYear))];
+    return years.sort((a, b) => b - a);
+  }
+
+  // Get unique types (optimized for array handling)
   static async getUniqueTypes(): Promise<string[]> {
     this.loadMoviesData();
-    return [...new Set(this.movies.map(movie => movie.type))];
+    const allTypes = this.movies.flatMap(movie => 
+      Array.isArray(movie.type) ? movie.type : [movie.type]
+    );
+    return [...new Set(allTypes)].filter(Boolean);
   }
 
-  // Get unique statuses
+  // Get unique statuses (optimized for array handling)
   static async getUniqueStatuses(): Promise<string[]> {
     this.loadMoviesData();
-    return [...new Set(this.movies.map(movie => movie.status))];
+    const allStatuses = this.movies.flatMap(movie => 
+      Array.isArray(movie.status) ? movie.status : [movie.status]
+    );
+    return [...new Set(allStatuses)].filter(Boolean);
   }
 
-  // Get unique languages
+  // Get unique languages (optimized for array handling)  
   static async getUniqueLanguages(): Promise<string[]> {
     this.loadMoviesData();
-    return [...new Set(this.movies.map(movie => movie.lang))];
+    const allLanguages = this.movies.flatMap(movie => 
+      Array.isArray(movie.lang) ? movie.lang : [movie.lang]
+    );
+    return [...new Set(allLanguages)].filter(Boolean);
   }
 
   // Get actors for a specific movie
   static async getMovieActors(movieId: string) {
     return this.populateMovieActors(movieId);
-  }
-
-  // Get all movie-actor relationships
-  static async getAllMovieActors() {
-    return mockMovieActors.map(ma => ({
-      ...ma,
-      movie: this.movies.find(m => m.id === ma.movieId),
-      actor: mockActors.find(a => a.id === ma.actorId)
-    }));
   }
 }

@@ -1,16 +1,32 @@
 import { User } from './User';
 
-//copy từ dự án cũ sang, chưa chỉnh sửa gì, có thể cần thay đổi sau
-
 export interface AuthenticationRequest {
   email: string;
   password: string;
 }
 
+// Response từ backend API
+export interface APIAuthResponse {
+  code?: number;
+  message: string;
+  result?: AuthenticationResponse;
+}
+
+// Response từ backend authentication
+export interface AuthenticationResponse {
+  token: string;
+  userId: string;
+  refreshToken?: string;
+  authenticated: boolean;
+}
+
+// Response đã được xử lý cho frontend
 export interface AuthResponse {
   token: string;
-  user: Omit<User, 'password'>;
-  message: string;
+  userId: string;
+  user?: Omit<User, 'password'>;
+  refreshToken?: string;
+  authenticated?: boolean;  
 }
 
 export interface LoginRequest {
@@ -18,44 +34,6 @@ export interface LoginRequest {
   password: string;
 }
 
-export interface RegisterRequest {
-  username: string;
-  email: string;
-  password: string;
-  gender: string; 
-  verificationCode?: string; // Optional for registration
-}
-
 export interface ResetPasswordRequest {
   email: string;
-}
-
-export interface VerifyResetCodeRequest {
-  email: string;
-  code: string;
-}
-
-export interface ResetPasswordWithCodeRequest {
-  email: string;
-  code: string;
-  newPassword: string;
-}
-
-export interface ChangePasswordRequest {
-  userId: string;
-  currentPassword: string;
-  newPassword: string;
-}
-
-export interface ResendCodeRequest {
-  email: string;
-}
-
-export interface VerifyCodeResponse {
-  message: string;
-  isValid: boolean;
-}
-
-export interface PasswordResetResponse {
-  message: string;
 }

@@ -1,13 +1,44 @@
 export interface User {
     id: string;
-    username: string;
-    fullname: string;
+    userName: string;
+    fullName: string;
     email: string;
     gender: string;
     avatarUrl?: string;
     createdAt: Date;
-    role?: String;
+    role?: string;
 }
 
-export type FilterGender = 'all' | 'male' | 'female';
-export type FilterRole = 'all' | 'Admin' | 'User';
+// Response từ localhost API  
+export interface UserResponse {
+    id: string;
+    userName: string;
+    fullName: string;
+    email: string;
+    gender: string;
+    avatarUrl?: string;
+    createdAt: string; // ISO string từ API
+    role?: string;
+}
+
+export interface ApiResponse<T> {
+    code?: number;
+    message?: string;
+    result: T;
+}
+
+export interface PageResponse<T> {
+    content: T[];
+    totalElements: number;
+    totalPages: number;
+    size: number;
+    number: number;
+}
+
+export interface AvatarUploadResponse {
+    id: string;
+    avatarUrl: string;
+}
+
+export type FilterGender = 'ALL' | 'MALE' | 'FEMALE';
+export type FilterRole = 'ALL' | 'ADMIN' | 'USER';
