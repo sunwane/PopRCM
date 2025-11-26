@@ -5,10 +5,13 @@ import HeaderDropdown from "../feature/header/HeaderDropdown";
 import { useState } from "react";
 import { useHeaderDropdownItems } from "@/hooks/useHeader";
 import { useSearchQuery } from "@/hooks/useSearch";
+import ServiceChecker from "@/services/ServiceChecker";
 
 export default function PageHeader() {
   const route = useRouter();
   const goHome = () => {
+    ServiceChecker.resetServiceCheck();
+    ServiceChecker.checkServiceAvailability();
     route.push("/");
   };
 

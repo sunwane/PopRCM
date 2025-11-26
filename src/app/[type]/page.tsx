@@ -3,7 +3,7 @@
 import MoviesFilter from "@/components/feature/movies/MoviesFilter";
 import PageHeader from "@/components/layout/PageHeader";
 import { useParams } from "next/navigation";
-import { usePagination } from "@/hooks/usePagination";
+import { useMoviesPagination } from "@/hooks/usePagination/useMoviesPagination";
 import MovieGridLayout from "@/components/feature/movies/MoviesGridLayout";
 import { getMovieTypesText } from "@/utils/getText";
 import PageFooter from "@/components/layout/PageFooter";
@@ -20,7 +20,7 @@ export default function TypePage() {
     hasNextPage,
     hasPrevPage,
     goToPage,
-  } = usePagination({
+  } = useMoviesPagination({
     type: type?.toString(),
   });
 

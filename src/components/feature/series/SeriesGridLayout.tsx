@@ -1,12 +1,12 @@
-import { use, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { LoadingEffect } from "@/components/ui/LoadingEffect";
 import NotFoundDiv from "@/components/ui/NotFoundDiv";
-import { Actor } from "@/types/Actor";
-import OneActor from "./OneActor";
+import { Series } from "@/types/Series";
+import OneSeries from "./OneSerie";
 import Pagination from "@/components/ui/Pagination";
 
-export interface ActorGridLayoutProps {
-  actors: Actor[];
+export interface SeriesGridLayoutProps {
+  series: Series[];
   loading: boolean;
   currentPage?: number;
   totalPages?: number;
@@ -15,15 +15,15 @@ export interface ActorGridLayoutProps {
   hasPrevPage?: boolean;
 }
 
-export default function ActorGridLayout({ 
-  actors, 
+export default function SeriesGridLayout({ 
+  series, 
   loading, 
   currentPage, 
   totalPages, 
   onPageChange, 
   hasNextPage, 
   hasPrevPage 
-}: ActorGridLayoutProps) {
+}: SeriesGridLayoutProps) {
   const [isAlignLeft, setIsAlignLeft] = useState(false);
 
   useEffect(() => {
@@ -31,12 +31,12 @@ export default function ActorGridLayout({
       const screenWidth = window.innerWidth;
 
       // Tính số lượng diễn viên có thể hiển thị trên một hàng
-      const actorWidth = 180; // Kích thước tối thiểu của mỗi diễn viên (px)
+      const seriesWidth = 180; // Kích thước tối thiểu của mỗi diễn viên (px)
       const gap = 8; // Khoảng cách giữa các diễn viên (px)
-      const actorsPerRow = Math.floor(screenWidth / (actorWidth + gap));
+      const seriessPerRow = Math.floor(screenWidth / (seriesWidth + gap));
 
       // Nếu số lượng diễn viên ít hơn số lượng diễn viên trên một hàng, căn trái
-      setIsAlignLeft(actors.length > 0 && actors.length < actorsPerRow);
+      setIsAlignLeft(series.length > 0 && series.length < seriessPerRow);
     };
 
     // Gọi hàm khi component mount
@@ -49,13 +49,13 @@ export default function ActorGridLayout({
     return () => {
       window.removeEventListener("resize", updateAlignment);
     };
-  }, [actors]);
+  }, [series]);
 
   if (loading) {
     return <LoadingEffect message="Đang tải diễn viên..." />;
   }
 
-  if (actors.length === 0) {
+  if (series.length === 0) {
     return <NotFoundDiv message="Không tìm thấy diễn viên nào." />;
   }
 
@@ -70,8 +70,8 @@ export default function ActorGridLayout({
                sm:grid-cols-[repeat(auto-fit,minmax(140px,1fr))] gap-y-6 justify-items-stretch`
         }`}
       >
-        {actors.map((actor) => (
-          <OneActor key={actor.id} actor={actor} />
+        {series.map((serie) => (
+          <OneSeries key={serie.id} serie={serie} />
         ))}
       </div>
         {totalPages && totalPages > 1 && onPageChange && (

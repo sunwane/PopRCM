@@ -2,22 +2,21 @@
 
 import PageHeader from "@/components/layout/PageHeader";
 import PageFooter from "@/components/layout/PageFooter";
-import { useActorsData } from "@/hooks/useData/useActorsData";
-import { LoadingEffect } from "@/components/ui/LoadingEffect";
+import ActorGridLayout from "@/components/feature/actors/ActorGridLayout";
+import { useActorPagination } from "@/hooks/usePagination/useActorPagination";
 
 export default function ActorPage() {
 
-  const {allActors, loading} = useActorsData();
-
-  if (loading) {
-    return (
-      <div className="max-w-[2000px]">
-        <PageHeader />
-        <LoadingEffect />
-        <PageFooter />
-      </div>
-    );
-  }
+  const {
+    actors,
+    loading,
+    currentPage,
+    totalPages,
+    hasNextPage,
+    hasPrevPage,
+    goToPage,
+  } = useActorPagination({
+  });
 
   return (
     <div className="max-w-[2000px]">
@@ -34,7 +33,15 @@ export default function ActorPage() {
 
         {/* {Diễn viên} */}
         <div className="mt-6">
-
+          <ActorGridLayout 
+            actors={actors} 
+            loading={loading}
+            currentPage={currentPage}
+            totalPages={totalPages}
+            onPageChange={goToPage}
+            hasNextPage={hasNextPage}
+            hasPrevPage={hasPrevPage}
+          />
         </div>
       </div>
       <PageFooter />

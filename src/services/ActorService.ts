@@ -22,7 +22,7 @@ export class ActorService {
       originName: actorResponse.originName,
       profilePath: actorResponse.profilePath,
       gender: this.mapGenderFromNumber(actorResponse.gender),
-      alsoKnownAs: [] // API không có field này, để trống
+      alsoKnownAs: actorResponse.alsoKnownAs || [],
     };
   }
 
@@ -45,7 +45,10 @@ export class ActorService {
   }
 
   // Load data from API or mock
-  private static async loadActorsData(): Promise<void> {
+  private static async loadActorsData(
+    page: number = 0,
+    size: number = 24
+  ): Promise<void> {
     if (this.isDataLoaded) return;
 
     if (!this.isServiceAvailable()) {
@@ -57,7 +60,7 @@ export class ActorService {
 
     try {
       const authToken = localStorage.getItem('authToken');
-      const response = await fetch(`${this.API_BASE_URL}?page=0&size=100`, {
+      const response = await fetch(`${this.API_BASE_URL}?page=${page}&size=${size}`, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
@@ -89,16 +92,29 @@ export class ActorService {
     }
   }
 
-  // Get all actors
-  static async getAllActors(): Promise<Actor[]> {
-    await this.loadActorsData();
+  // Get all actors - với pagination parameters
+  static async getAllActors(
+    page: number = 0,
+    size: number = 24
+  ): Promise<Actor[]> {
+    // Quyết định size dựa trên availability của service
+    const loadSize = this.isServiceAvailable() ? size : 1000;
+    await this.loadActorsData(page, loadSize);
+    
+    // Nếu sử dụng mock data, thực hiện pagination local
+    if (!this.isServiceAvailable()) {
+      const start = page * size;
+      const end = start + size;
+      return this.actors.slice(start, end);
+    }
+    
     return [...this.actors];
   }
 
   // Get actor by ID
   static async getActorById(id: string): Promise<Actor | null> {
     if (!this.isServiceAvailable()) {
-      await this.loadActorsData();
+      await this.loadActorsData(0, 1000);
       const actor = this.actors.find(a => a.id === id);
       return Promise.resolve(actor || null);
     }
@@ -127,7 +143,7 @@ export class ActorService {
       
     } catch (error) {
       console.warn('Failed to get actor from API, using local data:', error);
-      await this.loadActorsData();
+      await this.loadActorsData(0, 1000);
       const actor = this.actors.find(a => a.id === id);
       return Promise.resolve(actor || null);
     }
@@ -141,7 +157,7 @@ export class ActorService {
 
     if (!this.isServiceAvailable()) {
       console.info('API not available, using local search');
-      await this.loadActorsData();
+      await this.loadActorsData(0, 1000);
       const searchTerm = query.toLowerCase().trim();
       const filteredActors = this.actors.filter(actor => 
         actor.originName.toLowerCase().includes(searchTerm) ||
@@ -177,7 +193,7 @@ export class ActorService {
     } catch (error) {
       console.warn('Search API failed, falling back to local search:', error);
       // Fallback to local search
-      await this.loadActorsData();
+      await this.loadActorsData(0, 1000);
       const searchTerm = query.toLowerCase().trim();
       const filteredActors = this.actors.filter(actor => 
         actor.originName.toLowerCase().includes(searchTerm) ||
@@ -186,18 +202,6 @@ export class ActorService {
       );
       return Promise.resolve(filteredActors);
     }
-  }
-
-  // Check if TMDB ID exists
-  static async checkTmdbIdExists(tmdbId: string, excludeId?: string): Promise<boolean> {
-    await this.loadActorsData();
-    
-    return Promise.resolve(
-      this.actors.some(actor => 
-        actor.tmdbId === tmdbId && 
-        actor.id !== excludeId
-      )
-    );
   }
 
   // Get movie count for actor (mock function)

@@ -28,22 +28,24 @@ export class MoviesService {
   }
 
   // Load data from API or mock
-  private static async loadMoviesData(): Promise<void> {
+  private static async loadMoviesData(
+    page: number = 0,
+    size: number = 24
+  ): Promise<void> {
     if (this.isDataLoaded) return;
 
     if (!this.isServiceAvailable()) {
       console.info('API not available, using mock data');
       this.movies = mockMovies.map(movie => ({
         ...movie,
-        actors: this.populateMovieActors(movie.id)
       }));
       this.isDataLoaded = true;
       return;
     }
 
     try {
-      // Load all movies for filtering (we'll implement server-side pagination later)
-      const response = await fetch(`${this.API_BASE_URL}?page=0&size=1000`, {
+      // Load movies with pagination
+      const response = await fetch(`${this.API_BASE_URL}?page=${page}&size=${size}`, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
@@ -70,7 +72,6 @@ export class MoviesService {
       // Fallback to mock data nếu API fail
       this.movies = mockMovies.map(movie => ({
         ...movie,
-        actors: this.populateMovieActors(movie.id)
       }));
       this.isDataLoaded = true;
     }
@@ -127,8 +128,8 @@ export class MoviesService {
   }
 
   // Get all movies
-  static async getAllMovies(): Promise<Movie[]> {
-    await this.loadMoviesData();
+  static async getAllMovies(page: number = 0, size: number = 24): Promise<Movie[]> {
+    await this.loadMoviesData(page, size);
     return this.movies;
   }
 
@@ -143,7 +144,7 @@ export class MoviesService {
     countryId,
     sortBy,
     page = 0,
-    size = 20,
+    size = 24,
   }: {
     query?: string;
     year?: number;
@@ -156,7 +157,9 @@ export class MoviesService {
     page?: number;
     size?: number;
   }): Promise<{ movies: Movie[], totalCount: number, totalPages: number }> {
-    await this.loadMoviesData(); // Đảm bảo dữ liệu đã được tải
+    // Load dữ liệu - nếu dùng mock thì load toàn bộ, nếu dùng API thì chỉ cần load theo pagination
+    const loadSize = this.isServiceAvailable() ? size : 1000;
+    await this.loadMoviesData(0, loadSize);
 
     const searchTerm = query.toLowerCase().trim();
 
@@ -167,7 +170,53 @@ export class MoviesService {
     const filterCountryId = countryId === "all" ? undefined : countryId;
     const effectiveGenreIds = Array.isArray(genreIds) ? genreIds.filter(id => id !== "all") : [];
 
-    // Lọc phim dựa trên các tiêu chí
+    // Nếu sử dụng API, gọi API với phân trang
+    if (this.isServiceAvailable()) {
+      try {
+        const authToken = localStorage.getItem('authToken');
+        const params = new URLSearchParams({
+          page: page.toString(),
+          size: size.toString(),
+          ...(query && { query }),
+          ...(year && { year: year.toString() }),
+          ...(filterType && { type: filterType }),
+          ...(filterStatus && { status: filterStatus }),
+          ...(filterLanguage && { language: filterLanguage }),
+          ...(filterCountryId && { countryId: filterCountryId }),
+          ...(sortBy && { sortBy }),
+        });
+
+        // Thêm genreIds nếu có
+        if (effectiveGenreIds.length > 0) {
+          effectiveGenreIds.forEach(genreId => params.append('genreIds', genreId));
+        }
+
+        const response = await fetch(`${this.API_BASE_URL}/filter?${params}`, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${authToken}`
+          }
+        });
+
+        if (response.ok) {
+          const apiResponse = await response.json();
+          if (apiResponse.result && apiResponse.result.content) {
+            return {
+              movies: apiResponse.result.content.map((movieResponse: any) => 
+                this.mapMovieResponseToMovie(movieResponse)
+              ),
+              totalCount: apiResponse.result.totalElements || 0,
+              totalPages: apiResponse.result.totalPages || 1
+            };
+          }
+        }
+      } catch (error) {
+        console.warn('Filter API failed, falling back to local filtering:', error);
+      }
+    }
+
+    // Fallback to local filtering for mock data
     const filteredMovies = this.movies.filter((movie) => {
       // Lọc theo từ khóa tìm kiếm
       const matchesQuery =
@@ -201,7 +250,7 @@ export class MoviesService {
       return matchesQuery && matchesYear && matchesType && matchesStatus && matchesLanguage && matchesGenres && matchesCountry;
     });
 
-      // Sắp xếp nếu cần
+    // Sắp xếp nếu cần
     if (sortBy === "Nhiều lượt xem") {
       filteredMovies.sort((a, b) => b.view - a.view);
     } else if (sortBy === "Điểm IMDB") {
@@ -212,9 +261,9 @@ export class MoviesService {
       filteredMovies.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
     }
 
-    // Tính toán phân trang
+    // Tính toán phân trang cho mock data
     const totalCount = filteredMovies.length;
-    const totalPages = Math.ceil(totalCount / size);
+    const totalPages = Math.ceil(totalCount / size) || 1;
     const startIndex = page * size;
     const endIndex = startIndex + size;
     const movies = filteredMovies.slice(startIndex, endIndex);
@@ -228,7 +277,9 @@ export class MoviesService {
 
   // Get movie by ID
   static async getMovieById(id: string): Promise<Movie | null> {
-    await this.loadMoviesData();
+    // Chỉ load toàn bộ khi dùng mock data, API có thể query trực tiếp
+    const loadSize = this.isServiceAvailable() ? 24 : 1000;
+    await this.loadMoviesData(0, loadSize);
     const movie = this.movies.find(movie => movie.id === id);
     if (!movie) return null;
 
@@ -252,7 +303,7 @@ export class MoviesService {
 
     if (!this.isServiceAvailable()) {
       // Mock data - cần populate actors
-      await this.loadMoviesData();
+      await this.loadMoviesData(0, 1000); // Load all for searching in mock data
       const searchTerm = query.toLowerCase().trim();
       const filteredMovies = this.movies.filter(movie => {
         const directors = Array.isArray(movie.director) ? movie.director.join(' ') : movie.director;
@@ -295,7 +346,7 @@ export class MoviesService {
     } catch (error) {
       // Fallback to mock - cần populate actors
       console.warn('Search API failed, falling back to local search:', error);
-      await this.loadMoviesData();
+      await this.loadMoviesData(0, 1000); // Load all for searching in fallback
       const searchTerm = query.toLowerCase().trim();
       const filteredMovies = this.movies.filter(movie => {
         const directors = Array.isArray(movie.director) ? movie.director.join(' ') : movie.director;
@@ -313,7 +364,9 @@ export class MoviesService {
 
   // Get movies by actor
   static async getMoviesByActor(actorId: string): Promise<Movie[]> {
-    this.loadMoviesData();
+    // Chỉ load toàn bộ khi dùng mock data
+    const loadSize = this.isServiceAvailable() ? 24 : 1000;
+    await this.loadMoviesData(0, loadSize);
     
     // Get movie IDs that have this actor
     const movieIdsWithActor = mockMovieActors
@@ -329,7 +382,9 @@ export class MoviesService {
 
   // Get recent movies
   static async getRecentMovies(limit: number = 10): Promise<Movie[]> {
-    this.loadMoviesData();
+    // Chỉ load toàn bộ khi dùng mock data để sort, API có thể sort trực tiếp
+    const loadSize = this.isServiceAvailable() ? 24 : 1000;
+    await this.loadMoviesData(0, loadSize);
     const sortedMovies = [...this.movies]
       .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
       .slice(0, limit);
@@ -339,7 +394,9 @@ export class MoviesService {
 
   // Get popular movies (by view count)
   static async getPopularMovies(limit: number = 10): Promise<Movie[]> {
-    this.loadMoviesData();
+    // Chỉ load toàn bộ khi dùng mock data để sort, API có thể sort trực tiếp
+    const loadSize = this.isServiceAvailable() ? 24 : 1000;
+    await this.loadMoviesData(0, loadSize);
     const sortedMovies = [...this.movies]
       .sort((a, b) => b.view - a.view)
       .slice(0, limit);
@@ -349,7 +406,9 @@ export class MoviesService {
 
   // Get top rated movies
   static async getTopRatedMovies(limit: number = 10): Promise<Movie[]> {
-    this.loadMoviesData();
+    // Chỉ load toàn bộ khi dùng mock data để sort, API có thể sort trực tiếp
+    const loadSize = this.isServiceAvailable() ? 24 : 1000;
+    await this.loadMoviesData(0, loadSize);
 
     const sortedMovies = [...this.movies]
       .map(movie => {
@@ -371,14 +430,52 @@ export class MoviesService {
 
   // Get unique release years
   static async getUniqueReleaseYears(): Promise<number[]> {
-    this.loadMoviesData();
+    if (this.isServiceAvailable()) {
+      try {
+        // Gọi API endpoint riêng cho unique years
+        const response = await fetch(`${this.API_BASE_URL}/years`, {
+          method: 'GET',
+          headers: { 'Content-Type': 'application/json' }
+        });
+        if (response.ok) {
+          const apiResponse = await response.json();
+          if (apiResponse.result && Array.isArray(apiResponse.result)) {
+            return apiResponse.result.sort((a: number, b: number) => b - a);
+          }
+        }
+      } catch (error) {
+        console.warn('Years API failed, falling back to local data:', error);
+      }
+    }
+    
+    // Fallback to mock data
+    await this.loadMoviesData(0, 1000);
     const years = [...new Set(this.movies.map(movie => movie.releaseYear))];
     return years.sort((a, b) => b - a);
   }
 
   // Get unique types (optimized for array handling)
   static async getUniqueTypes(): Promise<string[]> {
-    this.loadMoviesData();
+    if (this.isServiceAvailable()) {
+      try {
+        // Gọi API endpoint riêng cho unique types
+        const response = await fetch(`${this.API_BASE_URL}/types`, {
+          method: 'GET',
+          headers: { 'Content-Type': 'application/json' }
+        });
+        if (response.ok) {
+          const apiResponse = await response.json();
+          if (apiResponse.result && Array.isArray(apiResponse.result)) {
+            return apiResponse.result.filter(Boolean);
+          }
+        }
+      } catch (error) {
+        console.warn('Types API failed, falling back to local data:', error);
+      }
+    }
+    
+    // Fallback to mock data
+    await this.loadMoviesData(0, 1000);
     const allTypes = this.movies.flatMap(movie => 
       Array.isArray(movie.type) ? movie.type : [movie.type]
     );
@@ -387,7 +484,26 @@ export class MoviesService {
 
   // Get unique statuses (optimized for array handling)
   static async getUniqueStatuses(): Promise<string[]> {
-    this.loadMoviesData();
+    if (this.isServiceAvailable()) {
+      try {
+        // Gọi API endpoint riêng cho unique statuses
+        const response = await fetch(`${this.API_BASE_URL}/statuses`, {
+          method: 'GET',
+          headers: { 'Content-Type': 'application/json' }
+        });
+        if (response.ok) {
+          const apiResponse = await response.json();
+          if (apiResponse.result && Array.isArray(apiResponse.result)) {
+            return apiResponse.result.filter(Boolean);
+          }
+        }
+      } catch (error) {
+        console.warn('Statuses API failed, falling back to local data:', error);
+      }
+    }
+    
+    // Fallback to mock data
+    await this.loadMoviesData(0, 1000);
     const allStatuses = this.movies.flatMap(movie => 
       Array.isArray(movie.status) ? movie.status : [movie.status]
     );
@@ -396,7 +512,26 @@ export class MoviesService {
 
   // Get unique languages (optimized for array handling)  
   static async getUniqueLanguages(): Promise<string[]> {
-    this.loadMoviesData();
+    if (this.isServiceAvailable()) {
+      try {
+        // Gọi API endpoint riêng cho unique languages
+        const response = await fetch(`${this.API_BASE_URL}/languages`, {
+          method: 'GET',
+          headers: { 'Content-Type': 'application/json' }
+        });
+        if (response.ok) {
+          const apiResponse = await response.json();
+          if (apiResponse.result && Array.isArray(apiResponse.result)) {
+            return apiResponse.result.filter(Boolean);
+          }
+        }
+      } catch (error) {
+        console.warn('Languages API failed, falling back to local data:', error);
+      }
+    }
+    
+    // Fallback to mock data
+    await this.loadMoviesData(0, 1000);
     const allLanguages = this.movies.flatMap(movie => 
       Array.isArray(movie.lang) ? movie.lang : [movie.lang]
     );

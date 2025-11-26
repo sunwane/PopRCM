@@ -1,7 +1,7 @@
 import { useState, useCallback, useMemo, useEffect } from 'react';
-import { useFilterResults } from './useFilter';
+import { useFilterResults } from '../useFilter';
 
-export interface UsePaginationOptions {
+export interface MoviesPaginationProps {
   query?: string;
   countryId?: string;
   genreIds?: string[];
@@ -14,7 +14,7 @@ export interface UsePaginationOptions {
   pageSize?: number;
 }
 
-export function usePagination(options: UsePaginationOptions = {}) {
+export function useMoviesPagination(props: MoviesPaginationProps = {}) {
   const {
     query = "",
     countryId,
@@ -26,9 +26,9 @@ export function usePagination(options: UsePaginationOptions = {}) {
     sortBy,
     initialPage = 1,
     pageSize = 24,
-  } = options;
+  } = props;
 
-  // Pagination state - merged from usePagination
+  // Pagination state - merged from useMoviesPagination
   const [currentPage, setCurrentPage] = useState(initialPage);
   const [totalItems, setTotalItems] = useState(0);
 

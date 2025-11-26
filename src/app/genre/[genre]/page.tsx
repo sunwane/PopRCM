@@ -4,7 +4,7 @@ import { useEffect, useState, useMemo } from "react";
 import MoviesFilter from "@/components/feature/movies/MoviesFilter";
 import PageHeader from "@/components/layout/PageHeader";
 import { useParams } from "next/navigation";
-import { usePagination } from "@/hooks/usePagination";
+import { useMoviesPagination } from "@/hooks/usePagination/useMoviesPagination";
 import MovieGridLayout from "@/components/feature/movies/MoviesGridLayout";
 import { useGenreData } from "@/hooks/useData/useGenreData";
 import { Genre } from "@/types/Genres";
@@ -40,7 +40,7 @@ export default function GenrePage() {
     hasNextPage,
     hasPrevPage,
     goToPage,
-  } = usePagination({
+  } = useMoviesPagination({
     genreIds,
   });
 

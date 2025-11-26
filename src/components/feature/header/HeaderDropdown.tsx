@@ -9,14 +9,15 @@ interface HeaderDropdownProps {
 }
 
 export default function HeaderDropdown({ items, type }: HeaderDropdownProps) {
-  // Tính số cột dựa trên số lượng items
   const columnCount = items.length <= 4 ? 1 : items.length <= 20 ? 2 : 3;
 
   return (
     <div
       className={`bg-black/85 px-5 py-4 rounded-lg grid gap-5 items-left shadow-md animate-fadeIn shrink-0`}
       style={{
-        gridTemplateColumns: `repeat(${columnCount}, minmax(140px, 1fr))`, // Tùy chỉnh số cột
+        gridTemplateColumns: `repeat(${columnCount}, minmax(140px, 1fr))`,
+        zIndex: 30, // Đảm bảo dropdown nằm trên cùng
+        position: "absolute", // Đặt dropdown ở chế độ `absolute`
       }}
     >
       {type !== "more" ? (

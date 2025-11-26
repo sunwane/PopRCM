@@ -3,7 +3,7 @@
 import MoviesFilter from "@/components/feature/movies/MoviesFilter";
 import PageHeader from "@/components/layout/PageHeader";
 import { useSearchParams } from "next/navigation";
-import { usePagination } from "@/hooks/usePagination";
+import { useMoviesPagination } from "@/hooks/usePagination/useMoviesPagination";
 import MovieGridLayout from "@/components/feature/movies/MoviesGridLayout";
 import PageFooter from "@/components/layout/PageFooter";
 
@@ -28,7 +28,7 @@ export default function SearchResultPage() {
     hasNextPage,
     hasPrevPage,
     goToPage,
-  } = usePagination({
+  } = useMoviesPagination({
     query,
     countryId,
     genreIds,

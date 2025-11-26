@@ -1,11 +1,11 @@
 import { useState } from "react";
-import { Actor } from "@/types/Actor";
+import { Series } from "@/types/Series";
 
-export interface OneActorProps {
-  actor: Actor;
+export interface OneSerieProps {
+  serie: Series;
 }
 
-export default function OneActor({ actor }: OneActorProps) {
+export default function OneSerie({ serie }: OneSerieProps) {
   const [imageError, setImageError] = useState(false);
 
   return (
@@ -17,8 +17,8 @@ export default function OneActor({ actor }: OneActorProps) {
           </div>
         ) : (
           <img
-            src={actor.profilePath}
-            alt={actor.originName}
+            src={serie.posterUrl}
+            alt={serie.name}
             className="w-full h-full object-cover rounded-sm"
             onError={() => setImageError(true)}
           />
@@ -26,9 +26,9 @@ export default function OneActor({ actor }: OneActorProps) {
         {/* Overlay gradient */}
         <div className="absolute bottom-0 left-0 w-full h-12 bg-linear-to-t from-black to-transparent rounded-b-sm"></div>
       </div>
-      {/* Actor name */}
+      {/* Serie name */}
       <span className="absolute bottom-2 truncate line-clamp-1 transform text-sm font-medium text-white z-10">
-        {actor.originName}
+        {serie.name}
       </span>
     </div>
   );
