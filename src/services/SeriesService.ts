@@ -94,7 +94,7 @@ export class SeriesService {
         const series = apiResponse.result.content.map((seriesResponse: any) => 
           this.mapSeriesResponseToSeries(seriesResponse)
         );
-        console.log('Loaded series from API:', series.length);
+        
         return series;
       } else {
         throw new Error('Invalid API response structure');

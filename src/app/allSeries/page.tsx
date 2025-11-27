@@ -26,7 +26,7 @@ export default function SeriesPage() {
         <div className="my-4">
         {/* {Tiêu đề} */}
           <h1 className="text-2xl font-bold tracking-wide">
-            Diễn viên
+            Danh sách Series
           </h1>
         </div>
 

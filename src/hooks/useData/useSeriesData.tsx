@@ -18,7 +18,15 @@ export function useSeriesData(
           page ?? 0, 
           size ?? 1000
         );
-        setAllSeries(series);
+
+        // Đếm số phim trong mỗi series và thêm vào dữ liệu
+        const seriesWithMovieCount = series.map((item) => ({
+          ...item,
+          movieCount: item.seriesMovies ? item.seriesMovies.length : 0, // Giả sử mỗi series có thuộc tính `movies`
+        }));
+
+        setAllSeries(seriesWithMovieCount);
+        console.log("Fetched series:", seriesWithMovieCount);
       } catch (err) {
         setError("Lỗi khi tải danh sách thể loại");
       } finally {

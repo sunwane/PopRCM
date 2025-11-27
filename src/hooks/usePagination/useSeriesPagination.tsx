@@ -1,6 +1,6 @@
 import { useState, useCallback, useMemo, useEffect } from 'react';
-import { SeriesService } from '@/services/SeriesService';
 import { Series } from '@/types/Series';
+import { useSeriesData } from '../useData/useSeriesData';
 
 export interface SeriesPaginationProps {
   query?: string; // Từ khóa tìm kiếm
@@ -27,38 +27,14 @@ export function useSeriesPagination(props: SeriesPaginationProps) {
     return Math.ceil(totalItems / pageSize) || 1;
   }, [totalItems, pageSize]);
 
-  // Load data từ service layer
-  useEffect(() => {
-    const fetchSeries = async () => {
-      setLoading(true);
-      setError(null);
-      
-      try {
-        if (query.trim()) {
-          // Nếu có search query, sử dụng searchSeries
-          const searchResults = await SeriesService.searchSeries(query);
-          setSeries(searchResults);
-          setTotalItems(searchResults.length);
-        } else {
-          // Nếu không có query, lấy tất cả series với pagination
-          const allSeries = await SeriesService.getAllSeries(currentPage - 1, pageSize);
-          setSeries(allSeries);
-          
-          // Để tính totalItems chính xác, cần load toàn bộ dữ liệu một lần
-          const fullSeries = await SeriesService.getAllSeries(0, 1000);
-          setTotalItems(fullSeries.length);
-        }
-      } catch (err) {
-        setError('Lỗi khi tải danh sách series');
-        setSeries([]);
-        setTotalItems(0);
-      } finally {
-        setLoading(false);
-      }
-    };
+  // Fetch dữ liệu series
+  const { allSeries, loading: dataLoading, error: dataError } = useSeriesData();
 
-    fetchSeries();
-  }, [currentPage, pageSize, query]);
+  useEffect(() => {
+    setLoading(dataLoading);
+    setError(dataError);
+    setSeries(allSeries);
+  }, [dataLoading]);
 
   // Navigation functions
   const goToPage = useCallback((page: number) => {

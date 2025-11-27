@@ -1,5 +1,6 @@
 import { Actor } from '@/types/Actor';
 import { mockActors } from '@/mocksData/mockActors';
+import { Movie } from '@/types/Movies';
 
 export class ActorService {
   private static actors: Actor[] = [...mockActors];
@@ -32,15 +33,6 @@ export class ActorService {
       case 1: return 'female';
       case 2: return 'male';
       default: return 'unknown';
-    }
-  }
-
-  // Chuyển đổi gender từ string sang số cho API
-  private static mapGenderToNumber(gender: string): number {
-    switch (gender.toLowerCase()) {
-      case 'female': return 1;
-      case 'male': return 2;
-      default: return 0;
     }
   }
 
@@ -116,6 +108,11 @@ export class ActorService {
     if (!this.isServiceAvailable()) {
       await this.loadActorsData(0, 1000);
       const actor = this.actors.find(a => a.id === id);
+      const movies = await this.getMoviesByActorId(id);
+      const moviesCount = movies.length;
+      if (actor) {
+        actor.moviesCount = moviesCount;
+      }
       return Promise.resolve(actor || null);
     }
 
@@ -146,6 +143,46 @@ export class ActorService {
       await this.loadActorsData(0, 1000);
       const actor = this.actors.find(a => a.id === id);
       return Promise.resolve(actor || null);
+    }
+  }
+
+  // Helper function to get movies by actor ID
+  static async getMoviesByActorId(actorId: string): Promise<any[]> {
+    if (!this.isServiceAvailable()) {
+      console.info('API not available, using local data to get movies by actor');
+      await this.loadActorsData(0, 1000);
+      const actor = this.actors.find(a => a.id === actorId);
+      if (!actor || !actor.movieActors) return [];
+      const movies: Movie[] = actor.movieActors
+        .filter(ma => ma.movie)
+        .map(ma => ma.movie!) ;
+      return Promise.resolve(movies);
+    }
+    try {
+      const authToken = localStorage.getItem('authToken');
+      const response = await fetch(`${this.API_BASE_URL}/${actorId}/movies`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${authToken}`
+        }
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const apiResponse = await response.json();
+      return apiResponse.result || [];
+    } catch (error) {
+      console.warn('Failed to get movies by actor from API:', error);
+      await this.loadActorsData(0, 1000);
+      const actor = this.actors.find(a => a.id === actorId);
+      if (!actor || !actor.movieActors) return [];
+      const movies: Movie[] = actor.movieActors
+        .filter(ma => ma.movie)
+        .map(ma => ma.movie!) ;
+      return Promise.resolve(movies);
     }
   }
 
@@ -206,14 +243,10 @@ export class ActorService {
 
   // Get movie count for actor (mock function)
   static async getMovieCountByActor(actorId: string): Promise<number> {
-    // TODO: Replace with real API call to get actual movie count
-    // return fetch(`/api/actors/${actorId}/movies/count`)
-    //   .then(response => response.json())
-    //   .then(data => data.count);
-    
-    // Fake random movie count based on actor ID for consistency
-    const seed = parseInt(actorId) || 1;
-    return Promise.resolve(Math.abs(Math.floor((Math.sin(seed * 3) * 10000) % 50) + Math.floor(Math.random() * 20)));
+    await this.loadActorsData(0, 1000);
+    const actor = this.actors.find(a => a.id === actorId);
+    if (!actor || !actor.movieActors) return 0;
+    return actor.movieActors.length;
   }
 
   // Refresh data - Force reload from API

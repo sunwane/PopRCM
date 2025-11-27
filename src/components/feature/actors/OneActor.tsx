@@ -8,8 +8,14 @@ export interface OneActorProps {
 export default function OneActor({ actor }: OneActorProps) {
   const [imageError, setImageError] = useState(false);
 
+  const goToDetails = () => {
+    window.location.href = `/actors/${actor.id}`;
+  }
+
   return (
-    <div className="relative w-40 h-48 flex flex-col items-center">
+    <div 
+      className="relative w-40 h-48 flex flex-col items-center hover:scale-105 transition"
+      onClick={goToDetails}>
       <div className="relative w-full h-full">
         {imageError ? (
           <div className="w-full h-full flex items-center justify-center bg-gray-800 rounded-sm">

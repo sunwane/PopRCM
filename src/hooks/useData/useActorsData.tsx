@@ -29,14 +29,36 @@ export function useActorsData(
     fetchActors();
   }, [page, size]);
 
-  const findActorById = (id: string): Actor | null => {
-    return allActors.find(actor => actor.id === id) || null;
-  };
-
   return {
     allActors,
     loading,
     error,
-    findActorById,
   };
+}
+
+export function useActorDataByID(id: string) {
+  const [actor, setActor] = useState<Actor | null>(null);
+  const [movies, setMovies] = useState<any[]>([]); // Nếu cần trả về danh sách phim
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchActor = async () => {
+      try {
+        setLoading(true);
+        const actor = await ActorService.getActorById(id);
+        const movies = await ActorService.getMoviesByActorId(id);
+        setActor(actor);
+        setMovies(movies);
+      } catch (err) {
+        setError("Lỗi khi tải thông tin diễn viên");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchActor();
+  }, [id]);
+
+  return { actor, movies, loading, error };
 }

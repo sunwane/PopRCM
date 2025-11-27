@@ -362,24 +362,6 @@ export class MoviesService {
     }
   }
 
-  // Get movies by actor
-  static async getMoviesByActor(actorId: string): Promise<Movie[]> {
-    // Chỉ load toàn bộ khi dùng mock data
-    const loadSize = this.isServiceAvailable() ? 24 : 1000;
-    await this.loadMoviesData(0, loadSize);
-    
-    // Get movie IDs that have this actor
-    const movieIdsWithActor = mockMovieActors
-      .filter(ma => ma.actorId === actorId)
-      .map(ma => ma.movieId);
-    
-    const filteredMovies = this.movies.filter(movie => 
-      movieIdsWithActor.includes(movie.id)
-    );
-    
-    return filteredMovies;
-  }
-
   // Get recent movies
   static async getRecentMovies(limit: number = 10): Promise<Movie[]> {
     // Chỉ load toàn bộ khi dùng mock data để sort, API có thể sort trực tiếp

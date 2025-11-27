@@ -31,7 +31,7 @@ export default function SeriesGridLayout({
       const screenWidth = window.innerWidth;
 
       // Tính số lượng diễn viên có thể hiển thị trên một hàng
-      const seriesWidth = 180; // Kích thước tối thiểu của mỗi diễn viên (px)
+      const seriesWidth = 260; // Kích thước tối thiểu của mỗi diễn viên (px)
       const gap = 8; // Khoảng cách giữa các diễn viên (px)
       const seriessPerRow = Math.floor(screenWidth / (seriesWidth + gap));
 
@@ -52,11 +52,11 @@ export default function SeriesGridLayout({
   }, [series]);
 
   if (loading) {
-    return <LoadingEffect message="Đang tải diễn viên..." />;
+    return <LoadingEffect message="Đang tải series..." />;
   }
 
   if (series.length === 0) {
-    return <NotFoundDiv message="Không tìm thấy diễn viên nào." />;
+    return <NotFoundDiv message="Không tìm thấy series nào." />;
   }
 
   return (
@@ -65,9 +65,9 @@ export default function SeriesGridLayout({
         className={`${
           isAlignLeft
             ? "flex gap-6 justify-start"
-            : `grid lg:grid-cols-[repeat(auto-fit,minmax(180px,1fr))] 
-               md:grid-cols-[repeat(auto-fit,minmax(180px,1fr))] 
-               sm:grid-cols-[repeat(auto-fit,minmax(140px,1fr))] gap-y-6 justify-items-stretch`
+            : `grid lg:grid-cols-[repeat(auto-fit,minmax(230px,1fr))] 
+               md:grid-cols-[repeat(auto-fit,minmax(230px,1fr))] 
+               sm:grid-cols-[repeat(auto-fit,minmax(180px,1fr))] gap-y-6 justify-items-stretch`
         }`}
       >
         {series.map((serie) => (

@@ -16,4 +16,5 @@ export interface Series {
     releaseYear: string;
     posterUrl: string;
     seriesMovies?: SeriesMovie[]; // Relationship data
+    movieCount?: number; // Số lượng phim trong series
 }
