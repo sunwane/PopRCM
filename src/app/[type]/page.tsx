@@ -32,7 +32,7 @@ export default function TypePage() {
       <div className="mx-6">
         <div className="my-4">
         {/* {Tiêu đề} */}
-          <h1 className="text-2xl uppercase font-extrabold tracking-wider">
+          <h1 className="text-[21px] uppercase font-extrabold tracking-wider">
             {getMovieTypesText(type?.toString() || "")}
           </h1>
         </div>

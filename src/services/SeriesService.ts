@@ -1,8 +1,10 @@
 import { Series, SeriesMovie } from '@/types/Series';
-import { MockSeriesService } from './MockSeriesService';
+import { mockSeries, mockSeriesMovies } from '@/mocksData/mockSeries';
+import { mockMovies } from '@/mocksData/mockMovies';
 
 export class SeriesService {
   private static readonly API_BASE_URL = 'http://localhost:8088/api/series';
+  private static series: Series[] = [...mockSeries];
 
   // Kiểm tra service availability từ localStorage
   private static isServiceAvailable(): boolean {
@@ -10,6 +12,25 @@ export class SeriesService {
       return localStorage.getItem('serviceAvailable') !== 'false';
     }
     return true;
+  }
+
+  // Helper method to populate series movies for mock data
+  private static populateSeriesMovies(seriesId: string): SeriesMovie[] {
+    return mockSeriesMovies
+      .filter(sm => sm.seriesId === seriesId)
+      .map(sm => ({
+        ...sm,
+        movie: mockMovies.find(m => m.id === sm.movieId)
+      }));
+  }
+
+  // Load mock data with series movies populated
+  private static loadMockData(): Series[] {
+    this.series = mockSeries.map(series => ({
+      ...series,
+      seriesMovies: this.populateSeriesMovies(series.id)
+    }));
+    return [...this.series];
   }
 
   // Chuyển đổi SeriesResponse từ API sang Series interface
@@ -62,7 +83,7 @@ export class SeriesService {
   ): Promise<Series[]> {
     if (!this.isServiceAvailable()) {
       console.info('API not available, using mock data');
-      const allSeries = await MockSeriesService.getAllSeries();
+      const allSeries = this.loadMockData();
       
       // Nếu sử dụng mock data và có pagination, thực hiện phân trang local
       if (size !== 1000) {
@@ -103,7 +124,7 @@ export class SeriesService {
     } catch (error) {
       console.warn('Failed to load series from API, using mock data:', error);
       // Fallback to mock data nếu API fail
-      const allSeries = await MockSeriesService.getAllSeries();
+      const allSeries = this.loadMockData();
       
       // Nếu có pagination, thực hiện phân trang local
       if (size !== 1000) {
@@ -121,7 +142,6 @@ export class SeriesService {
     page: number = 0,
     size: number = 24
   ): Promise<Series[]> {
-    // Quyết định size dựa trên availability của service
     const loadSize = this.isServiceAvailable() ? size : 1000;
     const series = await this.loadSeriesData(page, loadSize);
     return [...series];
@@ -130,7 +150,13 @@ export class SeriesService {
   // Get series by ID
   static async getSeriesById(id: string): Promise<Series | null> {
     if (!this.isServiceAvailable()) {
-      return MockSeriesService.getSeriesById(id);
+      const series = this.series.find(s => s.id === id);
+      if (!series) return null;
+
+      return {
+        ...series,
+        seriesMovies: this.populateSeriesMovies(id)
+      };
     }
 
     try {
@@ -157,14 +183,23 @@ export class SeriesService {
       
     } catch (error) {
       console.warn('Failed to get series from API, using mock data:', error);
-      return MockSeriesService.getSeriesById(id);
+      const series = this.series.find(s => s.id === id);
+      if (!series) return null;
+
+      return {
+        ...series,
+        seriesMovies: this.populateSeriesMovies(id)
+      };
     }
   }
 
-  // Get recent series
+  // Các phương thức khác (filter, getRecentSeries, getSeriesByMovieCount, v.v.)
   static async getRecentSeries(limit: number = 10): Promise<Series[]> {
     if (!this.isServiceAvailable()) {
-      return MockSeriesService.getRecentSeries(limit);
+      const allSeries = this.loadMockData();
+      return [...allSeries]
+        .sort((a, b) => parseInt(b.releaseYear) - parseInt(a.releaseYear))
+        .slice(0, limit);
     }
     
     try {
@@ -173,14 +208,19 @@ export class SeriesService {
         .sort((a, b) => parseInt(b.releaseYear) - parseInt(a.releaseYear))
         .slice(0, limit);
     } catch (error) {
-      return MockSeriesService.getRecentSeries(limit);
+      const allSeries = this.loadMockData();
+      return [...allSeries]
+        .sort((a, b) => parseInt(b.releaseYear) - parseInt(a.releaseYear))
+        .slice(0, limit);
     }
   }
 
-  // Get series by movie count
   static async getSeriesByMovieCount(limit: number = 10): Promise<Series[]> {
     if (!this.isServiceAvailable()) {
-      return MockSeriesService.getSeriesByMovieCount(limit);
+      const allSeries = this.loadMockData();
+      return [...allSeries]
+        .sort((a, b) => (b.seriesMovies?.length || 0) - (a.seriesMovies?.length || 0))
+        .slice(0, limit);
     }
     
     try {
@@ -189,35 +229,10 @@ export class SeriesService {
         .sort((a, b) => (b.seriesMovies?.length || 0) - (a.seriesMovies?.length || 0))
         .slice(0, limit);
     } catch (error) {
-      return MockSeriesService.getSeriesByMovieCount(limit);
-    }
-  }
-
-  // Get movies for a specific series
-  static async getSeriesMovies(seriesId: string) {
-    const series = await this.getSeriesById(seriesId);
-    return series?.seriesMovies || [];
-  }
-
-  // Get all series-movie relationships
-  static async getAllSeriesMovies() {
-    if (!this.isServiceAvailable()) {
-      return MockSeriesService.getAllSeriesMovies();
-    }
-    
-    try {
-      const allSeries = await this.loadSeriesData(0, 1000);
-      const allSeriesMovies: SeriesMovie[] = [];
-      
-      allSeries.forEach(series => {
-        if (series.seriesMovies) {
-          allSeriesMovies.push(...series.seriesMovies);
-        }
-      });
-      
-      return allSeriesMovies;
-    } catch (error) {
-      return MockSeriesService.getAllSeriesMovies();
+      const allSeries = this.loadMockData();
+      return [...allSeries]
+        .sort((a, b) => (b.seriesMovies?.length || 0) - (a.seriesMovies?.length || 0))
+        .slice(0, limit);
     }
   }
 }

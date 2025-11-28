@@ -14,7 +14,8 @@ export default function OneActor({ actor }: OneActorProps) {
 
   return (
     <div 
-      className="relative w-40 h-48 flex flex-col items-center hover:scale-105 transition"
+      className="relative lg:w-40 lg:h-48 md:w-40 md:h-48 sm:w-[28vw] sm:h-[28vw] w-[40vw] h-[40vw] 
+                cursor-pointer flex flex-col items-center hover:scale-105 transition"
       onClick={goToDetails}>
       <div className="relative w-full h-full">
         {imageError ? (

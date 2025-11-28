@@ -25,7 +25,7 @@ export default function SeriesPage() {
       <div className="mx-6">
         <div className="my-4">
         {/* {Tiêu đề} */}
-          <h1 className="text-2xl font-bold tracking-wide">
+          <h1 className="text-[21px] font-bold tracking-wide">
             Danh sách Series
           </h1>
         </div>

@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useMemo, useState, useEffect } from "react";
 import { useGenreData } from "@/hooks/useData/useGenreData";
 import { useCountryData } from "@/hooks/useData/useCountryData";
 
@@ -39,4 +39,59 @@ export function useHeaderDropdownItems(type: string): DropdownItem[] {
   }, [type, allGenres, allCountries, genreLoading, countryLoading]);
 
   return items;
+}
+
+// Hook quản lý state cho header
+export function useHeaderState() {
+  const [openDropdown, setOpenDropdown] = useState<string | null>(null);
+  const [showMobileMenu, setShowMobileMenu] = useState(false);
+  const [showMobileSearch, setShowMobileSearch] = useState(false);
+  const [isScrolled, setIsScrolled] = useState(false);
+
+  // Theo dõi scroll position
+  useEffect(() => {
+    const handleScroll = () => {
+      const scrollTop = window.scrollY;
+      setIsScrolled(scrollTop > 50); // Thay đổi background sau khi scroll 50px
+    };
+
+    // Thêm event listener
+    window.addEventListener('scroll', handleScroll);
+    
+    // Cleanup
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+    };
+  }, []);
+
+  const handleDropdownToggle = (type: string) => {
+    setOpenDropdown((prev) => (prev === type ? null : type));
+  };
+
+  const handleClickOutside = () => {
+    setOpenDropdown(null);
+  };
+
+  const handleMobileMenuToggle = () => {
+    setShowMobileMenu(!showMobileMenu);
+    setShowMobileSearch(false); // Close search when opening menu
+  };
+
+  const handleMobileSearchToggle = () => {
+    setShowMobileSearch(!showMobileSearch);
+    setShowMobileMenu(false); // Close menu when opening search
+  };
+
+  return {
+    openDropdown,
+    showMobileMenu,
+    showMobileSearch,
+    isScrolled, // Thêm isScrolled vào return
+    handleDropdownToggle,
+    handleClickOutside,
+    handleMobileMenuToggle,
+    handleMobileSearchToggle,
+    setShowMobileMenu,
+    setShowMobileSearch,
+  };
 }

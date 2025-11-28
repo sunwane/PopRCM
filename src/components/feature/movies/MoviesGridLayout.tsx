@@ -3,6 +3,7 @@ import MovieCard from "./MovieCard";
 import Pagination from "@/components/ui/Pagination";
 import { LoadingEffect } from "@/components/ui/LoadingEffect";
 import NotFoundDiv from "@/components/ui/NotFoundDiv";
+import { useResponsive } from "@/hooks/useResponsive";
 
 export interface MovieGridLayoutProps {
   filteredMovies: any[];
@@ -24,15 +25,16 @@ export default function MovieGridLayout({
   hasPrevPage
 }: MovieGridLayoutProps) {
   const [isAlignLeft, setIsAlignLeft] = useState(false);
+  const { isMobile, isTablet } = useResponsive();
 
   useEffect(() => {
     const updateAlignment = () => {
       const screenWidth = window.innerWidth;
 
       // Tính số lượng phim có thể hiển thị trên một hàng
-      const movieWidth = 180; // Kích thước tối thiểu của mỗi phim (px)
-      const gap = 8; // Khoảng cách giữa các phim (px)
-      const moviesPerRow = Math.floor(screenWidth / (movieWidth + gap));
+      const movieWidth = isTablet? 150 : 170; // Kích thước tối thiểu của mỗi phim (px)
+      const gap = isMobile? 4 : 6; // Khoảng cách giữa các phim (px)
+      const moviesPerRow = isMobile? 2 : Math.floor(screenWidth / movieWidth + gap);
 
       // Nếu số lượng phim ít hơn số lượng phim trên một hàng, căn trái
       setIsAlignLeft(filteredMovies.length > 0 && filteredMovies.length < moviesPerRow);
@@ -63,13 +65,15 @@ export default function MovieGridLayout({
   }
 
   return (
-    <div>
+    <div className="max-w-[2000px]">
       <div
-        className={` ${
-          isAlignLeft ? "flex gap-6 justify-start" 
-          : `grid lg:grid-cols-[repeat(auto-fit,minmax(180px,1fr))] 
-          md:grid-cols-[repeat(auto-fit,minmax(180px,1fr))] 
-          sm:grid-cols-[repeat(auto-fit,minmax(140px,1fr))] gap-y-6 justify-items-stretch`
+        className={`${
+          isAlignLeft ? "flex justify-start gap-6" 
+          : `grid lg:grid-cols-[repeat(auto-fit,minmax(168px,1fr))] 
+          md:grid-cols-[repeat(auto-fit,minmax(168px,1fr))] 
+          sm:grid-cols-[repeat(auto-fit,minmax(28vw,1fr))] 
+          grid-cols-[repeat(auto-fit,minmax(40vw,1fr))] 
+          lg:gap-6 md:gap-6 sm:gap-4 gap-2 gap-y-6 justify-items-center`
         }`}
       >
         {filteredMovies.map((movie) => (

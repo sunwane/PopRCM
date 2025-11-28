@@ -26,7 +26,7 @@ export default function ActorPage() {
       <div className="mx-6">
         <div className="my-4">
         {/* {Tiêu đề} */}
-          <h1 className="text-2xl font-bold tracking-wide">
+          <h1 className="text-[21px] font-bold tracking-wide">
             Diễn viên
           </h1>
         </div>

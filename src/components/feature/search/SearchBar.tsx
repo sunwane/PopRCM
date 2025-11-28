@@ -22,7 +22,7 @@ export default function SearchBar({ placeholder = "Tìm kiếm phim, diễn viê
         <input
           type="text"
           placeholder={placeholder}
-          className={`"w-auto lg:grow pl-12 pr-5 py-4 bg-white/15 rounded-lg text-white/80 text-sm placeholder-white/50 placeholder:font-light focus:outline-none focus:bg-white/25 transition" ${adjustStyle}`}
+          className={`"w-auto lg:grow pl-12 pr-5 py-3.5 bg-white/15 rounded-lg text-white/80 text-sm placeholder-white/50 placeholder:font-light focus:outline-none focus:bg-white/25 transition" ${adjustStyle}`}
           onChange={(e) => onSearch && onSearch(e.target.value)}
           value={value}
           onKeyDown={handleKeyDown}

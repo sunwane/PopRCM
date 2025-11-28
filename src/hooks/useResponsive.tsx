@@ -9,8 +9,8 @@ export function useResponsive() {
     const updateScreenType = () => {
       const width = window.innerWidth;
       setIsMobile(width < 768);
-      setIsTablet(width >= 768 && width < 1440);
-      setIsDesktop(width >= 1440);
+      setIsTablet(width >= 768 && width < 1280);
+      setIsDesktop(width >= 1280);
     };
 
     // Update screen type on load and resize
