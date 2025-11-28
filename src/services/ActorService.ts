@@ -1,5 +1,7 @@
 import { Actor } from '@/types/Actor';
 import { mockActors } from '@/mocksData/mockActors';
+import { mockMovieActors } from '@/mocksData/mockMovieActors';
+import { mockMovies } from '@/mocksData/mockMovies';
 import { Movie } from '@/types/Movies';
 
 export class ActorService {
@@ -13,6 +15,27 @@ export class ActorService {
       return localStorage.getItem('serviceAvailable') !== 'false';
     }
     return true;
+  }
+
+  // Helper method để populate movieActors cho mock data
+  private static populateActorMovies(actorId: string) {
+    return mockMovieActors
+      .filter(ma => ma.actorId === actorId)
+      .map(ma => ({
+        ...ma,
+        movie: mockMovies.find(m => m.id === ma.movieId),
+        actor: mockActors.find(a => a.id === ma.actorId)
+      }))
+      .filter(ma => ma.movie && ma.actor); // Chỉ giữ lại những record có đầy đủ thông tin
+  }
+
+  // Load mock data với movieActors được populate
+  private static loadMockData(): void {
+    this.actors = mockActors.map(actor => ({
+      ...actor,
+      movieActors: this.populateActorMovies(actor.id)
+    }));
+    this.isDataLoaded = true;
   }
 
   // Chuyển đổi ActorResponse từ API sang Actor interface
@@ -45,8 +68,7 @@ export class ActorService {
 
     if (!this.isServiceAvailable()) {
       console.info('API not available, using mock data');
-      this.actors = [...mockActors];
-      this.isDataLoaded = true;
+      this.loadMockData(); // Sử dụng method mới
       return;
     }
 
@@ -79,8 +101,7 @@ export class ActorService {
     } catch (error) {
       console.warn('Failed to load actors from API, using mock data:', error);
       // Fallback to mock data nếu API fail
-      this.actors = [...mockActors];
-      this.isDataLoaded = true;
+      this.loadMockData(); // Sử dụng method mới
     }
   }
 
@@ -106,14 +127,20 @@ export class ActorService {
   // Get actor by ID
   static async getActorById(id: string): Promise<Actor | null> {
     if (!this.isServiceAvailable()) {
-      await this.loadActorsData(0, 1000);
-      const actor = this.actors.find(a => a.id === id);
-      const movies = await this.getMoviesByActorId(id);
-      const moviesCount = movies.length;
-      if (actor) {
-        actor.moviesCount = moviesCount;
+      // Đảm bảo mock data được load với movieActors
+      if (!this.isDataLoaded) {
+        this.loadMockData();
       }
-      return Promise.resolve(actor || null);
+      const actor = this.actors.find(a => a.id === id);
+      if (actor) {
+        // Tính số lượng phim
+        const moviesCount = actor.movieActors?.length || 0;
+        return {
+          ...actor,
+          moviesCount
+        };
+      }
+      return null;
     }
 
     try {
@@ -140,24 +167,46 @@ export class ActorService {
       
     } catch (error) {
       console.warn('Failed to get actor from API, using local data:', error);
-      await this.loadActorsData(0, 1000);
+      // Fallback to mock data
+      if (!this.isDataLoaded) {
+        this.loadMockData();
+      }
       const actor = this.actors.find(a => a.id === id);
-      return Promise.resolve(actor || null);
+      if (actor) {
+        const moviesCount = actor.movieActors?.length || 0;
+        return {
+          ...actor,
+          moviesCount
+        };
+      }
+      return null;
     }
   }
 
-  // Helper function to get movies by actor ID
-  static async getMoviesByActorId(actorId: string): Promise<any[]> {
+  // Helper function to get movies by actor ID - SỬA PHẦN NÀY
+  static async getMoviesByActorId(actorId: string): Promise<Movie[]> {
     if (!this.isServiceAvailable()) {
       console.info('API not available, using local data to get movies by actor');
-      await this.loadActorsData(0, 1000);
-      const actor = this.actors.find(a => a.id === actorId);
-      if (!actor || !actor.movieActors) return [];
-      const movies: Movie[] = actor.movieActors
-        .filter(ma => ma.movie)
-        .map(ma => ma.movie!) ;
-      return Promise.resolve(movies);
+      
+      // Đảm bảo mock data được load
+      if (!this.isDataLoaded) {
+        this.loadMockData();
+      }
+
+      // Tìm movies từ mockMovieActors và mockMovies
+      const movieActorRelations = mockMovieActors.filter(ma => ma.actorId === actorId);
+      const movies: Movie[] = [];
+
+      for (const relation of movieActorRelations) {
+        const movie = mockMovies.find(m => m.id === relation.movieId);
+        if (movie) {
+          movies.push(movie);
+        }
+      }
+
+      return movies;
     }
+
     try {
       const authToken = localStorage.getItem('authToken');
       const response = await fetch(`${this.API_BASE_URL}/${actorId}/movies`, {
@@ -175,14 +224,25 @@ export class ActorService {
       const apiResponse = await response.json();
       return apiResponse.result || [];
     } catch (error) {
-      console.warn('Failed to get movies by actor from API:', error);
-      await this.loadActorsData(0, 1000);
-      const actor = this.actors.find(a => a.id === actorId);
-      if (!actor || !actor.movieActors) return [];
-      const movies: Movie[] = actor.movieActors
-        .filter(ma => ma.movie)
-        .map(ma => ma.movie!) ;
-      return Promise.resolve(movies);
+      console.warn('Failed to get movies by actor from API, fallback to mock data:', error);
+      
+      // Fallback to mock data
+      if (!this.isDataLoaded) {
+        this.loadMockData();
+      }
+
+      // Tìm movies từ mockMovieActors và mockMovies
+      const movieActorRelations = mockMovieActors.filter(ma => ma.actorId === actorId);
+      const movies: Movie[] = [];
+
+      for (const relation of movieActorRelations) {
+        const movie = mockMovies.find(m => m.id === relation.movieId);
+        if (movie) {
+          movies.push(movie);
+        }
+      }
+
+      return movies;
     }
   }
 
@@ -194,14 +254,16 @@ export class ActorService {
 
     if (!this.isServiceAvailable()) {
       console.info('API not available, using local search');
-      await this.loadActorsData(0, 1000);
+      if (!this.isDataLoaded) {
+        this.loadMockData();
+      }
       const searchTerm = query.toLowerCase().trim();
       const filteredActors = this.actors.filter(actor => 
         actor.originName.toLowerCase().includes(searchTerm) ||
         (actor.tmdbId ?? '').includes(searchTerm) ||
         (actor.alsoKnownAs ?? []).some(alias => alias.toLowerCase().includes(searchTerm))
       );
-      return Promise.resolve(filteredActors);
+      return filteredActors;
     }
 
     try {
@@ -230,23 +292,49 @@ export class ActorService {
     } catch (error) {
       console.warn('Search API failed, falling back to local search:', error);
       // Fallback to local search
-      await this.loadActorsData(0, 1000);
+      if (!this.isDataLoaded) {
+        this.loadMockData();
+      }
       const searchTerm = query.toLowerCase().trim();
       const filteredActors = this.actors.filter(actor => 
         actor.originName.toLowerCase().includes(searchTerm) ||
         (actor.tmdbId ?? '').includes(searchTerm) ||
         (actor.alsoKnownAs ?? []).some(alias => alias.toLowerCase().includes(searchTerm))
       );
-      return Promise.resolve(filteredActors);
+      return filteredActors;
     }
   }
 
-  // Get movie count for actor (mock function)
+  // Get movie count for actor - SỬA PHẦN NÀY
   static async getMovieCountByActor(actorId: string): Promise<number> {
-    await this.loadActorsData(0, 1000);
-    const actor = this.actors.find(a => a.id === actorId);
-    if (!actor || !actor.movieActors) return 0;
-    return actor.movieActors.length;
+    if (!this.isServiceAvailable()) {
+      // Đếm từ mockMovieActors thay vì từ actor.movieActors
+      const movieCount = mockMovieActors.filter(ma => ma.actorId === actorId).length;
+      return movieCount;
+    }
+
+    // API call cho movie count
+    try {
+      const authToken = localStorage.getItem('authToken');
+      const response = await fetch(`${this.API_BASE_URL}/${actorId}/movies/count`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${authToken}`
+        }
+      });
+
+      if (response.ok) {
+        const apiResponse = await response.json();
+        return apiResponse.result || 0;
+      }
+    } catch (error) {
+      console.warn('Movie count API failed, falling back to local count:', error);
+    }
+
+    // Fallback
+    const movieCount = mockMovieActors.filter(ma => ma.actorId === actorId).length;
+    return movieCount;
   }
 
   // Refresh data - Force reload from API
@@ -256,7 +344,6 @@ export class ActorService {
 
   // Reset to mock data
   static resetToMockData(): void {
-    this.actors = [...mockActors];
-    this.isDataLoaded = true;
+    this.loadMockData();
   }
 }

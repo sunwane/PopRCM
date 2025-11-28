@@ -53,3 +53,10 @@ body {
   text-stroke: 3px var(--color-gray-400); /* Fallback cho các trình duyệt khác */
   font-family: 'Arial Black', sans-serif; /* Font đậm để viền rõ hơn */
 }
+
+.stroke-text-hollow2 {
+  color: transparent; /* Làm chữ trong suốt (rỗng ruột) */
+  -webkit-text-stroke: 0.75px var(--color-white); /* Viền trắng dày 3px */
+  text-stroke: 0.75px var(--color-white); /* Fallback cho các trình duyệt khác */
+  font-family: 'Arial Black', sans-serif; /* Font đậm để viền rõ hơn */
+}

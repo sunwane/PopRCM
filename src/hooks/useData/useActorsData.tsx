@@ -1,6 +1,8 @@
 import { useState, useEffect } from "react";
 import { ActorService } from "../../services/ActorService";
 import { Actor } from "@/types/Actor";
+import { Movie } from "@/types/Movies";
+import { useMoviesByYear, useMovieStats } from "./useMovieService";
 
 export function useActorsData(
   page?: number,
@@ -13,7 +15,6 @@ export function useActorsData(
   useEffect(() => {
     const fetchActors = async () => {
       try {
-        // Nếu không truyền page/size, lấy toàn bộ dữ liệu
         const actors = await ActorService.getAllActors(
           page ?? 0, 
           size ?? 1000
@@ -38,7 +39,7 @@ export function useActorsData(
 
 export function useActorDataByID(id: string) {
   const [actor, setActor] = useState<Actor | null>(null);
-  const [movies, setMovies] = useState<any[]>([]); // Nếu cần trả về danh sách phim
+  const [movies, setMovies] = useState<Movie[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -46,19 +47,39 @@ export function useActorDataByID(id: string) {
     const fetchActor = async () => {
       try {
         setLoading(true);
-        const actor = await ActorService.getActorById(id);
-        const movies = await ActorService.getMoviesByActorId(id);
-        setActor(actor);
-        setMovies(movies);
+        const [actorData, moviesData] = await Promise.all([
+          ActorService.getActorById(id),
+          ActorService.getMoviesByActorId(id)
+        ]);
+        
+        setActor(actorData);
+        setMovies(moviesData || []);
+        console.log("Fetched actor:", actorData);
+        console.log("Fetched movies:", moviesData);
       } catch (err) {
         setError("Lỗi khi tải thông tin diễn viên");
+        console.error("Error fetching actor data:", err);
       } finally {
         setLoading(false);
       }
     };
 
-    fetchActor();
+    if (id) {
+      fetchActor();
+    }
   }, [id]);
 
-  return { actor, movies, loading, error };
+  // Sử dụng useMovieService để xử lý logic phim
+  const { moviesByYear, sortedYears } = useMoviesByYear(movies);
+  const movieStats = useMovieStats(movies);
+
+  return { 
+    actor, 
+    movies, 
+    moviesByYear, 
+    sortedYears, 
+    movieStats,
+    loading, 
+    error 
+  };
 }

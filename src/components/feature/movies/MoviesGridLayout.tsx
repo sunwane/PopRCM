@@ -13,6 +13,7 @@ export interface MovieGridLayoutProps {
   onPageChange?: (page: number) => void;
   hasNextPage?: boolean;
   hasPrevPage?: boolean;
+  fullWidth?: boolean;
 }
 
 export default function MovieGridLayout({ 
@@ -22,22 +23,28 @@ export default function MovieGridLayout({
   totalPages,
   onPageChange,
   hasNextPage,
-  hasPrevPage
+  hasPrevPage,
+  fullWidth = true
 }: MovieGridLayoutProps) {
   const [isAlignLeft, setIsAlignLeft] = useState(false);
-  const { isMobile, isTablet } = useResponsive();
+  const { isMobile } = useResponsive();
 
   useEffect(() => {
     const updateAlignment = () => {
-      const screenWidth = window.innerWidth;
-
-      // Tính số lượng phim có thể hiển thị trên một hàng
-      const movieWidth = isTablet? 150 : 170; // Kích thước tối thiểu của mỗi phim (px)
-      const gap = isMobile? 4 : 6; // Khoảng cách giữa các phim (px)
-      const moviesPerRow = isMobile? 2 : Math.floor(screenWidth / movieWidth + gap);
-
-      // Nếu số lượng phim ít hơn số lượng phim trên một hàng, căn trái
-      setIsAlignLeft(filteredMovies.length > 0 && filteredMovies.length < moviesPerRow);
+      if (!isMobile) {
+        // Tính số lượng phim có thể hiển thị trên một hàng
+        const screenWidth = fullWidth? window.innerWidth : window.innerWidth - 320;
+        const movieWidth = 168; // Kích thước tối thiểu của mỗi phim (px)
+        const gap = 6; // Khoảng cách giữa các phim (px)
+        const moviesPerRow = Math.floor(screenWidth / (movieWidth + gap));
+        // Nếu số lượng phim ít hơn số lượng phim trên một hàng, căn trái
+        setIsAlignLeft(filteredMovies.length > 0 && filteredMovies.length < moviesPerRow);
+      } else if (isMobile) {
+        console.log("Filtered Movies Length:", filteredMovies.length);
+        setIsAlignLeft(filteredMovies.length < 2);
+      } else {
+        setIsAlignLeft(false);
+      }
     };
 
     // Gọi hàm khi component mount
@@ -68,7 +75,7 @@ export default function MovieGridLayout({
     <div className="max-w-[2000px]">
       <div
         className={`${
-          isAlignLeft ? "flex justify-start gap-6" 
+          isAlignLeft ? "flex justify-start gap-6 flex-wrap" 
           : `grid lg:grid-cols-[repeat(auto-fit,minmax(168px,1fr))] 
           md:grid-cols-[repeat(auto-fit,minmax(168px,1fr))] 
           sm:grid-cols-[repeat(auto-fit,minmax(28vw,1fr))] 
