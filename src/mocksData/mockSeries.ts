@@ -3,47 +3,47 @@ import { Series, SeriesMovie } from '@/types/Series';
 // Mock SeriesMovies relationship data (without movie objects to avoid circular dependency)
 export const mockSeriesMovies: SeriesMovie[] = [
   // Marvel Cinematic Universe
-  { id: 'sm-001', movieId: 1, seriesId: 'series-001', seasonNumber: 1 }, // Avengers: Endgame
-  { id: 'sm-002', movieId: 13, seriesId: 'series-001', seasonNumber: 2 }, // Spider-Man: Homecoming
-  { id: 'sm-003', movieId: 14, seriesId: 'series-001', seasonNumber: 3 }, // Spider-Man: Far From Home
-  { id: 'sm-004', movieId: 15, seriesId: 'series-001', seasonNumber: 4 }, // Spider-Man: No Way Home
+  { id: 'sm-001', movieId: "1", seriesId: 'series-001', seasonNumber: 1 }, // Avengers: Endgame
+  { id: 'sm-002', movieId: "13", seriesId: 'series-001', seasonNumber: 2 }, // Spider-Man: Homecoming
+  { id: 'sm-003', movieId: "14", seriesId: 'series-001', seasonNumber: 3 }, // Spider-Man: Far From Home
+  { id: 'sm-004', movieId: "15", seriesId: 'series-001', seasonNumber: 4 }, // Spider-Man: No Way Home
 
   // Fast & Furious Franchise
-  { id: 'sm-005', movieId: 16, seriesId: 'series-002', seasonNumber: 1 }, // The Fast and the Furious
-  { id: 'sm-006', movieId: 17, seriesId: 'series-002', seasonNumber: 2 }, // Fast & Furious 6
+  { id: 'sm-005', movieId: "16", seriesId: 'series-002', seasonNumber: 1 }, // The Fast and the Furious
+  { id: 'sm-006', movieId: "17", seriesId: 'series-002', seasonNumber: 2 }, // Fast & Furious 6
 
   // Gia Đình Là Số 1
-  { id: 'sm-007', movieId: 18, seriesId: 'series-003', seasonNumber: 1 }, // Phần 1
-  { id: 'sm-008', movieId: 19, seriesId: 'series-003', seasonNumber: 2 }, // Phần 2
+  { id: 'sm-007', movieId: "18", seriesId: 'series-003', seasonNumber: 1 }, // Phần 1
+  { id: 'sm-008', movieId: "19", seriesId: 'series-003', seasonNumber: 2 }, // Phần 2
 
   // John Wick Series
-  { id: 'sm-009', movieId: 20, seriesId: 'series-004', seasonNumber: 1 }, // John Wick
-  { id: 'sm-010', movieId: 21, seriesId: 'series-004', seasonNumber: 2 }, // John Wick: Chapter 2
-  { id: 'sm-011', movieId: 22, seriesId: 'series-004', seasonNumber: 3 }, // John Wick: Chapter 3
+  { id: 'sm-009', movieId: "20", seriesId: 'series-004', seasonNumber: 1 }, // John Wick
+  { id: 'sm-010', movieId: "21", seriesId: 'series-004', seasonNumber: 2 }, // John Wick: Chapter 2
+  { id: 'sm-011', movieId: "22", seriesId: 'series-004', seasonNumber: 3 }, // John Wick: Chapter 3
 
   // Stranger Things Universe
-  { id: 'sm-012', movieId: 2, seriesId: 'series-005', seasonNumber: 1 }, // Stranger Things
+  { id: 'sm-012', movieId: "2", seriesId: 'series-005', seasonNumber: 1 }, // Stranger Things
 
   // Korean Horror Collection
-  { id: 'sm-013', movieId: 5, seriesId: 'series-006', seasonNumber: 1 }, // Kingdom
-  { id: 'sm-014', movieId: 10, seriesId: 'series-006', seasonNumber: 2 }, // Train to Busan
-  { id: 'sm-015', movieId: 12, seriesId: 'series-006', seasonNumber: 3 }, // Squid Game
+  { id: 'sm-013', movieId: "5", seriesId: 'series-006', seasonNumber: 1 }, // Kingdom
+  { id: 'sm-014', movieId: "10", seriesId: 'series-006', seasonNumber: 2 }, // Train to Busan
+  { id: 'sm-015', movieId: "12", seriesId: 'series-006', seasonNumber: 3 }, // Squid Game
 
   // Studio Ghibli Masterpieces
-  { id: 'sm-016', movieId: 6, seriesId: 'series-007', seasonNumber: 1 }, // Spirited Away
-  { id: 'sm-017', movieId: 11, seriesId: 'series-007', seasonNumber: 2 }, // Your Name
+  { id: 'sm-016', movieId: "6", seriesId: 'series-007', seasonNumber: 1 }, // Spirited Away
+  { id: 'sm-017', movieId: "11", seriesId: 'series-007', seasonNumber: 2 }, // Your Name
 
   // Vietnamese Cinema Collection
-  { id: 'sm-018', movieId: 3, seriesId: 'series-008', seasonNumber: 1 }, // Mắt Biếc
-  { id: 'sm-019', movieId: 9, seriesId: 'series-008', seasonNumber: 2 }, // Cô Ba Sài Gòn
-  { id: 'sm-020', movieId: 18, seriesId: 'series-008', seasonNumber: 3 }, // Gia Đình Là Số 1 - Phần 1
-  { id: 'sm-021', movieId: 19, seriesId: 'series-008', seasonNumber: 4 }, // Gia Đình Là Số 1 - Phần 2
+  { id: 'sm-018', movieId: "3", seriesId: 'series-008', seasonNumber: 1 }, // Mắt Biếc
+  { id: 'sm-019', movieId: "9", seriesId: 'series-008', seasonNumber: 2 }, // Cô Ba Sài Gòn
+  { id: 'sm-020', movieId: "18", seriesId: 'series-008', seasonNumber: 3 }, // Gia Đình Là Số 1 - Phần 1
+  { id: 'sm-021', movieId: "19", seriesId: 'series-008', seasonNumber: 4 }, // Gia Đình Là Số 1 - Phần 2
 
   // Anime Legends
-  { id: 'sm-022', movieId: 8, seriesId: 'series-009', seasonNumber: 1 }, // One Piece
+  { id: 'sm-022', movieId: "8", seriesId: 'series-009', seasonNumber: 1 }, // One Piece
 
   // Christopher Nolan Collection
-  { id: 'sm-023', movieId: 7, seriesId: 'series-010', seasonNumber: 1 }, // The Dark Knight
+  { id: 'sm-023', movieId: "7", seriesId: 'series-010', seasonNumber: 1 }, // The Dark Knight
 ];
 
 // Mock Series (without populated seriesMovies to avoid circular dependency)
@@ -54,7 +54,7 @@ export const mockSeries: Series[] = [
     description: 'Vũ trụ điện ảnh Marvel với các siêu anh hùng như Avengers, Spider-Man và nhiều nhân vật khác trong một thế giới được kết nối.',
     status: 'Ongoing',
     releaseYear: '2008',
-    posterUrl: 'https://cdn2.fptshop.com.vn/unsafe/1920x0/filters:format(webp):quality(75)/2023_9_14_638302830316996578_top-phim-marvel.jpg', // Horizontal thumbnail
+    posterUrl: 'https://img10.hotstar.com/image/upload/f_auto,q_auto/sources/r1/cms/prod/983/1120983-i-633ec2bcc241', // Horizontal thumbnail
     seriesMovies: [] // Will be populated by service
   },
   {

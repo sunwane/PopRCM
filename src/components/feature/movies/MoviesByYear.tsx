@@ -30,7 +30,7 @@ export default function MoviesByYear({ moviesByYear, sortedYears }: MoviesByYear
                 {year}
               </h2>
             </div>
-            <MovieGridLayout filteredMovies={moviesByYear[year]} fullWidth={false} loading={false} />
+            <MovieGridLayout filteredMovies={moviesByYear[year]} gapWidth={window.innerWidth * 80 + 20} loading={false} />
           </div>
         ))
       }
@@ -47,7 +47,7 @@ export default function MoviesByYear({ moviesByYear, sortedYears }: MoviesByYear
             </div>
           </div>
           
-          <MovieGridLayout filteredMovies={moviesByYear[year]} fullWidth={true} loading={false} />
+          <MovieGridLayout filteredMovies={moviesByYear[year]} loading={false} />
         </div>
       ))}
       

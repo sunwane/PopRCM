@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useFilterOptions } from "@/hooks/useFilter";
-import { getMovieTypesText, getStatusText } from "@/utils/getText";
+import { getMovieTypesText, getStatusText } from "@/utils/getTextUtils";
 import { useRouter } from "next/navigation";
 
 export interface MoviesFilterProps {

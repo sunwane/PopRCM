@@ -23,7 +23,7 @@ export default function ToggleButton({
       >
         {/* Left Label */}
         <span
-          className={`flex-1 text-center transition-all duration-300 px-3 py-2 text-nowrap lg:text-sm text-xs ${
+          className={`flex-1 text-center transition-all duration-300 px-2.5 py-1.5 text-nowrap lg:text-sm text-xs ${
             !isActive ? 'text-black bg-white rounded-l-[5px]' : 'text-white bg-(--background)'
           }`}
         >
@@ -32,7 +32,7 @@ export default function ToggleButton({
 
         {/* Right Label */}
         <span
-          className={`flex-1 text-center transition-all duration-300 px-3 py-2 text-nowrap lg:text-sm text-xs ${
+          className={`flex-1 text-center transition-all duration-300 px-2.5 py-1.5 text-nowrap lg:text-sm text-xs ${
             isActive ? 'text-black bg-white rounded-r-[5px]' : 'text-white bg-(--background)'
           }`}
         >

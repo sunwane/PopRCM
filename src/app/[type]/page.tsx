@@ -5,7 +5,7 @@ import PageHeader from "@/components/layout/PageHeader";
 import { useParams } from "next/navigation";
 import { useMoviesPagination } from "@/hooks/usePagination/useMoviesPagination";
 import MovieGridLayout from "@/components/feature/movies/MoviesGridLayout";
-import { getMovieTypesText } from "@/utils/getText";
+import { getMovieTypesText } from "@/utils/getTextUtils";
 import PageFooter from "@/components/layout/PageFooter";
 
 export default function TypePage() {

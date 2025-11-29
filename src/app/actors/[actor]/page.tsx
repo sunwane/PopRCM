@@ -6,13 +6,13 @@ import PageFooter from "@/components/layout/PageFooter";
 import { useActorDataByID } from "@/hooks/useData/useActorsData";
 import { LoadingPage } from "@/components/ui/LoadingPage";
 import NotFoundDiv from "@/components/ui/NotFoundDiv";
-import { getGenderText } from "@/utils/getText";
+import { getGenderText } from "@/utils/getTextUtils";
 import MovieGridLayout from "@/components/feature/movies/MoviesGridLayout";
 import MoviesByYear from "@/components/feature/movies/MoviesByYear";
 import ToggleButton from "@/components/ui/ToggleButton";
 import { useState } from "react";
 
-export default function TypePage() {
+export default function ActorPage() {
   const params = useParams();
   const actor = params.actor;
   const [imageError, setImageError] = useState(false);
@@ -117,7 +117,7 @@ export default function TypePage() {
 
           {/* Content dựa theo tab được chọn */}
           {activeTab === 'grid' ? (
-            <MovieGridLayout filteredMovies={movies} fullWidth={false} loading={loading} />
+            <MovieGridLayout filteredMovies={movies} gapWidth={ window.innerWidth * 0.8 + 20} loading={loading} />
           ) : (
             <MoviesByYear moviesByYear={moviesByYear} sortedYears={sortedYears} />
           )}

@@ -10,8 +10,11 @@ export default function OneSerie({ serie }: OneSerieProps) {
 
   return (
     <div className="relative bg-(--surface) lg:max-w-56 md:max-w-56 sm:max-w-[28vw] max-w-[40vw] 
-    aspect-10/7 rounded-md mb-2 border-2 border-(--border-blue) hover:scale-105 transition
-    shadow-[3px_3px_6px_var(--shadow-red)] overflow-hidden w-full">
+    aspect-10/7 rounded-md mb-2 border-2 border-(--border-blue) transition
+    shadow-[3px_3px_6px_var(--shadow-red)] overflow-hidden hover:-translate-y-3 w-full"
+    onClick={() => {
+      window.location.href = `/allSeries/${serie.id}`;
+    }}>
       {/* Container cho ảnh, overlay và chữ */}
       <div className="relative w-full h-[80%] overflow-hidden rounded-t-md">
         <img 

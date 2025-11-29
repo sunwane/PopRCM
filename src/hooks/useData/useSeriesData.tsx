@@ -37,14 +37,78 @@ export function useSeriesData(
     fetchSeries();
   }, [page, size]);
 
-  const findSeriesById = (id: string): Series | null => {
-    return allSeries.find(series => series.id === id) || null;
-  };
-
   return {
     allSeries,
     loading,
     error,
-    findSeriesById,
+  };
+}
+
+export function useSeriesDataByID(id: string) {
+  const [serieInfo, setSerieInfo] = useState<Series | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  // Hàm để thêm seasonNumber vào movies
+  const addSeasonNumberToMovies = (seriesData: Series) => {
+    if (!seriesData.movies || !seriesData.seriesMovies) return seriesData;
+
+    // Tạo map để lookup seasonNumber dựa trên movieId
+    const seasonMap = new Map();
+    seriesData.seriesMovies.forEach(sm => {
+      if (sm.movie) {
+        seasonMap.set(sm.movie.id, sm.seasonNumber);
+      }
+    });
+
+    // Thêm seasonNumber vào mỗi movie
+    const moviesWithSeason = seriesData.movies.map(movie => ({
+      ...movie,
+      seasonNumber: seasonMap.get(movie.id) || null // Thêm seasonNumber
+    }));
+
+    return {
+      ...seriesData,
+      movies: moviesWithSeason
+    };
+  };
+
+  useEffect(() => {
+    const fetchSeries = async () => {
+      try {
+        setLoading(true);
+        const seriesData = await SeriesService.getSeriesById(id);
+
+        if (seriesData) {
+          // Thêm seasonNumber vào movies
+          const seriesWithSeasonNumbers = addSeasonNumberToMovies(seriesData);
+          
+          const serieWithMovieCount = {
+            ...seriesWithSeasonNumbers,
+            movieCount: seriesWithSeasonNumbers.movies ? seriesWithSeasonNumbers.movies.length : 0,
+          };
+
+          setSerieInfo(serieWithMovieCount);
+          console.log("Fetched series by ID:", seriesWithSeasonNumbers);
+          console.log("Movies with season numbers:", seriesWithSeasonNumbers.movies);
+        } else {
+          setSerieInfo(null);
+        }
+      } catch (err) {
+        setError("Lỗi khi tải thông tin series");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (id) {
+      fetchSeries();
+    }
+  }, [id]);
+
+  return {
+    serieInfo,
+    loading,
+    error,
   };
 }

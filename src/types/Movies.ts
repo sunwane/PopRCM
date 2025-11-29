@@ -38,4 +38,5 @@ export interface Movie {
     actors: MovieActor[];
     genres: Genre[];
     episodes?: Episode[];
+    seasonNumber?: number; // For series movies
 }

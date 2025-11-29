@@ -17,7 +17,7 @@ export default function MovieCard({ movie }: MovieCardProps) {
       {/* Image */}
       <div 
         className="lg:w-42 md:w-42 sm:w-[28vw] w-[40vw] aspect-2/3 bg-gray-300 rounded-lg mb-3
-        border-2 border-(--border-blue) shadow-[3px_3px_2px_1px_var(--shadow-red)]"
+        border-2 border-(--border-blue) shadow-[3px_3px_2px_1px_var(--shadow-red)] relative"
       >
         <img
           src={movie.posterUrl ?? "/placeholder/placeholder-poster.png"}
@@ -27,6 +27,14 @@ export default function MovieCard({ movie }: MovieCardProps) {
           alt={movie.title}
           className="w-full h-full object-cover rounded-md"
         />
+
+        {/* Season Badge */}
+        {movie.seasonNumber !== null && movie.seasonNumber !== undefined && (
+          <div className="absolute top-1 left-1 bg-(--surface) text-white text-sm font-bold 
+          px-2.5 py-1 rounded-full shadow-lg)">
+            {movie.seasonNumber}
+          </div>
+        )}
       </div>
 
       {/* Title and originName */}

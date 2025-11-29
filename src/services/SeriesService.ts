@@ -14,21 +14,63 @@ export class SeriesService {
     return true;
   }
 
-  // Helper method to populate series movies for mock data
+  // Helper method to populate series movies with full movie details for mock data
   private static populateSeriesMovies(seriesId: string): SeriesMovie[] {
     return mockSeriesMovies
       .filter(sm => sm.seriesId === seriesId)
-      .map(sm => ({
-        ...sm,
-        movie: mockMovies.find(m => m.id === sm.movieId)
-      }));
+      .map(sm => {
+        const movie = mockMovies.find(m => m.id === sm.movieId);
+        return {
+          ...sm,
+          movie: movie ? {
+            ...movie,
+            // Đảm bảo có đầy đủ thông tin cần thiết
+            actors: movie.actors || [],
+            genres: movie.genres || [],
+            country: movie.country || [],
+            episodes: movie.episodes || []
+          } : undefined
+        };
+      })
+      .filter(sm => sm.movie !== undefined); // Loại bỏ các item không tìm thấy movie
+  }
+
+  // Helper method to get full movie details for series.movies array
+  private static getSeriesMoviesArray(seriesId: string): any[] {
+    const seriesMovies = mockSeriesMovies.filter(sm => sm.seriesId === seriesId);
+    
+    return seriesMovies.map(sm => {
+      const movie = mockMovies.find(m => m.id === sm.movieId);
+      if (!movie) return null;
+
+      return {
+        ...movie,
+        // Thêm thông tin từ SeriesMovie nếu cần
+        seasonNumber: sm.seasonNumber,
+        // Đảm bảo có đầy đủ thông tin
+        actors: movie.actors || [],
+        genres: movie.genres || [],
+        country: movie.country || [],
+        episodes: movie.episodes || [],
+        // Thêm các trường bổ sung từ movie
+        view: movie.view || 0,
+        tmdbScore: movie.tmdbScore || 0,
+        imdbScore: movie.imdbScore || 0,
+        duration: movie.duration || '',
+        director: movie.director || '',
+        status: movie.status || '',
+        type: movie.type || ''
+      };
+    }).filter(movie => movie !== null); // Loại bỏ các movie null
   }
 
   // Load mock data with series movies populated
   private static loadMockData(): Series[] {
     this.series = mockSeries.map(series => ({
       ...series,
-      seriesMovies: this.populateSeriesMovies(series.id)
+      seriesMovies: this.populateSeriesMovies(series.id),
+      // Thêm mảng movies với thông tin đầy đủ
+      movies: this.getSeriesMoviesArray(series.id)
     }));
     return [...this.series];
   }
@@ -42,37 +84,9 @@ export class SeriesService {
       status: seriesResponse.status,
       posterUrl: seriesResponse.posterUrl || '',
       releaseYear: seriesResponse.releaseYear?.toString() || new Date().getFullYear().toString(),
-      seriesMovies: seriesResponse.movies ? seriesResponse.movies.map((movieInSeries: any) => ({
-        id: `sm-${movieInSeries.movieId}-${seriesResponse.id}`,
-        movieId: parseInt(movieInSeries.movieId),
-        seriesId: seriesResponse.id,
-        seasonNumber: movieInSeries.seasonNumber || 1,
-        movie: {
-          id: parseInt(movieInSeries.movieId),
-          title: movieInSeries.movieTitle || 'Unknown Title',
-          originalName: movieInSeries.movieTitle || 'Unknown Title',
-          description: '',
-          releaseYear: parseInt(movieInSeries.movieReleaseYear) || new Date().getFullYear(),
-          type: movieInSeries.movieType || 'Movie',
-          duration: '',
-          posterUrl: movieInSeries.moviePosterUrl || '',
-          thumbnailUrl: movieInSeries.moviePosterUrl || '',
-          trailerUrl: '',
-          director: '',
-          status: 'Completed',
-          createdAt: new Date(),
-          modifiedAt: new Date(),
-          view: 0,
-          slug: movieInSeries.movieSlug || '',
-          tmdbScore: 0,
-          imdbScore: 0,
-          lang: 'vi',
-          country: [],
-          actors: [],
-          genres: [],
-          episodes: []
-        }
-      })) : []
+      // API trả về movies với thông tin đầy đủ
+      movies: seriesResponse.movies || [],
+      seriesMovies: seriesResponse.seriesMovies || [],
     };
   }
 
@@ -147,15 +161,25 @@ export class SeriesService {
     return [...series];
   }
 
-  // Get series by ID
+  // Get series by ID - Cập nhật để gán thông tin đầy đủ cho movies
   static async getSeriesById(id: string): Promise<Series | null> {
     if (!this.isServiceAvailable()) {
-      const series = this.series.find(s => s.id === id);
+      // Tìm series trong mock data
+      let series = this.series.find(s => s.id === id);
+      
+      // Nếu chưa load mock data, load trước
+      if (!series) {
+        this.loadMockData();
+        series = this.series.find(s => s.id === id);
+      }
+      
       if (!series) return null;
 
+      // Trả về series với thông tin đầy đủ
       return {
         ...series,
-        seriesMovies: this.populateSeriesMovies(id)
+        seriesMovies: this.populateSeriesMovies(id),
+        movies: this.getSeriesMoviesArray(id) // Gán thông tin đầy đủ cho movies
       };
     }
 
@@ -183,17 +207,26 @@ export class SeriesService {
       
     } catch (error) {
       console.warn('Failed to get series from API, using mock data:', error);
-      const series = this.series.find(s => s.id === id);
+      
+      // Fallback to mock data với thông tin đầy đủ
+      let series = this.series.find(s => s.id === id);
+      
+      if (!series) {
+        this.loadMockData();
+        series = this.series.find(s => s.id === id);
+      }
+      
       if (!series) return null;
 
       return {
         ...series,
-        seriesMovies: this.populateSeriesMovies(id)
+        seriesMovies: this.populateSeriesMovies(id),
+        movies: this.getSeriesMoviesArray(id) // Gán thông tin đầy đủ cho movies
       };
     }
   }
 
-  // Các phương thức khác (filter, getRecentSeries, getSeriesByMovieCount, v.v.)
+  // Các phương thức khác giữ nguyên
   static async getRecentSeries(limit: number = 10): Promise<Series[]> {
     if (!this.isServiceAvailable()) {
       const allSeries = this.loadMockData();
@@ -219,19 +252,19 @@ export class SeriesService {
     if (!this.isServiceAvailable()) {
       const allSeries = this.loadMockData();
       return [...allSeries]
-        .sort((a, b) => (b.seriesMovies?.length || 0) - (a.seriesMovies?.length || 0))
+        .sort((a, b) => (b.movies?.length || 0) - (a.movies?.length || 0))
         .slice(0, limit);
     }
     
     try {
       const allSeries = await this.loadSeriesData(0, 1000);
       return [...allSeries]
-        .sort((a, b) => (b.seriesMovies?.length || 0) - (a.seriesMovies?.length || 0))
+        .sort((a, b) => (b.movies?.length || 0) - (a.movies?.length || 0))
         .slice(0, limit);
     } catch (error) {
       const allSeries = this.loadMockData();
       return [...allSeries]
-        .sort((a, b) => (b.seriesMovies?.length || 0) - (a.seriesMovies?.length || 0))
+        .sort((a, b) => (b.movies?.length || 0) - (a.movies?.length || 0))
         .slice(0, limit);
     }
   }

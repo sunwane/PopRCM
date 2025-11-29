@@ -43,3 +43,31 @@ export function useMoviesData() {
     error,
   };
 }
+
+export function useMoviesDataByID(id: string) {
+  const [movieInfo, setMovieInfo] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  useEffect(() => {
+    const fetchMovieByID = async () => {
+      try {
+        const movie = await MoviesService.getMovieById(id);
+        setMovieInfo(movie);
+      } catch (err) {
+        setError("Lỗi khi tải thông tin phim");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (id) {
+      fetchMovieByID();
+    }
+  }, [id]);
+
+  return {
+    movieInfo,
+    loading,
+    error,
+  };
+}

@@ -13,7 +13,7 @@ export interface MovieGridLayoutProps {
   onPageChange?: (page: number) => void;
   hasNextPage?: boolean;
   hasPrevPage?: boolean;
-  fullWidth?: boolean;
+  gapWidth?: number;
 }
 
 export default function MovieGridLayout({ 
@@ -24,7 +24,7 @@ export default function MovieGridLayout({
   onPageChange,
   hasNextPage,
   hasPrevPage,
-  fullWidth = true
+  gapWidth = 0,
 }: MovieGridLayoutProps) {
   const [isAlignLeft, setIsAlignLeft] = useState(false);
   const { isMobile } = useResponsive();
@@ -33,9 +33,9 @@ export default function MovieGridLayout({
     const updateAlignment = () => {
       if (!isMobile) {
         // Tính số lượng phim có thể hiển thị trên một hàng
-        const screenWidth = fullWidth? window.innerWidth : window.innerWidth - 320;
+        const screenWidth = window.innerWidth - gapWidth;
         const movieWidth = 168; // Kích thước tối thiểu của mỗi phim (px)
-        const gap = 6; // Khoảng cách giữa các phim (px)
+        const gap = 4; // Khoảng cách giữa các phim (px)
         const moviesPerRow = Math.floor(screenWidth / (movieWidth + gap));
         // Nếu số lượng phim ít hơn số lượng phim trên một hàng, căn trái
         setIsAlignLeft(filteredMovies.length > 0 && filteredMovies.length < moviesPerRow);
@@ -80,7 +80,7 @@ export default function MovieGridLayout({
           md:grid-cols-[repeat(auto-fit,minmax(168px,1fr))] 
           sm:grid-cols-[repeat(auto-fit,minmax(28vw,1fr))] 
           grid-cols-[repeat(auto-fit,minmax(40vw,1fr))] 
-          lg:gap-6 md:gap-6 sm:gap-4 gap-2 gap-y-6 justify-items-center`
+          lg:gap-4 md:gap-4 sm:gap-4 gap-2 gap-y-6 justify-items-center`
         }`}
       >
         {filteredMovies.map((movie) => (
