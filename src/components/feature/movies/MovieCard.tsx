@@ -1,4 +1,6 @@
 import { Movie } from "@/types/Movies";
+import { getStatusLabelColor } from "@/utils/getColorUtils";
+import { getStatusText } from "@/utils/getTextUtils";
 
 export interface MovieCardProps {
   movie: Movie;
@@ -30,11 +32,27 @@ export default function MovieCard({ movie }: MovieCardProps) {
 
         {/* Season Badge */}
         {movie.seasonNumber !== null && movie.seasonNumber !== undefined && (
-          <div className="absolute top-1 left-1 bg-(--surface) text-white text-sm font-bold 
-          px-2.5 py-1 rounded-full shadow-lg)">
-            {movie.seasonNumber}
+          <div className="absolute top-0 left-0 font-black text-center text-lg bg-(--surface)
+          rounded-br-md rounded-tl-md shadow-lg)">
+            <div className="text-gradient py-0.5 px-3 text-center">
+              SS{movie.seasonNumber}
+            </div>
           </div>
         )}
+
+        {/* Status and ReleaseYear Badge */}
+        <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 flex gap-0 space-x-0 text-xs">
+          {movie.status && (
+            <div className={`bg-(--surface) text-white px-2 py-0.5 rounded-tl-md ${getStatusLabelColor(movie.status)}`}>
+              {getStatusText(movie.status)}
+            </div>
+          )}
+          {movie.releaseYear && (
+            <div className="bg-(--surface) text-white font-semibold px-2 py-0.5 rounded-tr-md">
+              {movie.releaseYear}
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Title and originName */}

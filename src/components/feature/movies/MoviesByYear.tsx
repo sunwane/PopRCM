@@ -30,7 +30,7 @@ export default function MoviesByYear({ moviesByYear, sortedYears }: MoviesByYear
                 {year}
               </h2>
             </div>
-            <MovieGridLayout filteredMovies={moviesByYear[year]} gapWidth={window.innerWidth * 80 + 20} loading={false} />
+            <MovieGridLayout filteredMovies={moviesByYear[year]} gapWidth={window.innerWidth * 0.2 + 24} loading={false} />
           </div>
         ))
       }

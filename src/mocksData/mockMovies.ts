@@ -811,5 +811,31 @@ export const mockMovies: Movie[] = [
     actors: [],
     genres: [mockGenres[9], mockGenres[13]], // Hoạt hình, Gia đình
     episodes: []
+  },
+
+  {
+    id: "31",
+    title: 'Phi vụ động trời',
+    originalName: 'Zootopia',
+    description: 'Từ con voi lớn nhất đến Shrew nhỏ nhất, thành phố Zootopia là một đô thị động vật có vú, nơi động vật khác nhau sống và phát triển mạnh. Khi Judy Hopps trở thành con thỏ đầu tiên tham gia lực lượng cảnh sát, cô nhanh chóng học được sự khó khăn như thế nào để thực thi luật pháp. Quyết tâm chứng minh mình, Judy nhảy vào cơ hội để giải quyết một vụ án bí ẩn. Thật không may, điều đó có nghĩa là làm việc với Nick Wilde, một Fily Fox, người khiến công việc của cô ấy trở nên khó khăn hơn nữa.',
+    releaseYear: 2016,
+    type: 'hoathinh',
+    duration: '108 min',
+    posterUrl: 'https://img.ophim.live/uploads/movies/phi-vu-dong-troi-thumb.jpg',
+    thumbnailUrl: 'https://img.ophim.live/uploads/movies/phi-vu-dong-troi-poster.jpg',
+    trailerUrl: 'https://www.youtube.com/watch?v=jWM0ct-OLsM',
+    director: 'Byron Howard, Rich Moore',
+    status: 'completed',
+    createdAt: new Date('2024-06-10'),
+    modifiedAt: new Date('2024-06-10'),
+    view: 1500,
+    slug: 'phi-vu-dong-troi',
+    tmdbScore: 8.0,
+    imdbScore: 8.0,
+    lang: 'Vietsub',
+    country: [mockCountries[5]], // Hoa Kỳ
+    actors: [],
+    genres: [mockGenres[9], mockGenres[13]], // Hoạt hình, Gia đình
+    episodes: []
   }
 ];

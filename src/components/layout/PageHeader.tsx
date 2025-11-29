@@ -51,7 +51,7 @@ export default function PageHeader() {
     return (
       <div className={`sticky top-0 z-30 transition-all duration-300 ${headerBgClass}`}>
         <div 
-          className="flex space-x-[3vw] mx-auto py-3 px-5 relative" 
+          className="flex space-x-[3vw] py-3 px-5 relative w-full border-none items-center justify-between" 
           onClick={handleClickOutside}
         >
           <button className="flex items-center shrink-0 cursor-pointer" onClick={goHome}>

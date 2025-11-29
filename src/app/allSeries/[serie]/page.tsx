@@ -5,8 +5,8 @@ import { useParams } from "next/navigation";
 import PageFooter from "@/components/layout/PageFooter";
 import { LoadingPage } from "@/components/ui/LoadingPage";
 import NotFoundDiv from "@/components/ui/NotFoundDiv";
-import { use, useEffect } from "react";
 import { useSeriesDataByID } from "@/hooks/useData/useSeriesData";
+import { getStatusText } from "@/utils/getTextUtils";
 import { getStatusLabelColor } from "@/utils/getColorUtils";
 import MovieGridLayout from "@/components/feature/movies/MoviesGridLayout";
 
@@ -38,19 +38,19 @@ export default function SeriePage() {
     <div className="max-w-[2000px]">
       <PageHeader />
 
-      <div className="min-h-[60vh] lg:-mt-20 md:-mt-20">
+      <div className="min-h-[60vh] lg:-mt-20 md:-mt-20 mt-0">
         <div className="relative">
           <img 
             src={serieInfo.posterUrl || "/placeholder/placeholder-thumbnail.jpg"} 
             alt={serieInfo.name} 
-            className="w-full lg:h-[90vh] md:h-[90vh] sm:h-[50vh] h-[50vh] object-center object-cover shadow-lg"
+            className="w-full max-w-[2000px] lg:h-[90vh] md:h-[90vh] sm:h-[50vh] h-[50vh] object-center object-cover"
             onError={(e) => {
               (e.target as HTMLImageElement).src = "/placeholder/placeholder-thumbnail.jpg";
             }}
           />
 
           {/* Overlay */}
-          <div className="absolute bottom-0 left-0 w-full h-full bg-linear-to-b from-(--background)/70 via-transparent to-(--background)"></div>
+          <div className="absolute bottom-0 left-0 w-full h-full bg-linear-to-b from-(--background)/80 via-transparent to-(--background)"></div>
 
           {/* Text Content */}
           <div className="absolute lg:bottom-8 lg:left-12 md:bottom-8 md:left-10 sm:bottom-6 sm:left-6
@@ -64,8 +64,8 @@ export default function SeriePage() {
               <div className="py-1 px-2 font-bold border-2 rounded-md text-(--hover)">
                 {serieInfo.movieCount ?? 0} phim
               </div>
-              <div className={`py-1 px-3 rounded-md ${getStatusLabelColor(serieInfo.status)}`}>
-                {serieInfo.status}
+              <div className={`py-1 px-3 rounded-md font-bold ${getStatusLabelColor(serieInfo.status)}`}>
+                {getStatusText(serieInfo.status)}
               </div>
             </div>
           </div>

@@ -28,7 +28,7 @@ export default async function RootLayout({
 
   return (
     <html lang="en">
-      <body className={`${geistInter.variable} antialiased`}>
+      <body className={`${geistInter.variable} antialiased mx-auto max-w-[2000px]`}>
         {children}
       </body>
     </html>

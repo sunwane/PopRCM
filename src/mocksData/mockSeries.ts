@@ -63,7 +63,7 @@ export const mockSeries: Series[] = [
     description: 'Loạt phim hành động về đua xe, gia đình và những cuộc phiêu lưu vòng quanh thế giới với Dominic Toretto và nhóm của anh ta.',
     status: 'Ongoing',
     releaseYear: '2001',
-    posterUrl: 'https://m.media-amazon.com/images/M/MV5BNGY2ZWIzYWYtOTMxZi00ODhkLTkxYzktYzA3YTJjNTQyOTE3XkEyXkFqcGc@._V1_QL75_UX500_CR0,47,500,281_.jpg', // Horizontal thumbnail
+    posterUrl: 'https://wallpapers.com/images/hd/fast-and-furious-1-3400-x-1900-milv2kd0tzcepu6b.jpg', // Horizontal thumbnail
     seriesMovies: [] // Will be populated by service
   },
   {

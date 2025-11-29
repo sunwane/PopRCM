@@ -60,3 +60,9 @@ body {
   text-stroke: 0.75px var(--color-white); /* Fallback cho các trình duyệt khác */
   font-family: 'Arial Black', sans-serif; /* Font đậm để viền rõ hơn */
 }
+
+.text-gradient {
+  background: linear-gradient(180deg, var(--number-gradient-start), var(--number-gradient-end));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}

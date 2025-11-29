@@ -53,6 +53,7 @@ export function useMoviesDataByID(id: string) {
       try {
         const movie = await MoviesService.getMovieById(id);
         setMovieInfo(movie);
+        console.log("Fetched movie:", movie);
       } catch (err) {
         setError("Lỗi khi tải thông tin phim");
       } finally {

@@ -117,7 +117,7 @@ export default function ActorPage() {
 
           {/* Content dựa theo tab được chọn */}
           {activeTab === 'grid' ? (
-            <MovieGridLayout filteredMovies={movies} gapWidth={ window.innerWidth * 0.8 + 20} loading={loading} />
+            <MovieGridLayout filteredMovies={movies} gapWidth={ window.innerWidth * 0.2 + 24} loading={loading} />
           ) : (
             <MoviesByYear moviesByYear={moviesByYear} sortedYears={sortedYears} />
           )}

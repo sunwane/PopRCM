@@ -16,11 +16,11 @@ export const getMovieTypesText = (type: string): string => {
 export const getStatusText = (status: string): string => {
   switch (status) {
     case 'completed':
-      return 'Hoàn thành';
+      return 'Full';
     case 'ongoing':
-      return 'Đang chiếu';
+      return 'Ongoing';
     case 'trailer':
-      return 'Sắp chiếu';
+      return 'Upcoming';
     default:
       return status;
   }

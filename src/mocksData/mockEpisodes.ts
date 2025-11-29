@@ -125,5 +125,16 @@ export const mockEpisodes: Episode[] = [
     videoUrl: 'https://example.com/videos/one-piece-e3.mp4',
     m3u8Url: 'https://example.com/streams/one-piece-e3.m3u8',
     serverName: 'Server 2'
+  },
+
+  // Episodes for Movie ID 31 - Zootopia
+  {
+    id: 14,
+    title: 'Zootopia - Full',
+    episodeNumber: 1,
+    createdAt: new Date('2024-04-01'),
+    videoUrl: 'https://vip.opstream11.com/share/a9813e9550fee3110373c21fa012eee7',
+    m3u8Url: 'https://vip.opstream11.com/20220315/2051_055e64c4/index.m3u8',
+    serverName: 'Vietsub'
   }
 ];
