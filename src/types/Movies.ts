@@ -24,6 +24,7 @@ export interface Movie {
     thumbnailUrl?: string;
     trailerUrl?: string;
     totalEpisodes?: number;
+    currentEpisode?: number;
     //rating: number;
     director: string;
     status: string; // e.g., "Ongoing", "Completed", "Hiatus"
@@ -33,6 +34,7 @@ export interface Movie {
     slug: string;
     tmdbScore?: number;
     imdbScore?: number;
+    PopRating?: number;
     lang: string; // vietsub, thuyet minh, etc.
     country: Country[];
     actors: MovieActor[];

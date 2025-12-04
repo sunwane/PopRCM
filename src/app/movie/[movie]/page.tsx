@@ -5,6 +5,9 @@ import PageFooter from "@/components/layout/PageFooter";
 import { LoadingPage } from "@/components/ui/LoadingPage";
 import NotFoundDiv from "@/components/ui/NotFoundDiv";
 import { useMoviesDataByID } from "@/hooks/useData/useMoviesData";
+import { Genre } from "@/types/Genres";
+import { getStatusText, getViewDisplayText } from "@/utils/getTextUtils";
+import { getStatusColor, getViewLabelColor } from "@/utils/getColorUtils";
 
 export default function MoviesPage() {
   const params = useParams();
@@ -45,25 +48,28 @@ export default function MoviesPage() {
             className="w-full max-w-[2000px] lg:h-[75vh] md:h-[75vh] sm:h-[50vh] h-[50vh] object-center object-cover"        
           />
           {/* Overlay */}
-          <div className="absolute bottom-0 left-0 w-full h-full bg-gradient-to-b from-(--background)/80 via-transparent to-(--background)"></div>
+          <div className="absolute bottom-0 left-0 w-full h-full bg-linear-to-b from-(--background)/80 via-transparent to-(--background)"></div>
           
           {/* Title and Original Name - positioned at bottom-0 of hero image, next to poster */}
           <div className="absolute bottom-0 left-0 w-full lg:px-12 md:px-10 sm:px-6 px-6">
             <div className="flex lg:space-x-6 md:space-x-4 sm:space-x-3 space-x-3 items-end">
               {/* Poster placeholder to maintain spacing */}
-              <div className="lg:w-[14vw] md:w-[14vw] sm:w-24 w-24"></div>
+              <div className="min-w-30 lg:w-[14vw] md:w-[14vw] sm:w-30 w-30"></div>
               
               {/* Movie Title Info */}
-              <div className="text-white pb-4 flex-1">
-                <h1 className="lg:text-4xl md:text-3xl sm:text-xl text-lg font-bold text-white mb-2">
-                  {movieInfo.title} {movieInfo.releaseYear ? `(${movieInfo.releaseYear})` : ""}
+              <div className="text-white lg:pb-3 md:pb-3 sm:pb-2 pb-1 flex-1">
+                <h1 className="lg:text-4xl md:text-3xl sm:text-2xl text-xl font-bold text-white lg:mb-1.5 md:mb-1 mb-0">
+                  {movieInfo.title}
                 </h1>
                 {movieInfo.originalName && (
-                  <h2 className="lg:text-xl md:text-lg sm:text-sm text-sm text-(--text-secondary)">
+                  <h2 className="lg:text-xl md:text-lg sm:text-sm text-sm text-(--text-highlight)">
                     {movieInfo.originalName}
                   </h2>
                 )}
               </div>
+
+              {/* Action Buttons - placeholder to maintain spacing */}
+              <div className="lg:w-72 md:w-64 sm:w-56 w-48 shrink-0 lg:-mt-20 md:-mt-16 sm:-mt-12 -mt-12"></div>
             </div>
           </div>
         </div>
@@ -74,100 +80,188 @@ export default function MoviesPage() {
           <div className="flex lg:gap-8 md:gap-6 sm:gap-4 gap-4 items-start">
             
             {/* Left Column: Poster + Movie Information */}
-            <div className="flex lg:space-x-6 md:space-x-4 sm:space-x-3 space-x-3 items-start flex-1">
+            <div className="relative flex lg:space-x-6 md:space-x-4 sm:space-x-3 space-x-3 items-start flex-1">
               {/* Poster - 1/3 overlapping hero image */}
-              <img 
-                src={movieInfo.posterUrl || "/placeholder/placeholder-poster.png"} 
-                alt={movieInfo.title}
-                onError={(e) => e.currentTarget.src = "/placeholder/placeholder-poster.png"}
-                className="lg:w-[14vw] md:w-[14vw] sm:w-24 w-24 h-auto aspect-[2/3] object-cover rounded-md 
-                shadow-lg lg:-mt-32 md:-mt-32 sm:-mt-20 -mt-20 flex-shrink-0"
-              />
+                <div className="relative">
+                  <img 
+                  src={movieInfo.posterUrl || "/placeholder/placeholder-poster.png"} 
+                  alt={movieInfo.title}
+                  onError={(e) => e.currentTarget.src = "/placeholder/placeholder-poster.png"}
+                  className="min-w-30 lg:w-[14vw] md:w-[14vw] sm:w-30 w-30 h-auto aspect-2/3 object-cover rounded-md 
+                  shadow-lg lg:-mt-30 md:-mt-26 sm:-mt-18 -mt-18 shrink-0"
+                />
+                
+                {/* Nút nằm giữa poster */}
+                <div 
+                  className="flex items-center space-x-2 absolute left-1/2 transform -translate-x-1/2 translate-y-1/2 
+                  bg-linear-to-b from-(--gradient-secondary-start) to-(--gradient-secondary-end)
+                  text-white lg:px-6 lg:py-2.5 md:px-5 md:py-2 sm:px-4 sm:py-1.5 px-4 py-1.5 
+                  rounded-lg shadow-lg cursor-pointer lg:-mt-10 md:-mt-8 sm:-mt-6 -mt-6 
+                  hover:bg-linear-to-b hover:from-blue-500 hover:to-blue-800 transition w-fit justify-center"
+                  onClick={() => {
+                    console.log("Xem trailer clicked");
+                  }}
+                >
+                  <img src="/icons/Play.png" alt="Play" className="lg:w-5 lg:h-5 md:h-4 md:w-4 sm:w-3 sm:h-3 w-3 h-3" />
+                  <div className="text-nowrap uppercase font-bold lg:text-sm md:text-sm sm:text-xs text-[10px]">Xem Trailer</div>
+                </div>
+              </div>
               
               {/* Movie Information - Next to poster */}
-              <div className="flex-1 text-white pt-4">
+              <div className="flex-1 text-white pt-2">
                 {/* Rating and Labels */}
-                <div className="flex flex-wrap items-center gap-2 mb-4">
-                  <div className="bg-yellow-500 text-black px-3 py-1 rounded font-bold text-sm">
-                    TMDB 9.9
-                  </div>
-                  <div className="bg-orange-500 text-white px-3 py-1 rounded font-bold text-sm">
-                    IMDB 9.9
-                  </div>
-                  <div className="bg-blue-600 text-white px-3 py-1 rounded text-sm">
+                <div className="flex flex-wrap items-center gap-2 mb-2">
+                  {movieInfo.tmdbScore && (
+                    <div className="flex items-center space-x-1.5 border-2 border-blue-500 bg-blue-500/30 text-white px-2.5 py-1.5 rounded-lg">
+                      <div className="font-bold text-[13px] text-blue-500">TMDB</div> 
+                      <div className="font-bold">
+                        {movieInfo.tmdbScore.toFixed(1)}
+                      </div>
+                    </div>
+                  )}
+                  {movieInfo.imdbScore && (
+                    <div className="flex items-center space-x-1.5 border-2 border-yellow-500 bg-yellow-500/30 text-white px-2.5 py-1.5 rounded-lg">
+                      <div className="font-bold text-[13px] text-yellow-500">TMDB</div> 
+                      <div className="font-bold">
+                        {movieInfo.imdbScore.toFixed(1)}
+                      </div>
+                    </div>
+                  )}
+                  <div className="bg-(--primary) px-2.5 py-2 border-2 border-(--primary) rounded-lg font-bold tracking-wide text-black text-sm">
                     Series
                   </div>
-                  <div className="bg-green-600 text-white px-3 py-1 rounded text-sm">
-                    POPCORN 9.9
-                  </div>
+                  {movieInfo.PopRating && (
+                    <div className="flex items-center space-x-1.5 border-2 border-blue-500 bg-blue-500/10 text-white px-2.5 py-1.5 rounded-lg">
+                      <div className="font-bold text-[13px]">TMDB</div> 
+                      <div className="font-bold text-(--hover)">
+                        {movieInfo.PopRating.toFixed(1)}
+                      </div>
+                    </div>
+                  )}
                 </div>
 
                 {/* Genres */}
-                <div className="flex flex-wrap gap-2 mb-4">
-                  <span className="bg-gray-700 px-3 py-1 rounded text-sm">Hành động</span>
-                  <span className="bg-gray-700 px-3 py-1 rounded text-sm">Drama</span>
-                  <span className="bg-gray-700 px-3 py-1 rounded text-sm">Viễn tưởng</span>
-                  <span className="bg-gray-700 px-3 py-1 rounded text-sm">Gay cấn</span>
-                  <span className="bg-gray-700 px-3 py-1 rounded text-sm">Khoa học</span>
+                <div className="flex flex-wrap gap-2 mb-2.5">
+                    {movieInfo.genres && movieInfo.genres.map((genre: Genre) => (
+                    <div 
+                      key={genre.id}
+                      className="bg-white/20 px-3 py-2 rounded-lg text-sm"
+                    >
+                      {genre.genresName}
+                    </div>
+                    ))}
                 </div>
 
                 {/* Episode Info */}
-                <div className="flex flex-wrap items-center gap-4 mb-6">
-                  <div className="flex items-center gap-2">
-                    <span className="text-blue-400">📺</span>
-                    <span className="text-sm">Ongoing: 12 / 24 tập</span>
+                <div className="flex flex-wrap items-center gap-2 mb-6">
+                  <div className={`flex items-center gap-1 rounded-md px-2.5 py-2 ${getStatusColor(movieInfo.status || "")}`}>
+                    {movieInfo.status === "ongoing" && (
+                      <div className="status-ongoing"></div>
+                    )}
+                    {movieInfo.status === "completed" && (
+                      <div className="status-completed"></div>
+                    )}
+                    {movieInfo.status === "trailer" && (
+                      <div className="status-trailer"></div>
+                    )}
+                    <span className="text-sm">{getStatusText(movieInfo.status)}: {movieInfo.currentEpisode} / {movieInfo.totalEpisodes || "?"} tập</span>
                   </div>
-                  <div className="bg-orange-600 px-3 py-1 rounded text-sm">
-                    2K lượt xem
+                  <div className={`px-2.5 py-1.5 rounded text-sm tracking-wide flex items-center space-x-1 ${getViewLabelColor(movieInfo.view || 0)}`}>
+                    <div className="font-black">{getViewDisplayText(movieInfo.view || 0)}</div>
+                    <div className="text-xs font-medium">lượt xem</div>
                   </div>
                 </div>
 
                 {/* Movie Details */}
                 <div className="space-y-2 mb-6 text-sm">
-                  <div className="flex flex-col sm:flex-row">
-                    <span className="w-32 text-gray-400 font-semibold">Mô tả:</span>
-                    <span className="flex-1">
+                  <div className="flex flex-col gap-1.5 mb-4">
+                    <span className="text-white font-semibold">Mô tả:</span>
+                    <span className="text-gray-400">
                       Trò Chơi Ảo giác (TRON: Ares) theo chân Ares – một thực thể ảo có kỹ năng vượt 
                       trội từ thế giới ảo của Tron lọt vào thế giới thực một nhiệm vụ nguy hiểm đầm đầu 
                       trận đấu tiến gửi loài người và những thực thể trí tuệ nhân tạo.
                     </span>
                   </div>
-                  <div className="flex flex-col sm:flex-row">
-                    <span className="w-32 text-gray-400 font-semibold">Năm sản xuất:</span>
-                    <span>{movieInfo.releaseYear || "2028"}</span>
-                  </div>
-                  <div className="flex flex-col sm:flex-row">
-                    <span className="w-32 text-gray-400 font-semibold">Thời lượng:</span>
-                    <span>1h 59p</span>
-                  </div>
-                  <div className="flex flex-col sm:flex-row">
-                    <span className="w-32 text-gray-400 font-semibold">Quốc gia:</span>
-                    <span>Anh, Mỹ</span>
-                  </div>
-                  <div className="flex flex-col sm:flex-row">
-                    <span className="w-32 text-gray-400 font-semibold">Đạo diễn:</span>
-                    <span>Joachim Ronning, Tom Struthers, Scott Rogers, Donald Sparks</span>
+                  <div className="grid grid-cols-2 gap-2.5 mb-3">
+                    <div className="flex gap-4">
+                      <span className="text-white font-semibold text-nowrap">Năm sản xuất:</span>
+                      <span className="text-gray-400">{movieInfo.releaseYear || "2028"}</span>
+                    </div>
+                    <div className="flex gap-4">
+                      <span className="text-white font-semibold text-nowrap">Thời lượng:</span>
+                      <span className="text-gray-400">1h 59p</span>
+                    </div>
+                    <div className="gap-4 flex">
+                      <span className="text-white font-semibold text-nowrap">Quốc gia:</span>
+                      <span className="text-gray-400">Anh, Mỹ</span>
+                    </div>
+                    <div className="flex gap-4">
+                      <span className="text-white font-semibold text-nowrap">Đạo diễn:</span>
+                      <span className="text-gray-400">Joachim Ronning, Tom Struthers, Scott Rogers, Donald Sparks</span>
+                    </div>
                   </div>
                 </div>
               </div>
             </div>
 
             {/* Right Column: Action Buttons */}
-            <div className="lg:w-64 md:w-56 sm:w-48 w-40 flex-shrink-0 pt-4">
-              <div className="space-y-3">
-                <button className="w-full flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 px-4 py-3 rounded transition-colors text-sm font-medium">
+            <div className="lg:w-72 md:w-64 sm:w-56 w-48 shrink-0 lg:-mt-20 md:-mt-16 sm:-mt-12 -mt-12">
+
+              <div className="grid grid-cols-3 bg-white/10 py-3 px-4 rounded-lg border-2 border-white/80 shadow-lg">
+                <button className="w-full flex flex-col items-center justify-center gap-2 text-nowrap rounded transition-colors text-sm text-white">
                   <span>👁️</span>
                   <span>Xem ngay</span>
                 </button>
-                <button className="w-full flex items-center justify-center gap-2 bg-gray-700 hover:bg-gray-600 px-4 py-3 rounded transition-colors text-sm text-white">
+                <button className="w-full flex flex-col items-center justify-center gap-2 text-nowrap rounded transition-colors text-sm text-white">
                   <span>❤️</span>
                   <span>Yêu thích</span>
                 </button>
-                <button className="w-full flex items-center justify-center gap-2 bg-gray-700 hover:bg-gray-600 px-4 py-3 rounded transition-colors text-sm text-white">
+                <button className="w-full flex flex-col items-center justify-center gap-2 text-nowrap rounded transition-colors text-sm text-white">
                   <span>⭐</span>
                   <span>Đánh giá</span>
                 </button>
               </div>
+              
+              {/* Actors Section */}
+              <div className="relative mt-10 border-2 border-white/30 bg-white/5 rounded-lg py-4 px-2.5 shadow-lg">
+                <h3 className="text-white font-bold mb-3 -mt-7 bg-linear-to-b from-(--background) via-52% via-(--background) to-white/5 w-fit px-1">Diễn viên</h3>
+                {movieInfo.actors && movieInfo.actors.length > 0 && (
+                  <div>
+                    <div className="grid grid-cols-3 gap-3">
+                      {movieInfo.actors.map((ma) => (
+                        <div key={ma.id} className="flex flex-col items-center text-center">
+                          {ma.actor?.profilePath || ma.profilePath ? (
+                            <img
+                              src={ma.actor?.profilePath || ma.profilePath}
+                              alt={ma.actor?.originName || ma.originName}
+                              onError={(e) => {
+                                e.currentTarget.style.display = "none"; // Ẩn ảnh khi lỗi
+                                e.currentTarget.parentElement?.querySelector(".no-avatar")?.classList.remove("hidden"); // Hiển thị div thay thế
+                              }}
+                              className="w-16 h-16 object-cover rounded-full mb-2"
+                            />
+                          ) : (
+                            <div className="w-16 h-16 rounded-full bg-gray-500 flex items-center justify-center text-white text-xs font-bold">
+                              No Avatar
+                            </div>
+                          )}
+                          <div className="hidden no-avatar">
+                            <div className="w-16 h-16 rounded-full bg-gray-700 flex items-center justify-center text-gray-300 text-[10px] font-bold mb-2">
+                              No Avatar
+                            </div>
+                          </div>
+                          <span className="text-white text-xs font-medium mb-0.5">{ma.originName || ma.actor?.originName}</span>
+                          <span className="text-gray-400 text-[10px] mb-2">{ma.characterName}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+                {movieInfo.actors.length === 0 && (
+                  <div className="px-3 text-sm text-gray-400 text-center">Không có thông tin diễn viên.</div>
+                )}
+              </div>
+            
             </div>
           </div>
         </div>

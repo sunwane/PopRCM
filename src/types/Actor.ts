@@ -15,6 +15,8 @@ export interface MovieActor {
     id: string;
     movieId?: string;
     actorId?: string;
+    profilePath?: string;
+    originName?: string;
     characterName: string;
     movie?: Movie; // Optional for avoiding circular deps
     actor?: Actor; // Optional for avoiding circular deps

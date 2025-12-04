@@ -3,21 +3,6 @@
 :root {
   --background: #0B1120;
   --foreground: #ffffff;
-  /* --surface: #233458;
-  --primary: #3080FF;
-  --gradient-primary-start: #003CFF;
-  --gradient-primary-end: #5093FF;
-  --number-gradient-start: #FFFFFF;
-  --number-gradient-end: #0084FF;
-  --shadow-red: rgba(255, 80, 80, 0.25);
-  --border-blue: #004DC8;
-  --hover: #A2C9FF;
-  --text-primary: #FFFFFF;
-  --text-highlight: #5093FF;
-  --text-secondary: #9D9D9D;
-  --text-no-focus: #BBBBBB;
-  --text-focus: #A2C9FF;
-  --surface-divine: #343434; */
 }
 
 @theme inline {
@@ -27,6 +12,8 @@
   --primary: #3080FF;
   --gradient-primary-start: #003CFF;
   --gradient-primary-end: #5093FF;
+  --gradient-secondary-start: #4588FF;
+  --gradient-secondary-end: #003CFF;
   --number-gradient-start: #FFFFFF;
   --number-gradient-end: #0084FF;
   --shadow-red: rgba(255, 80, 80, 0.3);
@@ -65,4 +52,65 @@ body {
   background: linear-gradient(180deg, var(--number-gradient-start), var(--number-gradient-end));
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
+}
+
+.status-ongoing {
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  border: 3.5px solid rgba(80, 147, 255, 0.3); /* Viền mờ */
+  border-top: 3.5px solid rgb(80, 147, 255); /* Viền nổi bật */
+  border-radius: 50%; /* Bo tròn */
+  animation: spin 1s linear infinite; /* Hiệu ứng xoay */
+}
+
+.status-completed {
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  background-color: green; /* Nền xanh */
+  border-radius: 50%; /* Bo tròn */
+  position: relative;
+}
+
+.status-completed::after {
+  content: '✔';
+  color: white;
+  font-size: 8px;
+  font-weight: bold;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.status-trailer {
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  background-color: black; /* Nền đen */
+  border-radius: 50%; /* Bo tròn */
+  position: relative;
+}
+
+.status-trailer::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 52%;
+  width: 0;
+  height: 0;
+  border-left: 6px solid white; /* Tam giác trắng */
+  border-top: 3.5px solid transparent;
+  border-bottom: 3.5px solid transparent;
+  transform: translate(-50%, -50%);
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
 }

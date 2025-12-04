@@ -826,16 +826,19 @@ export const mockMovies: Movie[] = [
     trailerUrl: 'https://www.youtube.com/watch?v=jWM0ct-OLsM',
     director: 'Byron Howard, Rich Moore',
     status: 'completed',
+    totalEpisodes: 1,
+    currentEpisode: 1,
     createdAt: new Date('2024-06-10'),
     modifiedAt: new Date('2024-06-10'),
-    view: 1500,
+    view: 20,
     slug: 'phi-vu-dong-troi',
     tmdbScore: 8.0,
     imdbScore: 8.0,
+    PopRating: 8.0,
     lang: 'Vietsub',
     country: [mockCountries[5]], // Hoa Kỳ
     actors: [],
-    genres: [mockGenres[9], mockGenres[13]], // Hoạt hình, Gia đình
+    genres: [mockGenres[9], mockGenres[13], mockGenres[12], mockGenres[10],mockGenres[8], mockGenres[7],mockGenres[6], mockGenres[5], mockGenres[4], mockGenres[2],mockGenres[1], mockGenres[3],], // Hoạt hình, Gia đình
     episodes: []
   }
 ];

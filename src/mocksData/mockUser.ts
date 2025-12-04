@@ -3,8 +3,8 @@ import { User } from '@/types/User';
 export const mockUsers: User[] = [
   { 
     id: '1', 
-    username: 'admin',
-    fullname: 'Admin User', 
+    userName: 'admin',
+    fullName: 'Admin User', 
     email: 'admin@poprcm.com',
     gender: 'male',
     avatarUrl: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1170&q=80',
@@ -13,8 +13,8 @@ export const mockUsers: User[] = [
   },
   { 
     id: '2', 
-    username: 'tranthibinh',
-    fullname: 'Trần Thị Bình', 
+    userName: 'tranthibinh',
+    fullName: 'Trần Thị Bình', 
     email: 'tranthibinh@gmail.com',
     gender: 'female',
     avatarUrl: 'https://guchat.vn/wp-content/uploads/2025/04/avatar-vo-tri-cute-37.jpg',
@@ -23,8 +23,8 @@ export const mockUsers: User[] = [
   },
   { 
     id: '3', 
-    username: 'lehoangcuong',
-    fullname: 'Lê Hoàng Cường', 
+    userName: 'lehoangcuong',
+    fullName: 'Lê Hoàng Cường', 
     email: 'lehoangcuong@gmail.com',
     gender: 'male',
     createdAt: new Date('2023-05-10'),
@@ -32,8 +32,8 @@ export const mockUsers: User[] = [
   },
   { 
     id: '4', 
-    username: 'phamthidung',
-    fullname: 'Phạm Thị Dung', 
+    userName: 'phamthidung',
+    fullName: 'Phạm Thị Dung', 
     email: 'phamthidung@gmail.com',
     avatarUrl: 'https://aic.com.vn/wp-content/uploads/2024/10/anh-avatar-vo-tri-22.jpg',
     gender: 'female',
@@ -42,8 +42,8 @@ export const mockUsers: User[] = [
   },
   { 
     id: '5', 
-    username: 'vominhtuan',
-    fullname: 'Võ Minh Tuấn', 
+    userName: 'vominhtuan',
+    fullName: 'Võ Minh Tuấn', 
     email: 'vominhtuan@gmail.com',
     avatarUrl: 'https://thuvienquangngai.vn/wp-content/uploads/2025/01/avatar-vo-tri-ngau-16.jpg',
     gender: 'male',
@@ -52,8 +52,8 @@ export const mockUsers: User[] = [
   },
   { 
     id: '6', 
-    username: 'hoangthilinh',
-    fullname: 'Hoàng Thị Linh', 
+    userName: 'hoangthilinh',
+    fullName: 'Hoàng Thị Linh', 
     email: 'hoangthilinh@gmail.com',
     gender: 'female',
     avatarUrl: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTd7aj0A7Etvk0C8N_aYp4n-sjwOgers-xGQQ&s',

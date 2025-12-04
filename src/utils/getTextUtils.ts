@@ -38,3 +38,13 @@ export const getGenderText = (gender: string): string => {
       return 'Không rõ';
   }
 };
+
+export const getViewDisplayText = (view: number): string => {
+  if (view >= 1000000) {
+    return (view / 1000000).toFixed(1) + 'M';
+  } else if (view >= 1000) {
+    return (view / 1000).toFixed(1) + 'K';
+  } else {
+    return view.toString();
+  }
+};

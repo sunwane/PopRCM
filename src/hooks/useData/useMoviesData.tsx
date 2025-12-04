@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo } from "react";
 import { MoviesService } from "../../services/MoviesService";
+import { Movie } from "@/types/Movies";
 
 export function useMoviesData() {
   const [languages, setLanguages] = useState<string[]>([]);
@@ -45,14 +46,18 @@ export function useMoviesData() {
 }
 
 export function useMoviesDataByID(id: string) {
-  const [movieInfo, setMovieInfo] = useState<any>(null);
+  const [movieInfo, setMovieInfo] = useState<Movie>();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   useEffect(() => {
     const fetchMovieByID = async () => {
       try {
         const movie = await MoviesService.getMovieById(id);
-        setMovieInfo(movie);
+        if (movie) {
+          setMovieInfo(movie);
+        } else {
+          setMovieInfo(undefined);
+        }
         console.log("Fetched movie:", movie);
       } catch (err) {
         setError("Lỗi khi tải thông tin phim");

@@ -314,7 +314,61 @@ export const mockMovieActors: MovieActor[] = [
     movieId: "22", // Changed to string
     actorId: '8', // Willem Dafoe
     characterName: 'Winston'
-  }
+  },
+  {
+    id: 'ma-046',
+    movieId: "31", // Changed to string
+    actorId: '1', // Willem Dafoe
+    characterName: 'Winston'
+  },
+  {
+    id: 'ma-047',
+    movieId: "31", // Changed to string
+    actorId: '2', // Willem Dafoe
+    characterName: 'Winston'
+  },
+  {
+    id: 'ma-048',
+    movieId: "31", // Changed to string
+    actorId: '4', // Willem Dafoe
+    characterName: 'Winston'
+  },
+  {
+    id: 'ma-049',
+    movieId: "31", // Changed to string
+    actorId: '5', // Willem Dafoe
+    characterName: 'Winston'
+  },
+  {
+    id: 'ma-050',
+    movieId: "31", // Changed to string
+    actorId: '6', // Willem Dafoe
+    characterName: 'Winston'
+  },
+  {
+    id: 'ma-051',
+    movieId: "31", // Changed to string
+    actorId: '7', // Willem Dafoe
+    characterName: 'Winston'
+  },
+  {
+    id: 'ma-052',
+    movieId: "31", // Changed to string
+    actorId: '8', // Willem Dafoe
+    characterName: 'Winston'
+  },
+  {
+    id: 'ma-053',
+    movieId: "31", // Changed to string
+    actorId: '9', // Willem Dafoe
+    characterName: 'Winston'
+  },
+  {
+    id: 'ma-054',
+    movieId: "31", // Changed to string
+    actorId: '10', // Willem Dafoe
+    characterName: 'Winston'
+  },
 ];
 
 export default mockMovieActors;
