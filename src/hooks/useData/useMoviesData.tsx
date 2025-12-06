@@ -1,6 +1,8 @@
 import { useState, useEffect, useMemo } from "react";
 import { MoviesService } from "../../services/MoviesService";
 import { Movie } from "@/types/Movies";
+import { Series } from "@/types/Series";
+import { SeriesService } from "@/services/SeriesService";
 
 export function useMoviesData() {
   const [languages, setLanguages] = useState<string[]>([]);
@@ -49,6 +51,7 @@ export function useMoviesDataByID(id: string) {
   const [movieInfo, setMovieInfo] = useState<Movie>();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  
   useEffect(() => {
     const fetchMovieByID = async () => {
       try {
@@ -73,6 +76,83 @@ export function useMoviesDataByID(id: string) {
 
   return {
     movieInfo,
+    loading,
+    error,
+  };
+}
+
+export function useSeriesDataByMovieId(movieId: string | null) {
+  const [seriesInfo, setSeriesInfo] = useState<Series | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  // Hàm để thêm seasonNumber vào movies (tương tự useSeriesDataByID)
+  const addSeasonNumberToMovies = (seriesData: Series) => {
+    if (!seriesData.movies || !seriesData.seriesMovies) return seriesData;
+
+    // Tạo map để lookup seasonNumber dựa trên movieId
+    const seasonMap = new Map();
+    seriesData.seriesMovies.forEach(sm => {
+      if (sm.movie) {
+        seasonMap.set(sm.movie.id, sm.seasonNumber);
+      }
+    });
+
+    // Thêm seasonNumber vào mỗi movie
+    const moviesWithSeason = seriesData.movies.map(movie => ({
+      ...movie,
+      seasonNumber: seasonMap.get(movie.id) || null
+    }));
+
+    return {
+      ...seriesData,
+      movies: moviesWithSeason
+    };
+  };
+
+  useEffect(() => {
+    const fetchSeriesByMovieId = async () => {
+      if (!movieId) {
+        setSeriesInfo(null);
+        setLoading(false);
+        return;
+      }
+
+      try {
+        setLoading(true);
+        const seriesData = await SeriesService.getSeriesByMovieId(movieId);
+        
+        if (seriesData) {
+          // Thêm seasonNumber vào movies
+          const seriesWithSeasonNumbers = addSeasonNumberToMovies(seriesData);
+          
+          // Thêm movieCount nếu chưa có
+          const seriesWithMovieCount = {
+            ...seriesWithSeasonNumbers,
+            movieCount: seriesWithSeasonNumbers.movies ? seriesWithSeasonNumbers.movies.length : 0,
+          };
+
+          setSeriesInfo(seriesWithMovieCount);
+          console.log("Fetched series by movie ID:", seriesWithMovieCount);
+          console.log("Movies in series with season numbers:", seriesWithMovieCount.movies);
+        } else {
+          setSeriesInfo(null);
+          console.log("No series found for movie ID:", movieId);
+        }
+      } catch (err) {
+        console.error("Error fetching series by movie ID:", err);
+        setError("Lỗi khi tải thông tin series");
+        setSeriesInfo(null);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchSeriesByMovieId();
+  }, [movieId]);
+
+  return {
+    seriesInfo,
     loading,
     error,
   };

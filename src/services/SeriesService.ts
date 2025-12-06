@@ -268,4 +268,77 @@ export class SeriesService {
         .slice(0, limit);
     }
   }
+
+  // Get series by movie ID
+  static async getSeriesByMovieId(movieId: string): Promise<Series | null> {
+    if (!this.isServiceAvailable()) {
+      // Mock data logic
+      const seriesMovie = mockSeriesMovies.find(sm => sm.movieId === movieId);
+      if (!seriesMovie) return null;
+
+      // Find the series
+      let series = this.series.find(s => s.id === seriesMovie.seriesId);
+      
+      // If not loaded, load mock data first
+      if (!series) {
+        this.loadMockData();
+        series = this.series.find(s => s.id === seriesMovie.seriesId);
+      }
+
+      if (!series) return null;
+
+      // Return series with full information
+      return {
+        ...series,
+        seriesMovies: this.populateSeriesMovies(series.id),
+        movies: this.getSeriesMoviesArray(series.id)
+      };
+    }
+
+    try {
+      // API call
+      const authToken = localStorage.getItem('authToken');
+      const response = await fetch(`${this.API_BASE_URL}/by-movie/${movieId}`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${authToken}`
+        }
+      });
+      
+      if (!response.ok) {
+        if (response.status === 404) return null;
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const apiResponse = await response.json();
+      
+      if (apiResponse.result) {
+        return this.mapSeriesResponseToSeries(apiResponse.result);
+      }
+      return null;
+      
+    } catch (error) {
+      console.warn('Failed to get series by movie ID from API, using mock data:', error);
+      
+      // Fallback to mock data
+      const seriesMovie = mockSeriesMovies.find(sm => sm.movieId === movieId);
+      if (!seriesMovie) return null;
+
+      let series = this.series.find(s => s.id === seriesMovie.seriesId);
+      
+      if (!series) {
+        this.loadMockData();
+        series = this.series.find(s => s.id === seriesMovie.seriesId);
+      }
+
+      if (!series) return null;
+
+      return {
+        ...series,
+        seriesMovies: this.populateSeriesMovies(series.id),
+        movies: this.getSeriesMoviesArray(series.id)
+      };
+    }
+  }
 }

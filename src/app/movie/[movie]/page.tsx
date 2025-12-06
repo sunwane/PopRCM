@@ -200,14 +200,14 @@ export default function MoviesPage() {
                       </div>
                       <div className="flex gap-2">
                         <span className="text-white font-semibold text-nowrap">Đạo diễn:</span>
-                        <span className="text-gray-400">Joachim Ronning, Tom Struthers, Scott Rogers, Donald Sparks</span>
+                        <span className="text-gray-400">{movieInfo.director}</span>
                       </div>
                     </div>
                   </div>
                 </div>
               </div>
               {/* Movies */}
-              <div className="mb-6">
+              <div className="mb-6 mt-6">
                 <DetailsTab movieInfo={movieInfo} />
               </div>
             </div>

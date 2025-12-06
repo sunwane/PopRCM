@@ -3,15 +3,16 @@ import { useState } from "react";
 import { EpisodesTab } from "./EpisodesTab";
 import { SeriesTab } from "./SeriesTab";
 import { RecommendTab } from "./RecommendTab";
+import { Movie } from "@/types/Movies";
+import { Series } from "@/types/Series";
 
 export interface DetailsTabProps {
-  movieInfo: any;
-  episodes?: any[];
-  relatedSeries?: any[];
-  recommendations?: any[];
+  movieInfo: Movie;
+  relatedSeries?: Series[];
+  recommendations?: Movie[];
 }
 
-export function DetailsTab({ movieInfo, episodes = [], relatedSeries = [], recommendations = [] }: DetailsTabProps) {
+export function DetailsTab({ movieInfo, relatedSeries = [], recommendations = [] }: DetailsTabProps) {
   const [activeTab, setActiveTab] = useState<'episodes' | 'series' | 'recommended'>('episodes');
 
   const tabs = [
@@ -25,13 +26,13 @@ export function DetailsTab({ movieInfo, episodes = [], relatedSeries = [], recom
   return (
     <div className="w-full">
       {/* Tab Header */}
-      <div className="flex border-b-2 border-gray-600 mb-6">
+      <div className="flex border-b-2 border-[#343434] mb-6">
         {tabs.map((tab) => (
           <button
             key={tab.id}
             className={`px-4 py-3 text-sm font-medium transition-colors relative ${
               activeTab === tab.id
-                ? "text-blue-400 border-b-2 border-blue-400 -mb-0.5"
+                ? "text-(--hover) border-b-2 border-(--hover) -mb-0.5"
                 : "text-gray-400 hover:text-white"
             }`}
             onClick={() => setActiveTab(tab.id as 'episodes' | 'series' | 'recommended')}
@@ -45,8 +46,8 @@ export function DetailsTab({ movieInfo, episodes = [], relatedSeries = [], recom
       <div className="text-white">
         <ActiveComponent 
           movieInfo={movieInfo}
-          episodes={episodes}
           relatedSeries={relatedSeries}
+          recommendedMovies={recommendations}
         />
       </div>
     </div>
