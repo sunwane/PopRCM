@@ -3,13 +3,14 @@ import { Country } from "./Country";
 import { Genre } from "./Genres";
 
 export interface Episode {
-    id: number;
+    id: string;
     title: string;
     episodeNumber: number;
     createdAt: Date;
     videoUrl: string;
     m3u8Url?: string;
     serverName: string; // e.g., "Vietsub", "ThuyetMinh"
+    movieId: string;
 }
 
 export interface Movie {

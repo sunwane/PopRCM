@@ -44,7 +44,7 @@ export default function PageHeader() {
   // Dynamic background class
   const headerBgClass = isScrolled 
     ? "bg-(--background)/90 backdrop-blur-md" 
-    : "bg-transparent";
+    : "bg-linear-to-b from-(--background) to-transparent";
 
   // Desktop Header - Sticky với dynamic background
   if (isDesktop) {

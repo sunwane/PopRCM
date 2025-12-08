@@ -17,13 +17,14 @@ export class EpisodesService {
   // Chuyển đổi EpisodeResponse từ API sang Episode interface
   private static mapEpisodeResponseToEpisode(episodeResponse: any): Episode {
     return {
-      id: parseInt(episodeResponse.id),
+      id: episodeResponse.id,
       title: episodeResponse.title,
       episodeNumber: episodeResponse.episodeNumber,
       createdAt: new Date(episodeResponse.createdAt),
       videoUrl: episodeResponse.videoUrl,
       m3u8Url: episodeResponse.m3u8Url,
-      serverName: episodeResponse.serverName || 'Vietsub'
+      serverName: episodeResponse.serverName || 'Vietsub',
+      movieId: episodeResponse.movieId || '1' // Default movieId if not provided
     };
   }
 
@@ -108,36 +109,6 @@ export class EpisodesService {
       console.warn('Failed to get episode from API, using mock data:', error);
       return mockEpisodes.find(ep => ep.id.toString() === episodeId) || null;
     }
-  }
-
-  // Add episode (local only for now)
-  static async addEpisode(movieId: string, episodeData: Omit<Episode, 'id' | 'createdAt'>): Promise<Episode> {
-    const newEpisode: Episode = {
-      ...episodeData,
-      id: Date.now(), // Generate temporary ID
-      createdAt: new Date()
-    };
-    
-    this.episodes.push(newEpisode);
-    return newEpisode;
-  }
-
-  // Update episode (local only for now)
-  static async updateEpisode(episodeId: number, updates: Partial<Episode>): Promise<Episode | null> {
-    const index = this.episodes.findIndex(ep => ep.id === episodeId);
-    if (index === -1) return null;
-    
-    this.episodes[index] = { ...this.episodes[index], ...updates };
-    return this.episodes[index];
-  }
-
-  // Delete episode (local only for now)
-  static async deleteEpisode(episodeId: number): Promise<boolean> {
-    const index = this.episodes.findIndex(ep => ep.id === episodeId);
-    if (index === -1) return false;
-    
-    this.episodes.splice(index, 1);
-    return true;
   }
 
   // Reorder episodes (local only for now)

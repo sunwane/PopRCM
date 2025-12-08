@@ -4,9 +4,10 @@ import Pagination from "@/components/ui/Pagination";
 import { LoadingEffect } from "@/components/ui/LoadingEffect";
 import NotFoundDiv from "@/components/ui/NotFoundDiv";
 import { useResponsive } from "@/hooks/useResponsive";
+import { Movie } from "@/types/Movies";
 
 export interface MovieGridLayoutProps {
-  filteredMovies: any[];
+  filteredMovies: Movie[];
   loading?: boolean;
   currentPage?: number;
   totalPages?: number;

@@ -8,18 +8,29 @@ import { Series } from "@/types/Series";
 
 export interface DetailsTabProps {
   movieInfo: Movie;
-  relatedSeries?: Series[];
+  seriesInfo?: Series;
   recommendations?: Movie[];
+  loading?: boolean;
 }
 
-export function DetailsTab({ movieInfo, relatedSeries = [], recommendations = [] }: DetailsTabProps) {
+export function DetailsTab({ movieInfo, seriesInfo, recommendations = [], loading }: DetailsTabProps) {
   const [activeTab, setActiveTab] = useState<'episodes' | 'series' | 'recommended'>('episodes');
 
-  const tabs = [
+  const allTabs = [
     { id: 'episodes', label: 'Tập phim', component: EpisodesTab },
     { id: 'series', label: 'Series', component: SeriesTab },
-    { id: 'recommended', label: 'Gợi ý', component: RecommendTab },
+    { id: 'recommended', label: 'Đề xuất', component: RecommendTab },
   ];
+
+  // Ẩn tab series nếu không có seriesInfo
+  const tabs = seriesInfo
+    ? allTabs
+    : allTabs.filter(tab => tab.id !== 'series');
+
+  // Nếu tab hiện tại là series nhưng seriesInfo không có, chuyển về episodes
+  if (!seriesInfo && activeTab === 'series') {
+    setActiveTab('episodes');
+  }
 
   const ActiveComponent = tabs.find(tab => tab.id === activeTab)?.component || EpisodesTab;
 
@@ -46,8 +57,9 @@ export function DetailsTab({ movieInfo, relatedSeries = [], recommendations = []
       <div className="text-white">
         <ActiveComponent 
           movieInfo={movieInfo}
-          relatedSeries={relatedSeries}
+          seriesInfo={seriesInfo}
           recommendedMovies={recommendations}
+          loading={loading}
         />
       </div>
     </div>

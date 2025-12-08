@@ -4,17 +4,19 @@ import PageHeader from "@/components/layout/PageHeader";
 import PageFooter from "@/components/layout/PageFooter";
 import { LoadingPage } from "@/components/ui/LoadingPage";
 import NotFoundDiv from "@/components/ui/NotFoundDiv";
-import { useMoviesDataByID } from "@/hooks/useData/useMoviesData";
-import { Genre } from "@/types/Genres";
-import { getStatusText, getViewDisplayText } from "@/utils/getTextUtils";
-import { getStatusColor, getViewLabelColor } from "@/utils/getColorUtils";
+import { useMoviesDataByID, useRecommendedMovies, useSeriesDataByMovieId } from "@/hooks/useData/useMoviesData";
 import { DetailsTab } from "@/components/feature/movieDetails/DetailsTab";
+import { Genre } from "@/types/Genres";
+import { getStatusColor, getViewLabelColor } from "@/utils/getColorUtils";
+import { getStatusText, getViewDisplayText } from "@/utils/getTextUtils";
 
 export default function MoviesPage() {
   const params = useParams();
   const movie = params.movie;
 
   const { movieInfo, loading } = useMoviesDataByID(movie?.toString() ?? "");
+  const { seriesInfo } = useSeriesDataByMovieId(movie?.toString() ?? "");
+  const { recommendedMovies } = useRecommendedMovies(movie?.toString() || "");
 
   if (loading) {
     return (
@@ -128,8 +130,8 @@ export default function MoviesPage() {
                         </div>
                       </div>
                     )}
-                    <div className="bg-(--primary) px-2.5 py-2 border-2 border-(--primary) rounded-lg font-bold tracking-wide text-black lg:text-sm md:text-sm text-xs">
-                      Series
+                    <div className="capitalize bg-(--primary) px-2.5 py-2 border-2 border-(--primary) rounded-lg font-bold tracking-wide text-black lg:text-sm md:text-sm text-xs">
+                      {movieInfo.type}
                     </div>
                     {movieInfo.PopRating && (
                       <div className="flex items-center space-x-1.5 border-2 border-blue-500 bg-blue-500/10 text-white px-2.5 py-1.5 rounded-lg">
@@ -206,9 +208,10 @@ export default function MoviesPage() {
                   </div>
                 </div>
               </div>
+              
               {/* Movies */}
               <div className="mb-6 mt-6">
-                <DetailsTab movieInfo={movieInfo} />
+                <DetailsTab movieInfo={movieInfo} seriesInfo={seriesInfo ?? undefined} recommendations={recommendedMovies} />
               </div>
             </div>
 
@@ -274,7 +277,7 @@ export default function MoviesPage() {
           </div>
         </div>
       </div>
-      
+
       <PageFooter />
     </div>
   );

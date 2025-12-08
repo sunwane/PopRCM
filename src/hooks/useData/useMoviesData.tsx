@@ -157,3 +157,38 @@ export function useSeriesDataByMovieId(movieId: string | null) {
     error,
   };
 }
+
+export function useRecommendedMovies(movieId: string) {
+  const [recommendedMovies, setRecommendedMovies] = useState<Movie[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  useEffect(() => {
+    const fetchRecommendedMovies = async () => {
+      if (!movieId) { 
+        setRecommendedMovies([]);
+        setLoading(false);
+        return;
+      }
+      try {
+        setLoading(true);
+        const recommended = await MoviesService.getRecommendedMovies(movieId, 10);
+        setRecommendedMovies(recommended);
+        console.log("Fetched recommended movies:", recommended);
+      } catch (err) {
+        console.error("Error fetching recommended movies:", err);
+        setError("Lỗi khi tải phim đề xuất");
+        setRecommendedMovies([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchRecommendedMovies();
+  }, [movieId]);
+
+  return {
+    recommendedMovies,
+    loading,
+    error,
+  };
+}

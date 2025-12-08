@@ -1,11 +1,26 @@
+'use client';
+
+import ListHeroMovies from "@/components/feature/homepage/ListHeroMovies";
+import { SeriesDisplayGrid } from "@/components/feature/homepage/SeriesDisplayGrid";
 import PageFooter from "@/components/layout/PageFooter";
 import PageHeader from "@/components/layout/PageHeader";
+import { useHomeData } from "@/hooks/useData/useHomeData";
 
 export default function Home() {
+  const { heroMovies, isLoading} = useHomeData();
+
   return (
     <div className="max-w-[2000px]">
       <PageHeader />
-
+      <main className="min-h-screen lg:-mt-20 md:-mt-20 sm:mt-0 mt-0">
+        <ListHeroMovies 
+          heroMovies={heroMovies}
+          isLoading={isLoading}
+        />
+        <div className="px-4 sm:px-6 lg:px-8 mt-8 mb-12">
+          <SeriesDisplayGrid />
+        </div>
+      </main>
       <PageFooter />
     </div>
   );
