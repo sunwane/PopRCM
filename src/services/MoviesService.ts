@@ -399,7 +399,7 @@ export class MoviesService {
   }
 
   // Get popular movies (by view count)
-  static async getPopularMoviesOfWeek(limit: number = 10): Promise<Movie[]> {
+  static async getPopularMovies(limit: number = 10): Promise<Movie[]> {
     // Chỉ load toàn bộ khi dùng mock data để sort, API có thể sort trực tiếp
     const loadSize = this.isServiceAvailable() ? 24 : 1000;
     await this.loadMoviesData(0, loadSize);
@@ -411,7 +411,7 @@ export class MoviesService {
   }
 
   // Get top rated movies
-  static async getTopRatedMoviesOfMonth(limit: number = 10): Promise<Movie[]> {
+  static async getTopRatedMovies(limit: number = 10): Promise<Movie[]> {
     // Chỉ load toàn bộ khi dùng mock data để sort, API có thể sort trực tiếp
     const loadSize = this.isServiceAvailable() ? 24 : 1000;
     await this.loadMoviesData(0, loadSize);
@@ -432,6 +432,22 @@ export class MoviesService {
       .slice(0, limit); // Lấy số lượng phim theo limit
 
     return sortedMovies;
+  }
+
+  static async getMostViewedMoviesOfWeek(limit: number = 10): Promise<Movie[]> {
+    return this.getPopularMovies(limit);
+  }
+
+  static async getMostViewedMoviesOfMonth(limit: number = 10): Promise<Movie[]> {
+    return this.getPopularMovies(limit);
+  }
+
+  static async getMoviesFromGenreSlug(genreSlug: string, limit: number = 9): Promise<Movie[]> {
+    await this.loadMoviesData(0, 1000);
+    const moviesFromGenre = this.movies.filter(movie => 
+      movie.genres.some(genre => genre.id === genreSlug)
+    ).slice(0, limit);
+    return moviesFromGenre;
   }
 
   // Helper method for unique value extraction (generic)

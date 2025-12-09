@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
 import { Movie } from '@/types/Movies';
+import { Series } from '@/types/Series';
 import { MoviesService } from '@/services/MoviesService';
+import { SeriesService } from '@/services/SeriesService';
 
 export interface HomeData {
   heroMovies: Movie[];
@@ -8,7 +10,7 @@ export interface HomeData {
   error: string | null;
 }
 
-export function useHomeData(movieId?: string): HomeData {
+export function useHeroData(movieId?: string): HomeData {
   const [heroMovies, setHeroMovies] = useState<Movie[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -20,7 +22,7 @@ export function useHomeData(movieId?: string): HomeData {
         setError(null);
         
         // Lấy top 5 phim phổ biến làm hero movies
-        const popularMovies = await MoviesService.getPopularMoviesOfWeek(7);
+        const popularMovies = await MoviesService.getMostViewedMoviesOfWeek(7);
         setHeroMovies(popularMovies);
         
       } catch (err) {
@@ -36,6 +38,100 @@ export function useHomeData(movieId?: string): HomeData {
 
   return {
     heroMovies,
+    isLoading,
+    error
+  };
+}
+
+export function useTopViewedMovies() {
+  const [movies, setMovies] = useState<Movie[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  useEffect(() => {
+    const fetchTopViewedMovies = async () => {
+      try {
+        setIsLoading(true);
+        setError(null);
+        const topViewedMovies = await MoviesService.getMostViewedMoviesOfWeek(10);
+        setMovies(topViewedMovies);
+      }
+      catch (err) {
+        console.error('Error fetching top viewed movies of the week:', err);
+        setError('Không thể tải danh sách phim được xem nhiều nhất trong tuần');
+      }
+      finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchTopViewedMovies();
+  }, []);
+
+  return {
+    movies,
+    isLoading,
+    error
+  };
+}
+
+export function usePopularSeries() {
+  const [seriesList, setSeriesList] = useState<Series[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  useEffect(() => {
+    const fetchPopularSeries = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        const popularSeries = await SeriesService.getAllSeries();
+        setSeriesList(popularSeries.slice(0, 6));
+      }
+      catch (err) {
+        console.error('Error fetching popular series:', err);
+        setError('Không thể tải danh sách series phổ biến');
+      }
+      finally {
+        setLoading(false);
+      }
+    };
+
+    fetchPopularSeries();
+  }, []);
+
+  return {
+    seriesList,
+    loading,
+    error
+  };
+}
+
+export function useMoviesFromGenreById(genreId: string, limit: number = 9) {
+  const [movies, setMovies] = useState<Movie[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  useEffect(() => {
+    const fetchMoviesFromGenre = async () => {
+      try {
+        setIsLoading(true);
+        setError(null);
+        const moviesFromGenre = await MoviesService.getMoviesFromGenreSlug(genreId, limit);
+        console.log('Fetched movies from genre:', moviesFromGenre);
+        setMovies(moviesFromGenre);
+      }
+      catch (err) {
+        console.error('Error fetching movies from genre:', err);
+        setError('Không thể tải danh sách phim từ thể loại');
+      }
+      finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchMoviesFromGenre();
+  }, [genreId]);
+
+  return {
+    movies,
     isLoading,
     error
   };

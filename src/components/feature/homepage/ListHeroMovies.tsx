@@ -35,7 +35,7 @@ export default function ListHeroMovies({ heroMovies, isLoading }: ListHeroMovies
 
   if (isLoading) {
     return (
-      <div className="relative w-full h-[600px] bg-gray-900">
+      <div className="relative w-full h-screen bg-gray-900">
         <LoadingEffect />
       </div>
     );

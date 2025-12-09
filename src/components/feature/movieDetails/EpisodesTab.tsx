@@ -1,5 +1,5 @@
 import { LoadingEffect } from "@/components/ui/LoadingEffect";
-import { Movie, Episode } from "@/types/Movies";
+import { Movie } from "@/types/Movies";
 import { Series } from "@/types/Series";
 import { useState, useMemo, useEffect } from "react";
 import { useRouter } from "next/navigation";
@@ -50,13 +50,13 @@ export function EpisodesTab({ movieInfo, seriesInfo, loading }: EpisodesTabProps
       {/* Series Part */}
       {seriesInfo && (
         <div>
-          <div className="lg:text-lg md:text-[16px] sm:text-sm text-sm flex gap-1.5 items-center font-light">
+          <div className="lg:text-base md:text-sm sm:text-sm text-sm flex gap-1.5 items-center">
             Loạt series: 
             <a href={`/allSeries/${seriesInfo.id}`} className="font-bold text-(--primary)">{seriesInfo.name}</a>
           </div>
           <div className="mt-3 relative">
             <img src={seriesInfo.posterUrl} alt={seriesInfo.name} 
-            className="lg:max-h-128 md:max-h-96 sm:max-h-72 max-h-60 w-full object-cover rounded-xl" />
+            className="lg:max-h-80 md:max-h-72 sm:max-h-60 max-h-60 w-full object-cover rounded-xl" />
             <div className="absolute inset-0 bottom-0 left-0 bg-linear-to-t from-(--background) to-transparent rounded-b-xl"></div>
             <div className="absolute bottom-4 left-4 lg:text-xl md:text-lg sm:text-sm text-sm font-semibold">
               {seriesInfo.movieCount} phần
@@ -161,8 +161,7 @@ export function EpisodesTab({ movieInfo, seriesInfo, loading }: EpisodesTabProps
                 onMouseEnter={() => setHoveredEpisodeId(episode.id)}
                 onMouseLeave={() => setHoveredEpisodeId(null)}
                 onClick={() => {
-                  // TODO: Handle episode click - navigate to watch page
-                  console.log('Play episode:', episode);
+                  router.push(`/watch/${episode.id}`);
                 }}
               >
                 <div className="flex justify-center items-center space-x-2">

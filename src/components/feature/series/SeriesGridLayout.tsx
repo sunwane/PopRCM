@@ -31,7 +31,7 @@ export default function SeriesGridLayout({
       const screenWidth = window.innerWidth;
 
       // Tính số lượng diễn viên có thể hiển thị trên một hàng
-      const seriesWidth = 260; // Kích thước tối thiểu của mỗi diễn viên (px)
+      const seriesWidth = 224; // Kích thước tối thiểu của mỗi diễn viên (px)
       const gap = 8; // Khoảng cách giữa các diễn viên (px)
       const seriessPerRow = Math.floor(screenWidth / (seriesWidth + gap));
 
@@ -64,9 +64,9 @@ export default function SeriesGridLayout({
       <div
         className={`${
           isAlignLeft
-            ? "flex gap-6 justify-start"
-            : `grid lg:grid-cols-[repeat(auto-fit,minmax(224px,1fr))] 
-               md:grid-cols-[repeat(auto-fit,minmax(224px,1fr))] 
+            ? "flex justify-start lg:gap-4 md:gap-4 sm:gap-3 gap-2 flex-wrap"
+            : `grid lg:grid-cols-[repeat(auto-fit,minmax(220px,1fr))] 
+               md:grid-cols-[repeat(auto-fit,minmax(220px,1fr))] 
                sm:grid-cols-[repeat(auto-fit,minmax(28vw,1fr))] 
                grid-cols-[repeat(auto-fit,minmax(40vw,1fr))]
                lg:gap-6 md:gap-6 sm:gap-4 gap-x-2 gap-y-4 justify-items-center`

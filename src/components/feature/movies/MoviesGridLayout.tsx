@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import MovieCard from "./MovieCard";
+import MovieCard, { MovieCardSize, getMovieCardWidth } from "./MovieCard";
 import Pagination from "@/components/ui/Pagination";
 import { LoadingEffect } from "@/components/ui/LoadingEffect";
 import NotFoundDiv from "@/components/ui/NotFoundDiv";
@@ -15,6 +15,7 @@ export interface MovieGridLayoutProps {
   hasNextPage?: boolean;
   hasPrevPage?: boolean;
   gapWidth?: number;
+  cardSize?: MovieCardSize;
 }
 
 export default function MovieGridLayout({ 
@@ -26,25 +27,45 @@ export default function MovieGridLayout({
   hasNextPage,
   hasPrevPage,
   gapWidth = 0,
+  cardSize = 'medium',
 }: MovieGridLayoutProps) {
   const [isAlignLeft, setIsAlignLeft] = useState(false);
-  const { isMobile } = useResponsive();
+  const [moviesPerRow, setMoviesPerRow] = useState(0);
+  const { isMobile, isTablet, isDesktop } = useResponsive();
 
   useEffect(() => {
     const updateAlignment = () => {
-      if (!isMobile) {
-        // Tính số lượng phim có thể hiển thị trên một hàng
-        const screenWidth = window.innerWidth - gapWidth;
-        const movieWidth = 168; // Kích thước tối thiểu của mỗi phim (px)
-        const gap = 4; // Khoảng cách giữa các phim (px)
-        const moviesPerRow = Math.floor(screenWidth / (movieWidth + gap));
-        // Nếu số lượng phim ít hơn số lượng phim trên một hàng, căn trái
-        setIsAlignLeft(filteredMovies.length > 0 && filteredMovies.length < moviesPerRow);
-      } else if (isMobile) {
-        console.log("Filtered Movies Length:", filteredMovies.length);
-        setIsAlignLeft(filteredMovies.length < 2);
+      // Tính toán responsive dựa trên breakpoints
+      let screenWidth = window.innerWidth - gapWidth;
+      let movieWidth = getMovieCardWidth(cardSize);
+      let gap = 16; // Khoảng cách giữa các phim (px)
+      let padding = 32; // Padding của container
+      
+      // Điều chỉnh cho mobile
+      if (isMobile) {
+        // Trên mobile, sử dụng viewport width thay vì px
+        screenWidth = window.innerWidth - padding;
+        gap = 8;
+        // Tính toán dựa trên vw cho mobile
+        const vwWidth = cardSize === 'small' ? 0.36 : cardSize === 'medium' ? 0.40 : 0.44;
+        movieWidth = screenWidth * vwWidth;
+        const calculatedMoviesPerRow = Math.floor(screenWidth / (movieWidth + gap));
+        setMoviesPerRow(calculatedMoviesPerRow);
+        setIsAlignLeft(filteredMovies.length > 0 && filteredMovies.length < calculatedMoviesPerRow);
+      } else if (isTablet) {
+        // Tablet responsiveness
+        screenWidth = window.innerWidth - padding;
+        gap = 12;
+        const calculatedMoviesPerRow = Math.floor(screenWidth / (movieWidth + gap));
+        setMoviesPerRow(calculatedMoviesPerRow);
+        setIsAlignLeft(filteredMovies.length > 0 && filteredMovies.length < calculatedMoviesPerRow);
       } else {
-        setIsAlignLeft(false);
+        // Desktop
+        screenWidth = Math.min(screenWidth, 2000) - padding; // Max container width
+        gap = 16;
+        const calculatedMoviesPerRow = Math.floor(screenWidth / (movieWidth + gap));
+        setMoviesPerRow(calculatedMoviesPerRow);
+        setIsAlignLeft(filteredMovies.length > 0 && filteredMovies.length < calculatedMoviesPerRow);
       }
     };
 
@@ -58,7 +79,7 @@ export default function MovieGridLayout({
     return () => {
       window.removeEventListener("resize", updateAlignment);
     };
-  }, [filteredMovies]);
+  }, [filteredMovies, cardSize, gapWidth, isMobile, isTablet, isDesktop]);
 
   if (loading) {
     return (
@@ -72,20 +93,36 @@ export default function MovieGridLayout({
     );
   }
 
+  // Dynamic grid class based on card size
+  const getGridClass = () => {
+    const sizes = {
+      small: {
+        desktop: 'lg:grid-cols-[repeat(auto-fit,minmax(152px,1fr))] md:grid-cols-[repeat(auto-fit,minmax(152px,1fr))]',
+        mobile: 'sm:grid-cols-[repeat(auto-fit,minmax(20vw,1fr))] grid-cols-[repeat(auto-fit,minmax(24vw,1fr))]'
+      },
+      medium: {
+        desktop: 'lg:grid-cols-[repeat(auto-fit,minmax(168px,1fr))] md:grid-cols-[repeat(auto-fit,minmax(168px,1fr))]',
+        mobile: 'sm:grid-cols-[repeat(auto-fit,minmax(28vw,1fr))] grid-cols-[repeat(auto-fit,minmax(40vw,1fr))]'
+      },
+      large: {
+        desktop: 'lg:grid-cols-[repeat(auto-fit,minmax(180px,1fr))] md:grid-cols-[repeat(auto-fit,minmax(180px,1fr))]',
+        mobile: 'sm:grid-cols-[repeat(auto-fit,minmax(28vw,1fr))] grid-cols-[repeat(auto-fit,minmax(40vw,1fr))]'
+      }
+    };
+    
+    return `grid ${sizes[cardSize].desktop} ${sizes[cardSize].mobile} lg:gap-4 md:gap-4 sm:gap-3 gap-2 gap-y-6 justify-items-center`;
+  };
+
   return (
     <div className="max-w-[2000px]">
       <div
         className={`${
-          isAlignLeft ? "flex justify-start gap-6 flex-wrap" 
-          : `grid lg:grid-cols-[repeat(auto-fit,minmax(168px,1fr))] 
-          md:grid-cols-[repeat(auto-fit,minmax(168px,1fr))] 
-          sm:grid-cols-[repeat(auto-fit,minmax(28vw,1fr))] 
-          grid-cols-[repeat(auto-fit,minmax(40vw,1fr))] 
-          lg:gap-4 md:gap-4 sm:gap-4 gap-2 gap-y-6 justify-items-center`
+          isAlignLeft ? "flex justify-start lg:gap-4 md:gap-4 sm:gap-3 gap-2 flex-wrap" 
+          : getGridClass()
         }`}
       >
         {filteredMovies.map((movie) => (
-          <MovieCard key={movie.id} movie={movie} />
+          <MovieCard key={movie.id} movie={movie} size={cardSize} />
         ))}
       </div>
       {totalPages && totalPages > 1 && onPageChange && (

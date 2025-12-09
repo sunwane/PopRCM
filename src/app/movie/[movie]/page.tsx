@@ -9,6 +9,7 @@ import { DetailsTab } from "@/components/feature/movieDetails/DetailsTab";
 import { Genre } from "@/types/Genres";
 import { getStatusColor, getViewLabelColor } from "@/utils/getColorUtils";
 import { getStatusText, getViewDisplayText } from "@/utils/getTextUtils";
+import { ListTopMovies } from "@/components/feature/movieDetails/ListTopMovies";
 
 export default function MoviesPage() {
   const params = useParams();
@@ -72,7 +73,7 @@ export default function MoviesPage() {
               </div>
 
               {/* Action Buttons - placeholder to maintain spacing */}
-              <div className="lg:w-80 md:w-72 sm:w-0 w-0 shrink-0 lg:-mt-20 md:-mt-16 sm:mt-0 mt-0"></div>
+              <div className="lg:w-86 md:w-72 sm:w-0 w-0 shrink-0 lg:-mt-20 md:-mt-16 sm:mt-0 mt-0"></div>
             </div>
           </div>
         </div>
@@ -80,7 +81,7 @@ export default function MoviesPage() {
         {/* Content Section - Below hero image */}
         <div className="relative lg:px-12 md:px-10 sm:px-6 px-6">
           {/* Main Layout: 2 Columns */}
-          <div className="flex lg:gap-8 md:gap-6 sm:gap-4 gap-4 lg:flex-row md:flex-row flex-col items-start">
+          <div className="flex lg:gap-10 md:gap-8 sm:gap-6 gap-4 lg:flex-row md:flex-row flex-col items-start">
             <div className="flex-1">
               {/* Left Column: Poster + Movie Information */}
               <div className="relative flex lg:space-x-6 md:space-x-4 sm:space-x-3 space-x-3 items-start flex-1">
@@ -216,7 +217,7 @@ export default function MoviesPage() {
             </div>
 
             {/* Right Column: Action Buttons */}
-            <div className="lg:w-80 md:w-72 sm:w-full w-full shrink-0 lg:-mt-20 md:-mt-16 sm:mt-0 mt-0">
+            <div className="lg:w-86 md:w-72 sm:w-full w-full shrink-0 lg:-mt-20 md:-mt-16 sm:mt-0 mt-0">
 
               <div className="grid grid-cols-3 lg:bg-white/10 md:bg-white/10 py-3 px-4 rounded-lg border-2 border-white/50 shadow-lg">
                 <button className="w-full flex flex-col items-center justify-center gap-1 text-nowrap rounded transition-colors text-sm text-white">
@@ -272,7 +273,11 @@ export default function MoviesPage() {
                   <div className="px-3 text-sm text-gray-400 text-center">Không có thông tin diễn viên.</div>
                 )}
               </div>
-            
+                
+              {/* Top Movies */}
+              <div className="mt-10">
+                <ListTopMovies />
+              </div>
             </div>
           </div>
         </div>

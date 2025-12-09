@@ -1,10 +1,10 @@
 import { Genre } from '@/types/Genres';
 
 export const mockGenres: Genre[] = [
-  { id: '1', genresName: 'Hành động' },
-  { id: '2', genresName: 'Kinh dị' },
-  { id: '3', genresName: 'Hài kịch' },
-  { id: '4', genresName: 'Tình cảm' },
+  { id: 'hanh-dong', genresName: 'Hành động' },
+  { id: 'kinh-di', genresName: 'Kinh dị' },
+  { id: 'hai-huoc', genresName: 'Hài kịch' },
+  { id: 'tinh-cam', genresName: 'Tình cảm' },
   { id: '5', genresName: 'Khoa học viễn tưởng' },
   { id: '6', genresName: 'Phiêu lưu' },
   { id: '7', genresName: 'Tâm lý' },

@@ -12,7 +12,7 @@ export function SeriesTab({ seriesInfo }: SeriesTabProps) {
     <div className="space-y-4">
       {seriesInfo && (
         <div>
-          <div className="lg:text-lg md:text-[16px] sm:text-sm text-sm flex gap-1.5 items-center font-light">
+          <div className="lg:text-base md:text-sm sm:text-sm text-sm flex gap-1.5 items-center">
             Loạt series: 
             <a href={`/allSeries/${seriesInfo.id}`} className="font-bold text-(--primary)">{seriesInfo.name}</a>
           </div>
