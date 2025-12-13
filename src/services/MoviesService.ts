@@ -601,4 +601,50 @@ export class MoviesService {
   
     return recommendedMovies;
   }
+
+  // Get top viewed movies for ranking (alias for getMostViewedMoviesOfWeek)
+  static async getTopViewedMoviesRanking(limit: number = 10): Promise<Movie[]> {
+    return this.getMostViewedMoviesOfWeek(limit);
+  }
+
+  // Get top favorites movies for ranking (mock data - shuffle popular movies)
+  static async getTopFavoritesMoviesRanking(limit: number = 10): Promise<Movie[]> {
+    try {
+      await this.loadMoviesData(0, 1000);
+      // Tạo mock favorites ranking bằng cách shuffle và lấy random từ popular movies
+      const shuffled = [...this.movies]
+        .sort((a, b) => b.view - a.view) // Lấy movies có view cao
+        .slice(0, 30) // Lấy top 30 để shuffle
+        .sort(() => Math.random() - 0.5) // Random shuffle
+        .slice(0, limit);
+      
+      return shuffled;
+    } catch (error) {
+      console.error('Error fetching top favorites movies ranking:', error);
+      return [];
+    }
+  }
+
+  // Get top comments movies for ranking (mock data - shuffle by different criteria)
+  static async getTopCommentsMoviesRanking(limit: number = 10): Promise<Movie[]> {
+    try {
+      await this.loadMoviesData(0, 1000);
+      // Tạo mock comments ranking bằng cách shuffle movies theo rating
+      const shuffled = [...this.movies]
+        .filter(movie => (movie.imdbScore || 0) > 0 || (movie.tmdbScore || 0) > 0) // Movies có rating
+        .sort((a, b) => {
+          const aScore = ((a.imdbScore || 0) + (a.tmdbScore || 0)) / 2;
+          const bScore = ((b.imdbScore || 0) + (b.tmdbScore || 0)) / 2;
+          return bScore - aScore;
+        })
+        .slice(0, 30) // Lấy top 30 để shuffle
+        .sort(() => Math.random() - 0.5) // Random shuffle
+        .slice(0, limit);
+      
+      return shuffled;
+    } catch (error) {
+      console.error('Error fetching top comments movies ranking:', error);
+      return [];
+    }
+  }
 }

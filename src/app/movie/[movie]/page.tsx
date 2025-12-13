@@ -240,8 +240,8 @@ export default function MoviesPage() {
                 {movieInfo.actors && movieInfo.actors.length > 0 && (
                   <div>
                     <div className="grid grid-cols-3 gap-2 px-1">
-                      {movieInfo.actors.map((ma) => (
-                        <div key={ma.id} className="flex flex-col items-center text-center">
+                      {movieInfo.actors.map((ma, index) => (
+                        <div key={index} className="flex flex-col items-center text-center">
                           {ma.actor?.profilePath || ma.profilePath ? (
                             <img
                               src={ma.actor?.profilePath || ma.profilePath}

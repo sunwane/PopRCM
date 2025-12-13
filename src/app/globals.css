@@ -124,3 +124,51 @@ body {
 .no-scrollbar::-webkit-scrollbar {
   display: none; /* WebKit */
 }
+
+.text-gradient-orange {
+  background: linear-gradient(140deg, #FF6B46, #FFFFFF);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.text-gradient-green {
+  background: linear-gradient(145deg, #00B303, #FFFFFF);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.text-fire {
+  background: linear-gradient(135deg, #FFD000, #FFA14D);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.text-pink {
+  background: linear-gradient(135deg, #FF51C5, #E75DB0);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.text-green {
+  background: linear-gradient(135deg, #00B303, #08AA00);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.text-gradient-pink {
+  background: linear-gradient(145deg, #FF51C5, #FFFFFF);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.text-BXH {
+  background: linear-gradient(135deg, #FF4242, #78B0FF);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.text-hot {
+  background: linear-gradient(165deg, #FFC800, #FF0242);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}

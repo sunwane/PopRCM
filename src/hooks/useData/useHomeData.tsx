@@ -4,6 +4,12 @@ import { Series } from '@/types/Series';
 import { MoviesService } from '@/services/MoviesService';
 import { SeriesService } from '@/services/SeriesService';
 
+export interface RankingData {
+  topViewed: Movie[];
+  topFavorites: Movie[];
+  topComments: Movie[];
+}
+
 export interface HomeData {
   heroMovies: Movie[];
   isLoading: boolean;
@@ -132,6 +138,51 @@ export function useMoviesFromGenreById(genreId: string, limit: number = 9) {
 
   return {
     movies,
+    isLoading,
+    error
+  };
+}
+
+export function useRankingsData() {
+  const [rankings, setRankings] = useState<RankingData>({
+    topViewed: [],
+    topFavorites: [],
+    topComments: []
+  });
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchRankings = async () => {
+      try {
+        setIsLoading(true);
+        setError(null);
+        const moviesService = new MoviesService();
+        
+        const [topViewed, topFavorites, topComments] = await Promise.all([
+          MoviesService.getTopViewedMoviesRanking(),
+          MoviesService.getTopFavoritesMoviesRanking(),
+          MoviesService.getTopCommentsMoviesRanking()
+        ]);
+        
+        setRankings({
+          topViewed,
+          topFavorites,
+          topComments
+        });
+      } catch (err) {
+        console.error('Error fetching rankings:', err);
+        setError('Không thể tải dữ liệu bảng xếp hạng');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchRankings();
+  }, []);
+
+  return {
+    rankings,
     isLoading,
     error
   };

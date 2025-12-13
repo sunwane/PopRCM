@@ -64,7 +64,7 @@ export default function SeriesGridLayout({
       <div
         className={`${
           isAlignLeft
-            ? "flex justify-start lg:gap-4 md:gap-4 sm:gap-3 gap-2 flex-wrap"
+            ? "flex justify-start lg:gap-4 md:gap-3 sm:gap-2 gap-2 flex-wrap"
             : `grid lg:grid-cols-[repeat(auto-fit,minmax(220px,1fr))] 
                md:grid-cols-[repeat(auto-fit,minmax(220px,1fr))] 
                sm:grid-cols-[repeat(auto-fit,minmax(28vw,1fr))] 
