@@ -1,5 +1,6 @@
 import { Episode } from '@/types/Movies';
 import { mockEpisodes } from '@/mocksData/mockEpisodes';
+import { mockMovies } from '@/mocksData/mockMovies';
 
 export class EpisodesService {
   private static episodes: Episode[] = [...mockEpisodes];
@@ -111,21 +112,42 @@ export class EpisodesService {
     }
   }
 
-  // Reorder episodes (local only for now)
-  static async reorderEpisodes(movieId: string, episodes: Episode[]): Promise<Episode[]> {
-    // Update local episodes for this movie
-    this.episodes = this.episodes.filter(ep => !episodes.some(newEp => newEp.id === ep.id));
-    this.episodes.push(...episodes);
-    
-    // Sort by episode number within each server
-    this.episodes.sort((a, b) => {
-      if (a.serverName !== b.serverName) {
-        return a.serverName.localeCompare(b.serverName);
+  static async getMovieByEpisodeId(episodeId: string): Promise<typeof mockMovies[0] | null> {
+    const episode = await this.getEpisodeById(episodeId);
+    if (!episode) return null;
+    const movie = mockMovies.find(mov => mov.id === episode.movieId);
+    return movie || null;
+  }
+
+  static async getEpisodesByMovieId(movieId: string): Promise<Episode[]> {
+    try {
+      if (!this.isServiceAvailable()) {
+        console.log('Service not available, using mock data for episodes by movie ID');
+        return mockEpisodes.filter(ep => ep.movieId === movieId);
       }
-      return a.episodeNumber - b.episodeNumber;
-    });
-    
-    return episodes;
+
+      const response = await fetch(`${this.API_BASE_URL}/movie/${movieId}`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const apiResponse = await response.json();
+      
+      if (apiResponse.result && Array.isArray(apiResponse.result)) {
+        return apiResponse.result.map((ep: any) => this.mapEpisodeResponseToEpisode(ep));
+      }
+      return [];
+      
+    } catch (error) {
+      console.warn('Failed to get episodes from API, using mock data:', error);
+      return mockEpisodes.filter(ep => ep.movieId === movieId);
+    }
   }
 
   // Clear cached episodes
