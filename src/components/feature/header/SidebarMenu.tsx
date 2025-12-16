@@ -1,16 +1,22 @@
 "use client";
 import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { useHeaderDropdownItems } from "@/hooks/useHeader";
 import { useAuth } from "@/hooks/useAuth";
+import { useUserData } from "@/hooks/useData/useUserData";
+import GradientAvatar from "@/components/ui/GradientAvatar";
 
 interface SidebarMenuProps {
   isOpen: boolean;
   onClose: () => void;
+  onOpenAuth?: () => void;
 }
 
-export default function SidebarMenu({ isOpen, onClose }: SidebarMenuProps) {
+export default function SidebarMenu({ isOpen, onClose, onOpenAuth }: SidebarMenuProps) {
   const [expandedSection, setExpandedSection] = useState<string | null>(null);
-  const { isAuthenticated, user, logout } = useAuth();
+  const router = useRouter();
+  const { isAuthenticated, logout } = useAuth();
+  const { userProfile, getUserAvatarText } = useUserData();
 
   const genreItems = useHeaderDropdownItems("genre");
   const countryItems = useHeaderDropdownItems("country");
@@ -56,7 +62,7 @@ export default function SidebarMenu({ isOpen, onClose }: SidebarMenuProps) {
 
       {/* Sidebar */}
       <div 
-        className={`fixed top-0 left-0 h-full lg:w-2/5 md:w-3/5 sm:w-4/5 w-4/5 bg-(--surface) z-50 transform transition-transform duration-300 ease-in-out ${
+        className={`fixed top-0 left-0 h-full lg:w-2/5 md:w-3/5 sm:w-4/5 w-4/5 bg-(--background) border-r border-white z-50 transform transition-transform duration-300 ease-in-out ${
           isOpen ? 'translate-x-0' : '-translate-x-full'
         } shadow-2xl`}
       >
@@ -65,25 +71,49 @@ export default function SidebarMenu({ isOpen, onClose }: SidebarMenuProps) {
         <div className="flex flex-col h-full overflow-y-auto">
           <div className="flex-1 px-4 py-6">
             {/* Thông tin tài khoản */}
-            {isAuthenticated && user ? (
+            {isAuthenticated && userProfile ? (
               <div className="pb-6 mb-6 border-b border-(--border)/30">
-                <div className="flex items-center space-x-4 mb-4">
-                  <img 
-                    src={user.avatarUrl || "/icons/Account.png"} 
-                    alt="Avatar" 
-                    className="w-12 h-12 rounded-full bg-(--primary)/20 border-2 border-(--primary)/30" 
-                  />
+                <div className="flex items-center space-x-2.5 mb-4">
+                  {userProfile.avatarUrl ? (
+                    <img 
+                      src={userProfile.avatarUrl} 
+                      alt="Avatar" 
+                      className="w-12 h-12 rounded-full bg-(--primary)/20 border-2 border-(--primary)/30 object-cover" 
+                      onError={(e) => {
+                        e.currentTarget.style.display = 'none';
+                        e.currentTarget.nextElementSibling?.classList.remove('hidden');
+                      }}
+                    />
+                  ) : null}
+                  <div className={userProfile.avatarUrl ? 'hidden' : ''}>
+                    <GradientAvatar 
+                      initial={getUserAvatarText(userProfile.fullName)} 
+                      size="w-12 h-12 text-lg"
+                    />
+                  </div>
                   <div className="flex-1">
-                    <p className="text-white font-semibold text-base">
-                      {user.fullName}
+                    <p className="text-white font-semibold text-base flex items-center gap-1.5">
+                      {userProfile.fullName || userProfile.userName}
+                      {userProfile.gender && (
+                        <img 
+                          src={`/icons/${userProfile.gender === 'male' ? 'Male' : 'Female'}.png`} 
+                          alt={userProfile.gender} 
+                          className="w-4 h-4" 
+                        />
+                      )}
                     </p>
-                    <p className="text-white/60 text-sm">{user.email}</p>
+                    <div className="truncate line-clamp-1">
+                      <p className="text-white/60 text-sm">{userProfile.email}</p>
+                    </div>
                   </div>
                 </div>
                 <div className="flex space-x-3">
                   <button 
                     className="flex-1 bg-(--primary)/20 text-(--primary) px-4 py-2.5 rounded-xl text-sm font-medium hover:bg-(--primary)/30 transition"
-                    onClick={onClose}
+                    onClick={() => {
+                      onClose();
+                      router.push('/myaccount?tab=profile');
+                    }}
                   >
                     Hồ sơ
                   </button>
@@ -99,7 +129,10 @@ export default function SidebarMenu({ isOpen, onClose }: SidebarMenuProps) {
               <div className="pb-6 mb-6 border-b border-(--border)/30">
                 <button 
                   className="w-full bg-(--primary)/30 text-white px-6 py-4 rounded-2xl font-semibold hover:bg-(--primary)/40 transition flex items-center justify-center space-x-3"
-                  onClick={onClose}
+                  onClick={() => {
+                    onClose();
+                    onOpenAuth?.();
+                  }}
                 >
                   <img src="/icons/Account.png" alt="Account" className="w-6 h-6" />
                   <span>Đăng nhập</span>

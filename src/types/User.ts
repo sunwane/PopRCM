@@ -1,3 +1,5 @@
+import { Episode, Movie } from "./Movies";
+
 export interface User {
     id: string;
     userName: string;
@@ -42,3 +44,28 @@ export interface AvatarUploadResponse {
 
 export type FilterGender = 'ALL' | 'MALE' | 'FEMALE';
 export type FilterRole = 'ALL' | 'ADMIN' | 'USER';
+
+export interface Notification {
+    id: string;
+    type: string;
+    message: string;
+    isRead: boolean;
+    createdAt: Date;
+    movieId?: string;
+    relatedId?: string;
+    actorName?: string;
+    actorAvatar?: string;
+}
+
+export interface WatchHistory {
+    episode: Episode;
+    currentTime: number;
+    watchedAt: Date;
+}
+
+export interface Favorites {
+    favoriteId: string;
+    movie: Movie;
+    createdAt: Date;
+}
+

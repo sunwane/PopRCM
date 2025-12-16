@@ -7,6 +7,10 @@ export function useAuth() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [user, setUser] = useState<Omit<User, "password"> | null>(null);
   const [loading, setLoading] = useState(true);
+  
+  // Auth form states
+  const [authLoading, setAuthLoading] = useState(false);
+  const [authError, setAuthError] = useState('');
 
   useEffect(() => {
     // Kiểm tra trạng thái đăng nhập khi component mount
@@ -63,12 +67,82 @@ export function useAuth() {
     }
   };
 
+  // Send verification code for register or forgot password
+  const sendVerificationCode = async (email: string): Promise<void> => {
+    try {
+      setAuthLoading(true);
+      setAuthError('');
+      await AuthService.sendVerificationCode(email);
+    } catch (err: any) {
+      setAuthError(err.message || 'Gửi mã xác thực thất bại');
+      throw err;
+    } finally {
+      setAuthLoading(false);
+    }
+  };
+
+  // Register new user
+  const register = async (formData: any): Promise<void> => {
+    try {
+      setAuthLoading(true);
+      setAuthError('');
+      await AuthService.register(formData);
+    } catch (err: any) {
+      setAuthError(err.message || 'Đăng ký thất bại');
+      throw err;
+    } finally {
+      setAuthLoading(false);
+    }
+  };
+
+  // Forgot password - send reset code
+  const forgotPassword = async (email: string): Promise<void> => {
+    try {
+      setAuthLoading(true);
+      setAuthError('');
+      await AuthService.forgotPassword({ email });
+    } catch (err: any) {
+      setAuthError(err.message || 'Gửi mã đặt lại mật khẩu thất bại');
+      throw err;
+    } finally {
+      setAuthLoading(false);
+    }
+  };
+
+  // Reset password with code
+  const resetPassword = async (email: string, newPassword: string, code: string): Promise<void> => {
+    try {
+      setAuthLoading(true);
+      setAuthError('');
+      await AuthService.resetPassword({ email, newPassword, code });
+    } catch (err: any) {
+      setAuthError(err.message || 'Đặt lại mật khẩu thất bại');
+      throw err;
+    } finally {
+      setAuthLoading(false);
+    }
+  };
+
+  // Clear auth error
+  const clearAuthError = () => {
+    setAuthError('');
+  };
+
   return {
     isAuthenticated,
     user,
     loading,
     login,
     logout,
-    isAdmin: () => AuthService.isAdmin()
+    isAdmin: () => AuthService.isAdmin(),
+    
+    // Auth form methods
+    authLoading,
+    authError,
+    clearAuthError,
+    sendVerificationCode,
+    register,
+    forgotPassword,
+    resetPassword
   };
 }

@@ -12,10 +12,12 @@ import { useRecommendedMovies, useSeriesDataByMovieId } from "@/hooks/useData/us
 import { Genre } from "@/types/Genres";
 import { getStatusText, getViewDisplayText } from "@/utils/getTextUtils";
 import { getStatusColor, getViewLabelColor } from "@/utils/getColorUtils";
+import { useRouter } from "next/navigation";
 
 export default function WatchPage() {
   const params = useParams();
   const episode = params.episode;
+  const route = useRouter();
 
   const { movie, loading } = useMovieByEpisodeId(episode?.toString() || '');
   const { episode: episodeData, loading: episodesLoading } = useEpisodeData(episode?.toString() || '');
@@ -140,7 +142,10 @@ export default function WatchPage() {
               </div>
               <div className="">
                 <div className="font-light text-gray-400 text-[15px] leading-7">{movie.description}</div>
-                <button className="flex gap-1 items-center mt-4">
+                <button 
+                  className="flex gap-1 items-center mt-4" 
+                  onClick={() => {route.push(`/movie/${movie.id}`)}}
+                >
                   <div className="text-sm text-(--hover)">Thông tin chi tiết</div>
                   <svg 
                     className='w-4 h-4 text-(--hover)'

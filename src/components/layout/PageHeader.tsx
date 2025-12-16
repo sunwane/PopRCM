@@ -1,18 +1,55 @@
 "use client";
+import { useState, useEffect } from "react";
 import SearchBar from "@/components/feature/search/SearchBar";
 import { useRouter } from "next/navigation";
 import HeaderDropdown from "../feature/header/HeaderDropdown";
 import SidebarMenu from "../feature/header/SidebarMenu";
+import AccountButton from "../feature/header/AccountButton";
 import { useHeaderDropdownItems, useHeaderState } from "@/hooks/useHeader";
 import { useSearchQuery } from "@/hooks/useSearch";
 import ServiceChecker from "@/services/ServiceChecker";
 import { useResponsive } from "@/hooks/useResponsive";
-import { useAuth } from "@/hooks/useAuth";
+import AuthService from "@/services/AuthService";
+import { AuthBackground } from "@/components/feature/auth/AuthBackground";
 
 export default function PageHeader() {
   const route = useRouter();
   const { isMobile, isTablet, isDesktop } = useResponsive();
-  const { isAuthenticated } = useAuth();
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [showAuthOverlay, setShowAuthOverlay] = useState(false);
+
+  // Check auth state
+  useEffect(() => {
+    const checkAuth = () => {
+      const token = AuthService.getToken();
+      const user = AuthService.getUser();
+      setIsAuthenticated(!!(token && user));
+    };
+
+    // Initial check
+    checkAuth();
+
+    // Listen for storage changes
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === 'authToken' || e.key === 'user') {
+        checkAuth();
+      }
+    };
+
+    window.addEventListener('storage', handleStorageChange);
+    
+    // Listen for auth changes in same tab
+    const handleAuthChange = () => {
+      checkAuth();
+    };
+    
+    window.addEventListener('authChanged', handleAuthChange);
+
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+      window.removeEventListener('authChanged', handleAuthChange);
+    };
+  }, []);
 
   const goHome = () => {
     ServiceChecker.resetServiceCheck();
@@ -46,7 +83,7 @@ export default function PageHeader() {
     ? "bg-(--background)/90 backdrop-blur-md" 
     : "bg-linear-to-b from-(--background) to-transparent";
 
-  // Desktop Header - Sticky với dynamic background
+  // Desktop Header - Sticky với dynamic background  
   if (isDesktop) {
     return (
       <div className={`sticky top-0 z-30 transition-all duration-300 ${headerBgClass}`}>
@@ -135,15 +172,33 @@ export default function PageHeader() {
             </nav>
           </div>
 
-          <div className="flex items-center">
-            <button className="flex items-center space-x-1.5 bg-(--primary)/30 px-4 py-3 border-2 border-(--primary) rounded-lg">
-              <img src="/icons/Account.png" alt="Account" className="w-4 h-4" />
-              <div className="text-white font-medium text-nowrap text-sm text-shadow-[1px_1px_2px_var(--border-blue)]">
-                {isAuthenticated ? "Tài khoản" : "Đăng nhập"}
-              </div>
-            </button>
+          <div className="flex items-center space-x-3">
+            {isAuthenticated ? (
+              <>
+                <button className="p-2 text-white hover:text-(--primary) transition">
+                  <img src="/icons/Bell.png" alt="Notifications" className="w-6 h-6" />
+                </button>
+                <AccountButton />
+              </>
+            ) : (
+              <button 
+                className="flex items-center space-x-1.5 bg-(--primary)/30 px-4 py-3 border-2 border-(--primary) rounded-lg hover:bg-(--primary)/50 transition-colors"
+                onClick={() => setShowAuthOverlay(true)}
+              >
+                <img src="/icons/Account.png" alt="Account" className="w-4 h-4" />
+                <div className="text-white font-medium text-nowrap text-sm text-shadow-[1px_1px_2px_var(--border-blue)]">
+                  Đăng nhập
+                </div>
+              </button>
+            )}
           </div>
         </div>
+        
+        {/* Auth Overlay */}
+        <AuthBackground 
+          isOpen={showAuthOverlay}
+          onClose={() => setShowAuthOverlay(false)}
+        />
       </div>
     );
   }
@@ -206,7 +261,14 @@ export default function PageHeader() {
       {/* Mobile Sidebar Menu */}
       <SidebarMenu
         isOpen={showMobileMenu} 
-        onClose={() => setShowMobileMenu(false)} 
+        onClose={() => setShowMobileMenu(false)}
+        onOpenAuth={() => setShowAuthOverlay(true)}
+      />
+
+      {/* Auth Overlay */}
+      <AuthBackground 
+        isOpen={showAuthOverlay}
+        onClose={() => setShowAuthOverlay(false)}
       />
     </>
   );

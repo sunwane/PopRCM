@@ -48,3 +48,12 @@ export const getViewDisplayText = (view: number): string => {
     return view.toString();
   }
 };
+
+export const getUserAvatarText = (fullName: string): string => {
+  return fullName
+  .split(' ')
+  .map(name => name.charAt(0))
+  .join('')
+  .toUpperCase()
+  .slice(0, 2);
+};

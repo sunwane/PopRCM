@@ -48,6 +48,16 @@ body {
   font-family: 'Arial Black', sans-serif; /* Font đậm để viền rõ hơn */
 }
 
+/* Custom scrollbar styles */
+.scrollbar-hide {
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;  /* Firefox */
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;  /* Chrome, Safari and Opera */
+}
+
 .text-gradient {
   background: linear-gradient(180deg, var(--number-gradient-start), var(--number-gradient-end));
   -webkit-background-clip: text;
@@ -171,4 +181,15 @@ body {
   background: linear-gradient(165deg, #FFC800, #FF0242);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
+}
+
+input:-webkit-autofill,
+input:-webkit-autofill:focus,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:active {
+  -webkit-box-shadow: 0 0 0 1000px #0B1120 inset !important; /* cùng màu bg input */
+  box-shadow: 0 0 0 1000px #0B1120 inset !important;
+  -webkit-text-fill-color: #fff !important; /* màu chữ trắng */
+  caret-color: #fff !important;
+  transition: background-color 9999s ease-in-out 0s !important;
 }
