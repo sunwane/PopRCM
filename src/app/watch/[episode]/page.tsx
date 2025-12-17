@@ -1,5 +1,5 @@
 "use client";
-import { useEpisodeData, useMovieByEpisodeId, useEpisodesByMovieId } from "@/hooks/useData/useEpisodeData";
+import { useEpisodeData, useEpisodesByMovieId } from "@/hooks/useData/useEpisodeData";
 import { useParams } from "next/navigation";
 import { PlayList } from "@/components/feature/watch/PlayList";
 import { Episode } from "@/types/Movies";
@@ -8,7 +8,7 @@ import PageFooter from "@/components/layout/PageFooter";
 import { ListTopMovies } from "@/components/feature/movieDetails/ListTopMovies";
 import { useResponsive } from "@/hooks/useResponsive";
 import { DetailsTab } from "@/components/feature/movieDetails/DetailsTab";
-import { useRecommendedMovies, useSeriesDataByMovieId } from "@/hooks/useData/useMoviesData";
+import { useMoviesDataByID, useRecommendedMovies, useSeriesDataByMovieId } from "@/hooks/useData/useMoviesData";
 import { Genre } from "@/types/Genres";
 import { getStatusText, getViewDisplayText } from "@/utils/getTextUtils";
 import { getStatusColor, getViewLabelColor } from "@/utils/getColorUtils";
@@ -18,12 +18,13 @@ export default function WatchPage() {
   const params = useParams();
   const episode = params.episode;
   const route = useRouter();
+  const movieId = new URLSearchParams(window.location.search).get('movieId');
 
-  const { movie, loading } = useMovieByEpisodeId(episode?.toString() || '');
+  const { movieInfo: movie, loading} = useMoviesDataByID(movieId || "");
   const { episode: episodeData, loading: episodesLoading } = useEpisodeData(episode?.toString() || '');
-  const { episodes, loading: episodesListLoading } = useEpisodesByMovieId(movie?.id || null);
-  const { seriesInfo } = useSeriesDataByMovieId(movie?.toString() ?? "");
-  const { recommendedMovies } = useRecommendedMovies(movie?.toString() || "");
+  const { episodes, loading: episodesListLoading } = useEpisodesByMovieId(movieId || null);
+  const { seriesInfo } = useSeriesDataByMovieId(movieId);
+  const { recommendedMovies } = useRecommendedMovies(movieId || "");
 
   const { isMobile } = useResponsive();
 

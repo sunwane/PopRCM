@@ -28,8 +28,9 @@ export function useAuth() {
     try {
       setLoading(true);
       const response = await AuthService.login(credentials);
+      console.log('Login response:', response);
       
-      if (response.authenticated && response.token && response.user) {
+      if (response.token && response.user) {
         // Lưu vào localStorage
         AuthService.setAuth(response.token, response.user);
         

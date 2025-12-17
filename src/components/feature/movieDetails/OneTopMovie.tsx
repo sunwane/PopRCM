@@ -18,7 +18,7 @@ export function OneTopMovie({ movie, rank }: OneTopMovieProps) {
         
         <div className="flex items-center flex-1 min-w-0 bg-gray-800 rounded-lg">
           {/* Movie Poster */}
-          <Link className="shrink-0 mr-3 cursor-pointer" href={`/movie/${movie.slug}`}>
+          <Link className="shrink-0 mr-3 cursor-pointer" href={`/movie/${movie.id}`}>
             <img 
               src={movie.posterUrl || '/placeholder/placeholder-poster.png'} 
               alt={movie.title}
@@ -31,7 +31,7 @@ export function OneTopMovie({ movie, rank }: OneTopMovieProps) {
         
           {/* Movie Info */}
           <div className="flex-1 min-w-0">
-            <Link href={`/movie/${movie.slug}`}>
+            <Link href={`/movie/${movie.id}`}>
               <div className="text-white font-semibold text-sm truncate mb-1 hover:text-(--hover)" >
                 {movie.title}
               </div>

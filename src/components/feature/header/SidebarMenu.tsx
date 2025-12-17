@@ -62,7 +62,7 @@ export default function SidebarMenu({ isOpen, onClose, onOpenAuth }: SidebarMenu
 
       {/* Sidebar */}
       <div 
-        className={`fixed top-0 left-0 h-full lg:w-2/5 md:w-3/5 sm:w-4/5 w-4/5 bg-(--background) border-r border-white z-50 transform transition-transform duration-300 ease-in-out ${
+        className={`fixed top-0 left-0 h-full lg:w-2/5 md:w-2/5 sm:w-3/5 w-5/7 bg-(--background) border-r border-white z-50 transform transition-transform duration-300 ease-in-out ${
           isOpen ? 'translate-x-0' : '-translate-x-full'
         } shadow-2xl`}
       >
@@ -88,11 +88,11 @@ export default function SidebarMenu({ isOpen, onClose, onOpenAuth }: SidebarMenu
                   <div className={userProfile.avatarUrl ? 'hidden' : ''}>
                     <GradientAvatar 
                       initial={getUserAvatarText(userProfile.fullName)} 
-                      size="w-12 h-12 text-lg"
+                      size="w-12 h-12 lg:text-lg md:text-lg sm:text-base text-sm"
                     />
                   </div>
                   <div className="flex-1">
-                    <p className="text-white font-semibold text-base flex items-center gap-1.5">
+                    <p className="text-white font-semibold lg:text-base md:text-base sm:text-sm text-xs flex items-center gap-1.5">
                       {userProfile.fullName || userProfile.userName}
                       {userProfile.gender && (
                         <img 
@@ -102,14 +102,14 @@ export default function SidebarMenu({ isOpen, onClose, onOpenAuth }: SidebarMenu
                         />
                       )}
                     </p>
-                    <div className="truncate line-clamp-1">
-                      <p className="text-white/60 text-sm">{userProfile.email}</p>
+                    <div className="truncate line-clamp-1 lg:text-sm md:text-sm sm:text-xs text-xs">
+                      <p className="text-white/60">{userProfile.email}</p>
                     </div>
                   </div>
                 </div>
                 <div className="flex space-x-3">
                   <button 
-                    className="flex-1 bg-(--primary)/20 text-(--primary) px-4 py-2.5 rounded-xl text-sm font-medium hover:bg-(--primary)/30 transition"
+                    className="flex-1 bg-(--primary)/20 text-(--primary) px-4 py-3 rounded-md lg:text-sm md:text-sm text-xs font-medium hover:bg-(--primary)/30 transition"
                     onClick={() => {
                       onClose();
                       router.push('/myaccount?tab=profile');
@@ -118,7 +118,7 @@ export default function SidebarMenu({ isOpen, onClose, onOpenAuth }: SidebarMenu
                     Hồ sơ
                   </button>
                   <button 
-                    className="flex-1 bg-red-500/20 text-red-400 px-4 py-2.5 rounded-xl text-sm font-medium hover:bg-red-500/30 transition"
+                    className="flex-1 bg-red-500/30 text-red-500 px-4 py-3 rounded-md lg:text-sm md:text-sm text-xs font-medium hover:bg-red-500/30 transition"
                     onClick={handleLogout}
                   >
                     Đăng xuất
@@ -128,32 +128,27 @@ export default function SidebarMenu({ isOpen, onClose, onOpenAuth }: SidebarMenu
             ) : (
               <div className="pb-6 mb-6 border-b border-(--border)/30">
                 <button 
-                  className="w-full bg-(--primary)/30 text-white px-6 py-4 rounded-2xl font-semibold hover:bg-(--primary)/40 transition flex items-center justify-center space-x-3"
+                  className="w-full bg-(--primary)/30 text-white px-6 py-4 rounded-2xl font-semibold hover:bg-(--primary)/40 transition flex items-center justify-center lg:space-x-3 md:space-x-3 sm:space-x-2 space-x-2"
                   onClick={() => {
                     onClose();
                     onOpenAuth?.();
                   }}
                 >
-                  <img src="/icons/Account.png" alt="Account" className="w-6 h-6" />
-                  <span>Đăng nhập</span>
+                  <img src="/icons/Account.png" alt="Account" className="lg:w-6 lg:h-6 md:w-6 md:h-6 w-5 h-5" />
+                  <span className="lg:text-base md:text-base text-sm">Đăng nhập</span>
                 </button>
               </div>
             )}
 
             {/* Menu chính */}
-            <div className="space-y-2">
+            <div className="lg:space-y-1 md:space-y-1 space-y-0.5">
               {/* Phim lẻ */}
               <a 
                 href="/single" 
                 className="flex items-center space-x-4 py-4 px-4 text-white hover:text-(--primary) hover:bg-(--primary)/10 rounded-xl transition group"
                 onClick={onClose}
               >
-                <div className="w-8 h-8 bg-(--primary)/20 rounded-lg flex items-center justify-center group-hover:bg-(--primary)/30 transition">
-                  <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                    <path fillRule="evenodd" d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm3 2h6v4H7V5zm8 8v2h1v-2h-1zm-2-2H7v4h6v-4z" clipRule="evenodd" />
-                  </svg>
-                </div>
-                <span className="text-base font-medium">Phim lẻ</span>
+                <span className="lg:text-base md:text-base text-sm font-medium">Phim lẻ</span>
               </a>
 
               {/* Phim bộ */}
@@ -162,30 +157,20 @@ export default function SidebarMenu({ isOpen, onClose, onOpenAuth }: SidebarMenu
                 className="flex items-center space-x-4 py-4 px-4 text-white hover:text-(--primary) hover:bg-(--primary)/10 rounded-xl transition group"
                 onClick={onClose}
               >
-                <div className="w-8 h-8 bg-(--primary)/20 rounded-lg flex items-center justify-center group-hover:bg-(--primary)/30 transition">
-                  <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                    <path d="M2 6a2 2 0 012-2h6a2 2 0 012 2v6a2 2 0 01-2 2H4a2 2 0 01-2-2V6zM14.553 7.106A1 1 0 0014 8v4a1 1 0 00.553.894l2 1A1 1 0 0018 13V7a1 1 0 00-1.447-.894l-2 1z" />
-                  </svg>
-                </div>
-                <span className="text-base font-medium">Phim bộ</span>
+                <span className="lg:text-base md:text-base text-sm font-medium">Phim bộ</span>
               </a>
 
               {/* Thể loại */}
-              <div className="py-1">
+              <div className="">
                 <button
                   className="flex items-center justify-between w-full py-4 px-4 text-white hover:text-(--primary) hover:bg-(--primary)/10 rounded-xl transition group"
                   onClick={() => toggleSection("genre")}
                 >
                   <div className="flex items-center space-x-4">
-                    <div className="w-8 h-8 bg-(--primary)/20 rounded-lg flex items-center justify-center group-hover:bg-(--primary)/30 transition">
-                      <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                        <path d="M7 3a1 1 0 000 2h6a1 1 0 100-2H7zM4 7a1 1 0 011-1h10a1 1 0 110 2H5a1 1 0 01-1-1zM2 11a2 2 0 012-2h12a2 2 0 012 2v4a2 2 0 01-2 2H4a2 2 0 01-2-2v-4z" />
-                      </svg>
-                    </div>
-                    <span className="text-base font-medium">Thể loại</span>
+                    <span className="lg:text-base md:text-base text-sm ">Thể loại</span>
                   </div>
                   <svg 
-                    className={`w-5 h-5 transition-transform duration-200 ${
+                    className={`lg:w-5 lg:h-5 md:w-5 md:h-5 w-4 h-4 transition-transform duration-200 ${
                       expandedSection === "genre" ? "rotate-180" : ""
                     }`} 
                     fill="none" 
@@ -196,12 +181,12 @@ export default function SidebarMenu({ isOpen, onClose, onOpenAuth }: SidebarMenu
                   </svg>
                 </button>
                 {expandedSection === "genre" && (
-                  <div className="mt-2 ml-12 space-y-1 bg-(--surface)/50 rounded-xl py-3 px-2">
+                  <div className="grid grid-cols-2 space-y-1 py-1 px-1.5 lg:mt-0 md:mt-0 -mt-1">
                     {genreItems.map((item, index) => (
                       <a
                         key={index}
                         href={`/genre/${item.id}`}
-                        className="block py-2.5 px-4 text-sm text-white/70 hover:text-white hover:bg-(--primary)/10 rounded-lg transition"
+                        className="block py-2.5 px-4 lg:text-sm md:text-sm text-xs text-white/70 hover:text-white hover:bg-(--primary)/10 rounded-lg transition"
                         onClick={onClose}
                       >
                         {item.label}
@@ -212,21 +197,16 @@ export default function SidebarMenu({ isOpen, onClose, onOpenAuth }: SidebarMenu
               </div>
 
               {/* Quốc gia */}
-              <div className="py-1">
+              <div className="">
                 <button
                   className="flex items-center justify-between w-full py-4 px-4 text-white hover:text-(--primary) hover:bg-(--primary)/10 rounded-xl transition group"
                   onClick={() => toggleSection("country")}
                 >
                   <div className="flex items-center space-x-4">
-                    <div className="w-8 h-8 bg-(--primary)/20 rounded-lg flex items-center justify-center group-hover:bg-(--primary)/30 transition">
-                      <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                        <path fillRule="evenodd" d="M3 6a3 3 0 013-3h10a1 1 0 01.8 1.6L14.25 8l2.55 3.4A1 1 0 0116 13H6a1 1 0 00-1 1v3a1 1 0 11-2 0V6z" clipRule="evenodd" />
-                      </svg>
-                    </div>
-                    <span className="text-base font-medium">Quốc gia</span>
+                    <span className="lg:text-base md:text-base text-sm ">Quốc gia</span>
                   </div>
                   <svg 
-                    className={`w-5 h-5 transition-transform duration-200 ${
+                    className={`lg:w-5 lg:h-5 md:w-5 md:h-5 w-4 h-4 transition-transform duration-200 ${
                       expandedSection === "country" ? "rotate-180" : ""
                     }`} 
                     fill="none" 
@@ -237,12 +217,12 @@ export default function SidebarMenu({ isOpen, onClose, onOpenAuth }: SidebarMenu
                   </svg>
                 </button>
                 {expandedSection === "country" && (
-                  <div className="mt-2 ml-12 space-y-1 bg-(--surface)/50 rounded-xl py-3 px-2">
+                  <div className="grid grid-cols-2 space-y-1 py-1 px-1.5 lg:mt-0 md:mt-0 -mt-1">
                     {countryItems.map((item, index) => (
                       <a
                         key={index}
                         href={`/country/${item.id}`}
-                        className="block py-2.5 px-4 text-sm text-white/70 hover:text-white hover:bg-(--primary)/10 rounded-lg transition"
+                        className="block py-2.5 px-4 lg:text-sm md:text-sm text-xs text-white/70 hover:text-white hover:bg-(--primary)/10 rounded-lg transition"
                         onClick={onClose}
                       >
                         {item.label}
@@ -253,21 +233,16 @@ export default function SidebarMenu({ isOpen, onClose, onOpenAuth }: SidebarMenu
               </div>
 
               {/* Thêm */}
-              <div className="py-1">
+              <div className="">
                 <button
                   className="flex items-center justify-between w-full py-4 px-4 text-white hover:text-(--primary) hover:bg-(--primary)/10 rounded-xl transition group"
                   onClick={() => toggleSection("more")}
                 >
                   <div className="flex items-center space-x-4">
-                    <div className="w-8 h-8 bg-(--primary)/20 rounded-lg flex items-center justify-center group-hover:bg-(--primary)/30 transition">
-                      <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                        <path d="M10 6a2 2 0 110-4 2 2 0 010 4zM10 12a2 2 0 110-4 2 2 0 010 4zM10 18a2 2 0 110-4 2 2 0 010 4z" />
-                      </svg>
-                    </div>
-                    <span className="text-base font-medium">Thêm</span>
+                    <span className="lg:text-base md:text-base text-sm ">Thêm</span>
                   </div>
                   <svg 
-                    className={`w-5 h-5 transition-transform duration-200 ${
+                    className={`lg:w-5 lg:h-5 md:w-5 md:h-5 w-4 h-4 transition-transform duration-200 ${
                       expandedSection === "more" ? "rotate-180" : ""
                     }`} 
                     fill="none" 
@@ -278,12 +253,12 @@ export default function SidebarMenu({ isOpen, onClose, onOpenAuth }: SidebarMenu
                   </svg>
                 </button>
                 {expandedSection === "more" && (
-                  <div className="mt-2 ml-12 space-y-1 bg-(--surface)/50 rounded-xl py-3 px-2">
+                  <div className="space-y-1 rounded py-1 px-1.5 lg:mt-0 md:mt-0 -mt-1">
                     {moreItems.map((item, index) => (
                       <a
                         key={index}
                         href={item.link}
-                        className="block py-2.5 px-4 text-sm text-white/70 hover:text-white hover:bg-(--primary)/10 rounded-lg transition"
+                        className="block py-2.5 px-4 lg:text-sm md:text-sm text-xs text-white/70 hover:text-white hover:bg-(--primary)/10 rounded-lg transition"
                         onClick={onClose}
                       >
                         {item.label}
@@ -296,13 +271,11 @@ export default function SidebarMenu({ isOpen, onClose, onOpenAuth }: SidebarMenu
               {/* AI gợi ý phim */}
               <a 
                 href="#" 
-                className="flex items-center space-x-4 py-4 px-4 text-white hover:text-(--primary) hover:bg-(--primary)/10 rounded-xl transition group"
+                className="flex items-center space-x-1.5 py-4 px-4 text-white hover:text-(--primary) hover:bg-(--primary)/10 rounded-xl transition group"
                 onClick={onClose}
               >
-                <div className="w-8 h-8 bg-linear-to-br from-purple-500/20 to-pink-500/20 rounded-lg flex items-center justify-center group-hover:from-purple-500/30 group-hover:to-pink-500/30 transition">
-                  <img src="/icons/Sparkles.png" alt="" className="w-5 h-5" />
-                </div>
-                <span className="text-base font-medium">AI gợi ý phim</span>
+                <span className="lg:text-base md:text-base text-sm ">AI gợi ý phim</span>
+                <img src="/icons/Sparkles.png" alt="" className="w-4 h-4" />
               </a>
             </div>
           </div>

@@ -58,8 +58,8 @@ export default function AccountDropdown({ isOpen, onClose }: AccountDropdownProp
             />
           </div>
           <div className="flex-1 min-w-0">
-            <div className="text-white font-semibold truncate flex items-center gap-1">
-              {userProfile.fullName || userProfile.userName}
+            <div className="text-white font-semibold flex items-center gap-1">
+              <div className='line-clamp-1 truncate max-w-[130px]'>{userProfile.userName}</div>
               {userProfile.gender === 'male' ? (
                 <img src="/icons/Male.png" alt="Male" className="w-4 h-4" />
               ) : (

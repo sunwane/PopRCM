@@ -18,6 +18,7 @@ export default function MoviesPage() {
   const { movieInfo, loading } = useMoviesDataByID(movie?.toString() ?? "");
   const { seriesInfo } = useSeriesDataByMovieId(movie?.toString() ?? "");
   const { recommendedMovies } = useRecommendedMovies(movie?.toString() || "");
+  console.log("Movie Info:", movieInfo);
 
   if (loading) {
     return (

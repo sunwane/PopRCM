@@ -58,7 +58,7 @@ export function useTopViewedMovies() {
       try {
         setIsLoading(true);
         setError(null);
-        const topViewedMovies = await MoviesService.getMostViewedMoviesOfWeek(10);
+        const topViewedMovies = await MoviesService.getMostViewedMoviesOfMonth(10);
         setMovies(topViewedMovies);
       }
       catch (err) {
@@ -156,9 +156,7 @@ export function useRankingsData() {
     const fetchRankings = async () => {
       try {
         setIsLoading(true);
-        setError(null);
-        const moviesService = new MoviesService();
-        
+        setError(null);        
         const [topViewed, topFavorites, topComments] = await Promise.all([
           MoviesService.getTopViewedMoviesRanking(),
           MoviesService.getTopFavoritesMoviesRanking(),

@@ -61,7 +61,6 @@ export function useMoviesDataByID(id: string) {
         } else {
           setMovieInfo(undefined);
         }
-        console.log("Fetched movie:", movie);
       } catch (err) {
         setError("Lỗi khi tải thông tin phim");
       } finally {

@@ -1,6 +1,9 @@
 import { useState, useEffect } from "react";
 import { ActorService } from "@/services/ActorService";
+import { MoviesService } from "@/services/MoviesService";
 import { Actor } from "@/types/Actor";
+import { Movie } from "@/types/Movies";
+import { useDebounce } from "./useDebounce";
 
 export function useSearchQuery() {
   const [query, setQuery] = useState<string>("");
@@ -12,6 +15,34 @@ export function useSearchQuery() {
   return {
     query,
     onSearch,
+  };
+}
+
+export function useSearchSuggestions(query: string) {
+  const [suggestions, setSuggestions] = useState<Movie[]>([]);
+  const [loading, setLoading] = useState(false);
+  const debouncedQuery = useDebounce(query, 500);
+
+  useEffect(() => {
+    const searchMovies = async () => {
+      setLoading(true);
+      try {
+        const results = await MoviesService.searchMovies(debouncedQuery, 5);
+        setSuggestions(results.slice(0, 5));
+      } catch (error) {
+        console.error('Search suggestions error:', error);
+        setSuggestions([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    searchMovies();
+  }, [debouncedQuery]);
+
+  return {
+    suggestions,
+    loading,
   };
 }
 

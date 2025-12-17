@@ -70,7 +70,7 @@ export function RankingSection() {
       >
         <RankingList
           movies={rankings.topViewed}
-          title="SÔI NỔI NHẤT"
+          title="NHIỀU VIEW NHẤT"
           icon="/icons/Ranking.png"
           titleColor="text-fire"
           onShowMore={() => openPopup(rankings.topViewed, "SÔI NỔI NHẤT", "/icons/Ranking.png", "text-blue-400")}
@@ -88,7 +88,7 @@ export function RankingSection() {
         />
         <RankingList
           movies={rankings.topComments}
-          title="XEM NHIỀU NHẤT"
+          title="SÔI NỔI NHẤT"
           icon="/icons/Popular.png"
           titleColor="text-green"
           onShowMore={() => openPopup(rankings.topComments, "XEM NHIỀU NHẤT", "/icons/Popular.png", "text-green-400")}

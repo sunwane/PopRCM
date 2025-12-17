@@ -37,3 +37,17 @@ export const getStatusColor = (status: string): string => {
       return 'bg-gray-400/30 text-gray-200';
   }
 };
+
+export const getTypeTextColor = (types: string): string => {
+  if (types.includes('single')) {
+    return 'text-green-600';
+  } else if (types.includes('series')) {
+    return 'text-blue-400';
+  } else if (types.includes('tvshow')) {
+    return 'text-purple-500';
+  } else if (types.includes('hoathinh')) {
+    return 'text-pink-400';
+  } else {
+    return 'text-gray-600';
+  }
+};

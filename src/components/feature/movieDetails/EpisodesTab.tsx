@@ -161,7 +161,7 @@ export function EpisodesTab({ movieInfo, seriesInfo, loading }: EpisodesTabProps
                 onMouseEnter={() => setHoveredEpisodeId(episode.id)}
                 onMouseLeave={() => setHoveredEpisodeId(null)}
                 onClick={() => {
-                  router.push(`/watch/${episode.id}?server=${selectedServer}`);
+                  router.push(`/watch/${episode.id}?movieId=${movieInfo.id}&server=${selectedServer}`);
                 }}
               >
                 <div className="flex justify-center items-center space-x-2">
