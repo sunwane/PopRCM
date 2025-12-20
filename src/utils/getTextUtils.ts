@@ -13,7 +13,12 @@ export const getMovieTypesText = (type: string): string => {
   }
 };
 
-export const getStatusText = (status: string): string => {
+export const getStatusText = (status: string | null | undefined): string => {
+  // Handle null, undefined, or non-string values
+  if (!status || typeof status !== 'string') {
+    return 'Unknown';
+  }
+
   switch (status) {
     case 'completed':
       return 'Full';

@@ -12,7 +12,7 @@ export function useFavoritesHistoryData() {
   const [favoritesLoading, setFavoritesLoading] = useState(false);
   const [favoritesError, setFavoritesError] = useState('');
   const [favoritesPagination, setFavoritesPagination] = useState({
-    currentPage: 0,
+    currentPage: 1, // Start from 1 for UI consistency
     totalPages: 0,
     totalElements: 0,
     hasNext: false,
@@ -24,7 +24,7 @@ export function useFavoritesHistoryData() {
   const [historyLoading, setHistoryLoading] = useState(false);
   const [historyError, setHistoryError] = useState('');
   const [historyPagination, setHistoryPagination] = useState({
-    currentPage: 0,
+    currentPage: 1, // Start from 1 for UI consistency
     totalPages: 0,
     totalElements: 0,
     hasNext: false,
@@ -35,30 +35,26 @@ export function useFavoritesHistoryData() {
    * FAVORITES FUNCTIONS
    */
 
-  // Load favorites
-  const loadFavorites = async (page: number = 0, size: number = 20, resetData: boolean = false) => {
+  // Load favorites with page-based pagination
+  const loadFavorites = async (page: number = 1, size: number = 20) => {
     if (!isAuthenticated) return;
 
     try {
       setFavoritesLoading(true);
       setFavoritesError('');
 
-      const response = await FavoritesHistoryService.getFavorites(page, size);
+      // Convert UI page (1-based) to API page (0-based)
+      const apiPage = page - 1;
+      const response = await FavoritesHistoryService.getFavorites(apiPage, size);
       if (response) {
-        const newFavorites = response.content;
-        
-        if (resetData || page === 0) {
-          setFavorites(newFavorites);
-        } else {
-          setFavorites(prev => [...prev, ...newFavorites]);
-        }
+        setFavorites(response.content);
 
         setFavoritesPagination({
-          currentPage: response.number,
+          currentPage: page,
           totalPages: response.totalPages,
           totalElements: response.totalElements,
-          hasNext: response.number < response.totalPages - 1,
-          hasPrev: response.number > 0
+          hasNext: page < response.totalPages,
+          hasPrev: page > 1
         });
       }
     } catch (error: any) {
@@ -76,7 +72,7 @@ export function useFavoritesHistoryData() {
       const success = await FavoritesHistoryService.addFavorite(movieId);
       if (success) {
         // Reload favorites to get updated list
-        await loadFavorites(0, 20, true);
+        await loadFavorites(1, 20);
       }
       return success;
     } catch (error: any) {
@@ -87,22 +83,61 @@ export function useFavoritesHistoryData() {
 
   // Remove favorite
   const removeFavorite = async (movieId: string): Promise<boolean> => {
+    console.log('🔥 removeFavorite called for movieId:', movieId);
+    console.log('🔥 isAuthenticated:', isAuthenticated);
     if (!isAuthenticated) return false;
 
     try {
+      console.log('🔥 Calling FavoritesHistoryService.removeFavorite...');
       const success = await FavoritesHistoryService.removeFavorite(movieId);
+      console.log('🔥 Service removeFavorite result:', success);
+      
       if (success) {
-        // Remove from local state immediately for better UX
-        setFavorites(prev => prev.filter(fav => fav.movie.id !== movieId));
+        console.log('🔥 Updating local state...');
+        console.log('🔥 Current favorites count:', favorites.length);
         
-        // Update pagination count
-        setFavoritesPagination(prev => ({
-          ...prev,
-          totalElements: prev.totalElements - 1
-        }));
+        // Force immediate update by using functional state update
+        setFavorites(prevFavorites => {
+          const updatedFavorites = prevFavorites.filter(fav => fav.movie.id !== movieId);
+          console.log('🔥 Updated favorites count:', updatedFavorites.length);
+          return updatedFavorites;
+        });
+        
+        // Update pagination with functional update
+        setFavoritesPagination(prev => {
+          const newTotalElements = prev.totalElements - 1;
+          const itemsPerPage = 20;
+          const newTotalPages = Math.ceil(newTotalElements / itemsPerPage);
+          
+          console.log('🔥 Updating pagination:', {
+            newTotalElements,
+            newTotalPages,
+            currentPage: prev.currentPage
+          });
+          
+          return {
+            ...prev,
+            totalElements: newTotalElements,
+            totalPages: newTotalPages,
+            hasNext: prev.currentPage < newTotalPages,
+            hasPrev: prev.currentPage > 1
+          };
+        });
+
+        // If current page becomes empty and it's not the first page, load previous page
+        // Use setTimeout to ensure state updates are processed first
+        setTimeout(async () => {
+          const currentFavs = favorites.filter(fav => fav.movie.id !== movieId);
+          if (currentFavs.length === 0 && favoritesPagination.currentPage > 1) {
+            console.log('🔥 Current page empty, loading previous page...');
+            const newPage = favoritesPagination.currentPage - 1;
+            await loadFavorites(newPage, 20);
+          }
+        }, 100);
       }
       return success;
     } catch (error: any) {
+      console.error('❌ Error in removeFavorite:', error);
       setFavoritesError(error.message || 'Lỗi khi xóa yêu thích');
       return false;
     }
@@ -113,41 +148,35 @@ export function useFavoritesHistoryData() {
     return favorites.some(fav => fav.movie.id === movieId);
   };
 
-  // Load more favorites (pagination)
-  const loadMoreFavorites = async () => {
-    if (favoritesPagination.hasNext && !favoritesLoading) {
-      await loadFavorites(favoritesPagination.currentPage + 1, 20, false);
-    }
+  // Handle page change for favorites
+  const handleFavoritesPageChange = async (page: number) => {
+    await loadFavorites(page, 20);
   };
 
   /**
    * WATCH HISTORY FUNCTIONS
    */
 
-  // Load watch history
-  const loadWatchHistory = async (page: number = 0, size: number = 20, resetData: boolean = false) => {
+  // Load watch history with page-based pagination
+  const loadWatchHistory = async (page: number = 1, size: number = 20) => {
     if (!isAuthenticated) return;
 
     try {
       setHistoryLoading(true);
       setHistoryError('');
 
-      const response = await FavoritesHistoryService.getWatchHistory(page, size);
+      // Convert UI page (1-based) to API page (0-based)
+      const apiPage = page - 1;
+      const response = await FavoritesHistoryService.getWatchHistory(apiPage, size);
       if (response) {
-        const newHistory = response.content;
-        
-        if (resetData || page === 0) {
-          setWatchHistory(newHistory);
-        } else {
-          setWatchHistory(prev => [...prev, ...newHistory]);
-        }
+        setWatchHistory(response.content);
 
         setHistoryPagination({
-          currentPage: response.number,
+          currentPage: page,
           totalPages: response.totalPages,
           totalElements: response.totalElements,
-          hasNext: response.number < response.totalPages - 1,
-          hasPrev: response.number > 0
+          hasNext: page < response.totalPages,
+          hasPrev: page > 1
         });
       }
     } catch (error: any) {
@@ -172,11 +201,9 @@ export function useFavoritesHistoryData() {
     }
   };
 
-  // Load more history (pagination)
-  const loadMoreHistory = async () => {
-    if (historyPagination.hasNext && !historyLoading) {
-      await loadWatchHistory(historyPagination.currentPage + 1, 20, false);
-    }
+  // Handle page change for history
+  const handleHistoryPageChange = async (page: number) => {
+    await loadWatchHistory(page, 20);
   };
 
   // Get watch progress for an episode
@@ -199,8 +226,8 @@ export function useFavoritesHistoryData() {
   const refreshData = async () => {
     if (isAuthenticated) {
       await Promise.all([
-        loadFavorites(0, 20, true),
-        loadWatchHistory(0, 20, true)
+        loadFavorites(1, 20),
+        loadWatchHistory(1, 20)
       ]);
     }
   };
@@ -208,13 +235,15 @@ export function useFavoritesHistoryData() {
   // Auto-load data when user logs in
   useEffect(() => {
     if (isAuthenticated && user) {
+      console.log('🔥 User authenticated, loading data...');
       refreshData();
     } else {
+      console.log('🔥 User not authenticated, clearing data...');
       // Clear data when user logs out
       setFavorites([]);
       setWatchHistory([]);
-      setFavoritesPagination({ currentPage: 0, totalPages: 0, totalElements: 0, hasNext: false, hasPrev: false });
-      setHistoryPagination({ currentPage: 0, totalPages: 0, totalElements: 0, hasNext: false, hasPrev: false });
+      setFavoritesPagination({ currentPage: 1, totalPages: 0, totalElements: 0, hasNext: false, hasPrev: false });
+      setHistoryPagination({ currentPage: 1, totalPages: 0, totalElements: 0, hasNext: false, hasPrev: false });
     }
   }, [isAuthenticated, user]);
 
@@ -228,7 +257,7 @@ export function useFavoritesHistoryData() {
     addFavorite,
     removeFavorite,
     isFavorited,
-    loadMoreFavorites,
+    handleFavoritesPageChange,
 
     // Watch History
     watchHistory,
@@ -237,7 +266,7 @@ export function useFavoritesHistoryData() {
     historyPagination,
     loadWatchHistory,
     updateWatchProgress,
-    loadMoreHistory,
+    handleHistoryPageChange,
     getWatchProgress,
 
     // Utility

@@ -153,14 +153,7 @@ export default function NotificationTab() {
 
       {/* Notifications List */}
       {filteredNotifications.length === 0 ? (
-        <div className="text-center py-12">
-          <div className="mb-6">
-            <img 
-              src="/icons/Bell.png" 
-              alt="No notifications" 
-              className="w-16 h-16 mx-auto opacity-50 mb-4"
-            />
-          </div>
+        <div className="text-center">
           <NotFoundDiv message={
             filter === 'unread' ? 'Không có thông báo chưa đọc nào.' :
             filter === 'read' ? 'Không có thông báo đã đọc nào.' :

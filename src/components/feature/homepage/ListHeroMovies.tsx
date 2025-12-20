@@ -4,6 +4,8 @@ import { useState, useEffect } from 'react';
 import { Movie } from '@/types/Movies';
 import OneHeroMovies from './OneHeroMovies';
 import { LoadingEffect } from '@/components/ui/LoadingEffect';
+import { useFavoriteHandler } from '@/hooks/useFavoriteHandler';
+import Message from '@/components/ui/Message';
 
 interface ListHeroMoviesProps {
   heroMovies: Movie[];
@@ -14,20 +16,32 @@ export default function ListHeroMovies({ heroMovies, isLoading }: ListHeroMovies
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isAutoPlay, setIsAutoPlay] = useState(true);
 
+  // Use favorite handler hook at parent level
+  const { isProcessing, message, isFavorited, handleFavoriteToggle, clearMessage } = useFavoriteHandler();
+
   // Auto-play functionality
   useEffect(() => {
     if (!isAutoPlay || heroMovies.length <= 1) return;
 
     const interval = setInterval(() => {
+      // Clear message before changing slide
+      if (message) {
+        clearMessage();
+      }
       setCurrentIndex((prev) => (prev + 1) % heroMovies.length);
     }, 8000);
 
     return () => clearInterval(interval);
-  }, [isAutoPlay, heroMovies.length]);
+  }, [isAutoPlay, heroMovies.length, message, clearMessage]);
 
   const handleThumbnailClick = (index: number) => {
     setCurrentIndex(index);
     setIsAutoPlay(false); // Tạm dừng auto-play khi user click
+    
+    // Clear message when manually changing slide
+    if (message) {
+      clearMessage();
+    }
     
     // Bật lại auto-play sau 10 giây
     setTimeout(() => setIsAutoPlay(true), 10000);
@@ -57,6 +71,10 @@ export default function ListHeroMovies({ heroMovies, isLoading }: ListHeroMovies
           key={movie.id}
           movie={movie}
           isActive={index === currentIndex}
+          // Pass favorite handlers to child component
+          isProcessing={isProcessing}
+          isFavorited={isFavorited}
+          onFavoriteToggle={handleFavoriteToggle}
         />
       ))}
 
@@ -83,6 +101,19 @@ export default function ListHeroMovies({ heroMovies, isLoading }: ListHeroMovies
           </button>
         ))}
       </div>
+
+      {/* Global Message Component */}
+      {message && (
+        <Message
+          isVisible={true}
+          message={message.text}
+          type={message.type}
+          onClose={clearMessage}
+          autoClose={true}
+          autoCloseDelay={3000}
+          position="bottom-right"
+        />
+      )}
 
     </div>
   );

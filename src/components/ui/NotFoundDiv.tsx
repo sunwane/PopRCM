@@ -8,8 +8,9 @@ export default function NotFoundDiv({ message = "Không tìm thấy trang" }: No
       <div className="mb-2 text-8xl font-bold stroke-text-hollow">
         404
       </div>
-      <div className="text-center text-gray-400 text-lg">
-        {message}
+      <div 
+        className="text-center text-gray-400 text-lg"
+        dangerouslySetInnerHTML={{ __html: message }}>
       </div>
     </div>
   );

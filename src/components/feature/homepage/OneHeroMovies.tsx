@@ -3,17 +3,37 @@ import { Genre } from '@/types/Genres';
 import { getMovieTypesText } from '@/utils/getTextUtils';
 import { useState } from "react";
 import { useRouter } from 'next/navigation';
+import { useFavoriteHandler } from '@/hooks/useFavoriteHandler';
+import Message from '@/components/ui/Message';
 
 interface OneHeroMoviesProps {
   movie: Movie;
   isActive: boolean;
+  // Props for favorite functionality (optional to maintain backward compatibility)
+  isProcessing?: boolean;
+  isFavorited?: (movieId: string) => boolean;
+  onFavoriteToggle?: (movieId: string) => Promise<void>;
 }
 
-export default function OneHeroMovies({ movie, isActive }: OneHeroMoviesProps) {
+export default function OneHeroMovies({ 
+  movie, 
+  isActive, 
+  isProcessing: parentIsProcessing,
+  isFavorited: parentIsFavorited,
+  onFavoriteToggle: parentOnFavoriteToggle
+}: OneHeroMoviesProps) {
   const [isFavHover, setFavHover] = useState(false);
   const [isInfoHover, setInfoHover] = useState(false);
 
   const route = useRouter();
+  
+  // Use favorite handler hook as fallback if parent doesn't provide handlers
+  const { isProcessing: hookIsProcessing, message, isFavorited: hookIsFavorited, handleFavoriteToggle: hookHandleFavoriteToggle, clearMessage } = useFavoriteHandler();
+
+  // Use parent handlers if available, otherwise fall back to hook
+  const isProcessing = parentIsProcessing ?? hookIsProcessing;
+  const isFavorited = parentIsFavorited ?? hookIsFavorited;
+  const handleFavoriteToggle = parentOnFavoriteToggle ?? hookHandleFavoriteToggle;
 
   if (!isActive) return null;
 
@@ -90,9 +110,11 @@ export default function OneHeroMovies({ movie, isActive }: OneHeroMoviesProps) {
         </div>
 
         {/* Description */}
-        <p className="text-gray-300 text-xs sm:text-xs lg:text-sm md:text-sm leading-relaxed mb-4 line-clamp-3">
-          {movie.description}
-        </p>
+        <div 
+          className="text-gray-300 text-xs sm:text-xs lg:text-sm md:text-sm leading-relaxed mb-4 line-clamp-3"
+          dangerouslySetInnerHTML={{
+            __html: movie.description || "Không có mô tả cho movie này."
+        }}/>
 
         {/* Action Buttons */}
         <div className="flex items-center gap-7">
@@ -105,11 +127,30 @@ export default function OneHeroMovies({ movie, isActive }: OneHeroMoviesProps) {
           {/* Group 2 nút bo tròn, border, chia đôi */}
           <div className="flex items-center rounded-3xl border-2 border-gray-500 overflow-hidden bg-transparent h-fit">
             <button 
-              className="px-5 py-3.5 text-gray-300 border-r-2 border-gray-500"
+              className="px-5 py-3.5 text-gray-300 border-r-2 border-gray-500 disabled:opacity-50"
               onMouseEnter={() => setFavHover(true)}
               onMouseLeave={() => setFavHover(false)}
+              onClick={() => handleFavoriteToggle(movie.id)}
+              disabled={isProcessing}
             >
-              <img src={isFavHover? "/icons/HeartHover.png" : "/icons/Heart.png"} alt="favorite" className={`w-7 h-7 ${isFavHover? "" : "opacity-75"}`} />
+              {isProcessing ? (
+                <svg className="w-7 h-7 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+              ) : (
+                <img 
+                  src={
+                    isFavorited(movie.id) 
+                      ? "/icons/HeartHover.png" 
+                      : isFavHover 
+                      ? "/icons/HeartHover.png" 
+                      : "/icons/Heart.png"
+                  } 
+                  alt="favorite" 
+                  className={`w-7 h-7 ${(isFavHover || isFavorited(movie.id)) ? "" : "opacity-75"}`} 
+                />
+              )}
             </button>
             <button className="px-5 py-3.5 text-gray-300"
               onMouseEnter={() => setInfoHover(true)}
@@ -123,6 +164,19 @@ export default function OneHeroMovies({ movie, isActive }: OneHeroMoviesProps) {
           </div>
         </div>
       </div>
+
+      {/* Message component - only show if using internal hook (no parent handlers) */}
+      {!parentOnFavoriteToggle && message && (
+        <Message
+          isVisible={true}
+          message={message.text}
+          type={message.type}
+          onClose={clearMessage}
+          autoClose={true}
+          autoCloseDelay={3000}
+          position="bottom-right"
+        />
+      )}
     </div>
   );
 }

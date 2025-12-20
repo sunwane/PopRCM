@@ -1,6 +1,7 @@
 import { ApiResponse, PageResponse, Favorites, WatchHistory } from '@/types/User';
 import { Movie, Episode } from '@/types/Movies';
 import ServiceChecker from './ServiceChecker';
+import { mapMovieResponseToMovie } from './MoviesService';
 
 export class FavoritesHistoryService {
   private static readonly API_BASE_URL = 'http://localhost:8088/api';
@@ -25,7 +26,7 @@ export class FavoritesHistoryService {
   private static mapFavoriteResponse(favoriteResponse: any): Favorites {
     return {
       favoriteId: favoriteResponse.favoriteId,
-      movie: favoriteResponse.movie,
+      movie: favoriteResponse.movie ? mapMovieResponseToMovie(favoriteResponse.movie) : favoriteResponse.movie,
       createdAt: new Date(favoriteResponse.createdAt)
     };
   }
@@ -95,14 +96,18 @@ export class FavoritesHistoryService {
    */
   static async addFavorite(movieId: string): Promise<boolean> {
     if (!this.isServiceAvailable()) {
-      // Mock success
+      // Mock success - simulate API delay
       console.log('Mock: Added favorite for movie', movieId);
+      await new Promise(resolve => setTimeout(resolve, 500)); // Simulate network delay
       return true;
     }
 
     try {
       const token = this.getAuthToken();
-      if (!token) throw new Error('No authentication token');
+      if (!token) {
+        console.error('No authentication token found');
+        return false;
+      }
 
       const response = await fetch(`${this.API_BASE_URL}/favorites`, {
         method: 'POST',
@@ -113,7 +118,13 @@ export class FavoritesHistoryService {
         body: JSON.stringify({ movieId })
       });
 
-      return response.ok;
+      if (response.ok) {
+        console.log('Successfully added movie to favorites:', movieId);
+        return true;
+      } else {
+        console.error('Failed to add favorite, status:', response.status);
+        return false;
+      }
     } catch (error) {
       console.error('Error adding favorite:', error);
       return false;
@@ -125,23 +136,34 @@ export class FavoritesHistoryService {
    */
   static async removeFavorite(movieId: string): Promise<boolean> {
     if (!this.isServiceAvailable()) {
-      // Mock success
+      // Mock success - simulate API delay
       console.log('Mock: Removed favorite for movie', movieId);
+      await new Promise(resolve => setTimeout(resolve, 500)); // Simulate network delay
       return true;
     }
 
     try {
       const token = this.getAuthToken();
-      if (!token) throw new Error('No authentication token');
+      if (!token) {
+        console.error('No authentication token found');
+        return false;
+      }
 
       const response = await fetch(`${this.API_BASE_URL}/favorites/${movieId}`, {
         method: 'DELETE',
         headers: {
-          'Authorization': `Bearer ${token}`
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
         }
       });
 
-      return response.ok;
+      if (response.ok) {
+        console.log('Successfully removed movie from favorites:', movieId);
+        return true;
+      } else {
+        console.error('Failed to remove favorite, status:', response.status);
+        return false;
+      }
     } catch (error) {
       console.error('Error removing favorite:', error);
       return false;

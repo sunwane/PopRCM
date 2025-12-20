@@ -71,28 +71,22 @@ export function useAuth() {
   // Send verification code for register or forgot password
   const sendVerificationCode = async (email: string): Promise<void> => {
     try {
-      setAuthLoading(true);
       setAuthError('');
       await AuthService.sendVerificationCode(email);
     } catch (err: any) {
       setAuthError(err.message || 'Gửi mã xác thực thất bại');
       throw err;
-    } finally {
-      setAuthLoading(false);
     }
   };
 
   // Register new user
   const register = async (formData: any): Promise<void> => {
     try {
-      setAuthLoading(true);
       setAuthError('');
       await AuthService.register(formData);
     } catch (err: any) {
       setAuthError(err.message || 'Đăng ký thất bại');
       throw err;
-    } finally {
-      setAuthLoading(false);
     }
   };
 
@@ -113,14 +107,11 @@ export function useAuth() {
   // Reset password with code
   const resetPassword = async (email: string, newPassword: string, code: string): Promise<void> => {
     try {
-      setAuthLoading(true);
       setAuthError('');
       await AuthService.resetPassword({ email, newPassword, code });
     } catch (err: any) {
       setAuthError(err.message || 'Đặt lại mật khẩu thất bại');
       throw err;
-    } finally {
-      setAuthLoading(false);
     }
   };
 

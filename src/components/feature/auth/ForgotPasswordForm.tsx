@@ -16,7 +16,9 @@ interface ForgotPasswordFormProps {
 }
 
 export function ForgotPasswordForm({ onSwitchToLogin, onSuccess }: ForgotPasswordFormProps) {
-  const { authLoading, authError, clearAuthError, sendVerificationCode, resetPassword } = useAuth();
+  const { authError, clearAuthError, sendVerificationCode, resetPassword } = useAuth();
+  const [sendCodeLoading, setSendCodeLoading] = useState(false);
+  const [resetLoading, setResetLoading] = useState(false);
   const [formData, setFormData] = useState<ForgotPasswordRequest>({
     email: '',
     newPassword: '',
@@ -33,10 +35,15 @@ export function ForgotPasswordForm({ onSwitchToLogin, onSuccess }: ForgotPasswor
   };
 
   const handleSendCode = async () => {
+    if (!formData.email) return;
+    
     try {
+      setSendCodeLoading(true);
       await sendVerificationCode(formData.email);
     } catch (err) {
       // Error handled in useAuth
+    } finally {
+      setSendCodeLoading(false);
     }
   };
 
@@ -49,10 +56,13 @@ export function ForgotPasswordForm({ onSwitchToLogin, onSuccess }: ForgotPasswor
     }
     
     try {
+      setResetLoading(true);
       await resetPassword(formData.email, formData.newPassword, formData.code);
       onSuccess();
     } catch (err) {
       // Error handled in useAuth
+    } finally {
+      setResetLoading(false);
     }
   };
 
@@ -97,10 +107,10 @@ export function ForgotPasswordForm({ onSwitchToLogin, onSuccess }: ForgotPasswor
           <button
             type="button"
             onClick={handleSendCode}
-            disabled={authLoading || !formData.email}
-            className="w-48 min-w-32 text-nowrap bg-blue-600 text-white hover:bg-blue-700 font-medium py-3 px-4 rounded-md transition-colors disabled:cursor-not-allowed"
+            disabled={sendCodeLoading || !formData.email}
+            className="w-48 min-w-32 text-nowrap bg-gray-600 text-white hover:bg-gray-700 font-medium py-3 px-4 rounded-md transition-colors disabled:cursor-not-allowed disabled:bg-gray-400"
           >
-            {authLoading ? "Đang gửi mã..." : "Gửi mã"}
+            {sendCodeLoading ? "Đang gửi mã..." : "Gửi mã"}
           </button>
         </div>
 
@@ -145,10 +155,10 @@ export function ForgotPasswordForm({ onSwitchToLogin, onSuccess }: ForgotPasswor
         {/* Submit Button */}
         <button
           type="submit"
-          disabled={authLoading || formData.code.length !== 6 || formData.newPassword.length < 6 || formData.newPassword !== formData.confirmPassword}
+          disabled={resetLoading || formData.code.length !== 6 || formData.newPassword.length < 6 || formData.newPassword !== formData.confirmPassword}
           className="w-full bg-blue-600 hover:bg-blue-500 disabled:bg-blue-600/50 text-white font-medium py-3 px-4 rounded-lg transition-colors disabled:cursor-not-allowed mt-1"
         >
-          {authLoading ? "Đang đặt lại..." : "Đặt lại mật khẩu"}
+          {resetLoading ? "Đang đặt lại..." : "Đặt lại mật khẩu"}
         </button>
       </form>
     </div>

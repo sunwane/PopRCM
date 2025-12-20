@@ -1,10 +1,12 @@
 "use client";
-import { useEffect } from 'react';
+"use client";
+import { useEffect, useState } from 'react';
 import { useFavoritesHistoryData } from '@/hooks/useData/useFavoritesHistoryData';
 import { Movie } from '@/types/Movies';
-import MovieCard from '@/components/feature/movies/MovieCard';
+import MoviesGridLayout from '@/components/feature/movies/MoviesGridLayout';
 import { LoadingEffect } from '@/components/ui/LoadingEffect';
 import NotFoundDiv from '@/components/ui/NotFoundDiv';
+import Message from '@/components/ui/Message';
 
 export default function HistoryTab() {
   const { 
@@ -12,9 +14,17 @@ export default function HistoryTab() {
     historyLoading, 
     historyError,
     historyPagination,
-    loadMoreHistory,
+    handleHistoryPageChange,
     refreshData
   } = useFavoritesHistoryData();
+
+  // Message state for global notifications
+  const [message, setMessage] = useState<{ text: string; type: 'success' | 'error' } | null>(null);
+
+  // Handle message from MovieCard
+  const handleMessage = (content: string, type: 'success' | 'error') => {
+    setMessage({ text: content, type });
+  };
 
   // Load data on component mount
   useEffect(() => {
@@ -22,7 +32,7 @@ export default function HistoryTab() {
   }, []);
 
   // Convert WatchHistory to Movie data with progress info
-  const historyMovies = watchHistory.map(history => {
+  const historyMovies: Movie[] = watchHistory.map(history => {
     // Create a mock movie from episode data (in real app, you'd fetch movie details)
     const movie: Movie = {
       id: history.episode.movieId,
@@ -48,9 +58,22 @@ export default function HistoryTab() {
       currentEpisode: history.episode.episodeNumber
     };
 
-    return {
-      movie,
-      history
+    return movie;
+  });
+
+  // Create movie extra data with progress info
+  const movieExtraData: { [movieId: string]: any } = {};
+  watchHistory.forEach(history => {
+    const progressInfo = getProgressInfo(history.currentTime);
+    movieExtraData[history.episode.movieId] = {
+      showProgress: true,
+      progressPercent: progressInfo.progressPercent,
+      currentTime: progressInfo.currentTime,
+      totalDuration: progressInfo.totalDuration,
+      episodeInfo: {
+        episodeNumber: history.episode.episodeNumber,
+        watchedAt: history.watchedAt
+      }
     };
   });
 
@@ -85,18 +108,9 @@ export default function HistoryTab() {
 
   if (watchHistory.length === 0) {
     return (
-      <div className="text-center py-12">
-        <div className="mb-6">
-          <img 
-            src="/icons/History.png" 
-            alt="No history" 
-            className="w-16 h-16 mx-auto opacity-50 mb-4"
-          />
-        </div>
-        <NotFoundDiv message="Chưa có lịch sử xem phim nào." />
-        <p className="text-gray-400 mt-2">
-          Bắt đầu xem phim để theo dõi tiến trình!
-        </p>
+      <div className="text-center">
+        <h2 className="text-2xl font-bold text-white mb-4 text-left">Lịch sử xem</h2>
+        <NotFoundDiv message="Chưa có lịch sử xem phim nào. <br/>Bắt đầu xem phim để theo dõi tiến trình!" />
       </div>
     );
   }
@@ -132,85 +146,62 @@ export default function HistoryTab() {
       )}
 
       {/* History Grid */}
-      <div className="space-y-6">
-        {/* Recent Activity Section */}
-        <div>
+      <MoviesGridLayout 
+        filteredMovies={historyMovies} 
+        loading={historyLoading}
+        currentPage={historyPagination.currentPage}
+        totalPages={historyPagination.totalPages}
+        onPageChange={handleHistoryPageChange}
+        hasNextPage={historyPagination.hasNext}
+        hasPrevPage={historyPagination.hasPrev}
+        cardSize="medium"
+        movieExtraData={movieExtraData}
+        onMessage={handleMessage}
+      />
+
+      {/* Additional History Info */}
+      {historyMovies.length > 0 && (
+        <div className="mt-6 space-y-3">
           <h3 className="text-lg font-semibold text-white mb-4 flex items-center space-x-2">
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
-            <span>Xem gần đây</span>
+            <span>Thông tin xem gần đây</span>
           </h3>
           
-          <div className="grid grid-cols-[repeat(auto-fit,minmax(168px,1fr))] lg:grid-cols-[repeat(auto-fit,minmax(168px,1fr))] md:grid-cols-[repeat(auto-fit,minmax(168px,1fr))] sm:grid-cols-[repeat(auto-fit,minmax(28vw,1fr))] gap-4 gap-y-6 justify-items-center">
-            {historyMovies.map(({ movie, history }, index) => {
-              const progressInfo = getProgressInfo(history.currentTime);
-              
-              return (
-                <div key={`${movie.id}-${history.episode.id}-${index}`} className="w-full">
-                  <MovieCard
-                    movie={movie}
-                    size="medium"
-                    showProgress={true}
-                    progressPercent={progressInfo.progressPercent}
-                    currentTime={progressInfo.currentTime}
-                    totalDuration={progressInfo.totalDuration}
-                  />
-                  
-                  {/* Additional Episode Info */}
-                  <div className="mt-2 text-sm text-gray-400 text-center">
-                    <div className="flex items-center justify-center space-x-2">
-                      <span>Tập {history.episode.episodeNumber}</span>
-                      <span>•</span>
-                      <span>{new Date(history.watchedAt).toLocaleDateString('vi-VN')}</span>
-                    </div>
-                    <div className="text-xs mt-1 text-gray-500">
-                      Xem lúc {new Date(history.watchedAt).toLocaleTimeString('vi-VN', { 
-                        hour: '2-digit', 
-                        minute: '2-digit' 
-                      })}
-                    </div>
+          <div className="grid gap-3">
+            {watchHistory.slice(0, 5).map((history, index) => (
+              <div key={`${history.episode.id}-${index}`} className="bg-(--surface)/30 rounded-lg p-3">
+                <div className="flex justify-between items-center text-sm">
+                  <div className="text-white">
+                    <span className="font-medium">{history.episode.title}</span>
+                    <span className="text-gray-400 ml-2">• Tập {history.episode.episodeNumber}</span>
+                  </div>
+                  <div className="text-gray-400 text-xs">
+                    {new Date(history.watchedAt).toLocaleDateString('vi-VN')} • {' '}
+                    {new Date(history.watchedAt).toLocaleTimeString('vi-VN', { 
+                      hour: '2-digit', 
+                      minute: '2-digit' 
+                    })}
                   </div>
                 </div>
-              );
-            })}
+              </div>
+            ))}
           </div>
-        </div>
-      </div>
-
-      {/* Load More Button */}
-      {historyPagination.hasNext && (
-        <div className="flex justify-center mt-8">
-          <button
-            onClick={loadMoreHistory}
-            disabled={historyLoading}
-            className="px-6 py-3 bg-(--primary) text-white rounded-lg hover:bg-(--primary)/80 transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-2"
-          >
-            {historyLoading ? (
-              <>
-                <svg className="animate-spin w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                </svg>
-                <span>Đang tải...</span>
-              </>
-            ) : (
-              <>
-                <span>Xem thêm</span>
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                </svg>
-              </>
-            )}
-          </button>
         </div>
       )}
 
-      {/* Footer info */}
-      {!historyPagination.hasNext && historyMovies.length > 0 && (
-        <div className="text-center py-4 text-gray-500">
-          Đã hiển thị tất cả {historyPagination.totalElements} mục lịch sử
-        </div>
+      {/* Global Message Component */}
+      {message && (
+        <Message 
+          isVisible={true}
+          message={message.text}
+          type={message.type} 
+          onClose={() => setMessage(null)}
+          autoClose={true}
+          autoCloseDelay={3000}
+          position="bottom-right"
+        />
       )}
     </div>
   );

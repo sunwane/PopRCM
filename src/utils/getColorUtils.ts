@@ -1,4 +1,9 @@
-export const getStatusLabelColor = (status: string): string => {
+export const getStatusLabelColor = (status: string | null | undefined): string => {
+  // Handle null, undefined, or non-string values
+  if (!status || typeof status !== 'string') {
+    return 'bg-gray-500 text-white';
+  }
+
   switch (status.toLowerCase()) {
     case 'completed':
       return 'bg-green-700 text-white';

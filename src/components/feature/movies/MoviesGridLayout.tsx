@@ -16,6 +16,17 @@ export interface MovieGridLayoutProps {
   hasPrevPage?: boolean;
   gapWidth?: number;
   cardSize?: MovieCardSize;
+  // Additional MovieCard props
+  showFavoriteButton?: boolean;
+  inFavoritesTab?: boolean;
+  showProgress?: boolean;
+  progressPercent?: number;
+  currentTime?: number;
+  totalDuration?: number;
+  // Custom data for each movie (e.g., history info)
+  movieExtraData?: { [movieId: string]: any };
+  // Message callback
+  onMessage?: (content: string, type: 'success' | 'error') => void;
 }
 
 export default function MovieGridLayout({ 
@@ -28,6 +39,14 @@ export default function MovieGridLayout({
   hasPrevPage,
   gapWidth = 0,
   cardSize = 'medium',
+  showFavoriteButton,
+  inFavoritesTab,
+  showProgress,
+  progressPercent,
+  currentTime,
+  totalDuration,
+  movieExtraData,
+  onMessage,
 }: MovieGridLayoutProps) {
   const [isAlignLeft, setIsAlignLeft] = useState(false);
   const [moviesPerRow, setMoviesPerRow] = useState(0);
@@ -121,9 +140,23 @@ export default function MovieGridLayout({
           : getGridClass()
         }`}
       >
-        {filteredMovies.map((movie) => (
-          <MovieCard key={movie.id} movie={movie} size={cardSize} />
-        ))}
+        {filteredMovies.map((movie) => {
+          const extraData = movieExtraData?.[movie.id];
+          return (
+            <MovieCard 
+              key={movie.id} 
+              movie={movie} 
+              size={cardSize}
+              showFavoriteButton={showFavoriteButton}
+              inFavoritesTab={inFavoritesTab}
+              showProgress={extraData?.showProgress || showProgress}
+              progressPercent={extraData?.progressPercent || progressPercent}
+              currentTime={extraData?.currentTime || currentTime}
+              totalDuration={extraData?.totalDuration || totalDuration}
+              onMessage={onMessage}
+            />
+          );
+        })}
       </div>
       {totalPages && totalPages > 1 && onPageChange && (
         <div className="mt-8 mb-16">

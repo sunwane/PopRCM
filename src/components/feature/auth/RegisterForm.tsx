@@ -6,6 +6,7 @@ import { useAuth } from "@/hooks/useAuth";
 interface RegisterRequest {
   email: string;
   password: string;
+  confirmPassword: string;
   username: string;
   fullName: string;
   gender: string;
@@ -18,10 +19,13 @@ interface RegisterFormProps {
 }
 
 export function RegisterForm({ onSwitchToLogin, onSuccess }: RegisterFormProps) {
-  const { authLoading, authError, clearAuthError, sendVerificationCode, register } = useAuth();
+  const { authError, clearAuthError, sendVerificationCode, register } = useAuth();
+  const [sendCodeLoading, setSendCodeLoading] = useState(false);
+  const [registerLoading, setRegisterLoading] = useState(false);
   const [formData, setFormData] = useState<RegisterRequest>({
     email: '',
     password: '',
+    confirmPassword: '',
     username: '',
     fullName: '',
     gender: 'male',
@@ -37,10 +41,40 @@ export function RegisterForm({ onSwitchToLogin, onSuccess }: RegisterFormProps) 
   };
 
   const handleSendCode = async () => {
+    if (!formData.email) return;
+    
     try {
+      setSendCodeLoading(true);
       await sendVerificationCode(formData.email);
+      // Có thể thêm thông báo thành công ở đây nếu cần
     } catch (err) {
       // Error handled in useAuth
+    } finally {
+      setSendCodeLoading(false);
+    }
+  };
+
+  const handleRegister = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    // Validation trước khi gọi API
+    if (formData.password !== formData.confirmPassword) {
+      return;
+    }
+    
+    if (!formData.email || !formData.code || formData.code.length !== 6) {
+      return;
+    }
+    
+    try {
+      setRegisterLoading(true);
+      // Gọi API register với tất cả thông tin
+      await register(formData);
+      onSuccess();
+    } catch (err) {
+      // Error handled in useAuth
+    } finally {
+      setRegisterLoading(false);
     }
   };
 
@@ -59,9 +93,42 @@ export function RegisterForm({ onSwitchToLogin, onSuccess }: RegisterFormProps) 
         </p>
       </div>
 
-      <form onSubmit={(e) => { e.preventDefault(); handleSendCode(); }} className="space-y-3">
-        {/* Email Input */}
+      {/* Email Input - Riêng biệt để gửi mã */}
+      <div className="space-y-3 mb-4">
+        <FormInput
+          type="email"
+          name="email"
+          placeholder="Email"
+          value={formData.email}
+          onChange={handleChange}
+          required
+          autoComplete="email"
+        />
 
+        <div className="flex gap-2 items-center">
+          <FormInput
+            type="text"
+            name="code"
+            placeholder="Mã xác thực (6 số)"
+            value={formData.code}
+            onChange={handleChange}
+            required
+            minLength={6}
+            maxLength={6}
+          />
+          <button
+            type="button"
+            onClick={handleSendCode}
+            disabled={sendCodeLoading || !formData.email}
+            className="w-48 min-w-32 text-nowrap bg-gray-600 text-white hover:bg-gray-700 font-medium py-3 px-4 rounded-lg transition-colors disabled:cursor-not-allowed disabled:bg-gray-400"
+          >
+            {sendCodeLoading ? "Đang gửi mã..." : "Gửi mã"}
+          </button>
+        </div>
+      </div>
+
+      {/* Form đăng ký - Submit để đăng ký tài khoản */}
+      <form onSubmit={handleRegister} className="space-y-3">
         {/* Username Input */}
         <FormInput
           type="text"
@@ -89,37 +156,6 @@ export function RegisterForm({ onSwitchToLogin, onSuccess }: RegisterFormProps) 
           onGenderChange={(value) => setFormData(prev => ({ ...prev, gender: value }))}
         />
 
-        <FormInput
-          type="email"
-          name="email"
-          placeholder="Email"
-          value={formData.email}
-          onChange={handleChange}
-          required
-          autoComplete="email"
-        />
-
-        <div className="flex gap-2 items-center">
-          <FormInput
-            type="text"
-            name="code"
-            placeholder="Mã xác thực (6 số)"
-            value={formData.code}
-            onChange={handleChange}
-            required
-            minLength={6}
-            autoComplete="new-password"
-          />
-          <button
-            type="button"
-            onClick={handleSendCode}
-            disabled={authLoading}
-            className="w-48 min-w-32 text-nowrap bg-blue-600 text-white hover:bg-blue-700 font-medium py-3 px-4 rounded-lg transition-colors disabled:cursor-not-allowed"
-          >
-            {authLoading ? "Đang gửi mã..." : "Gửi mã"}
-          </button>
-        </div>
-
         {/* Password Input */}
         <FormInput
           type="password"
@@ -136,12 +172,19 @@ export function RegisterForm({ onSwitchToLogin, onSuccess }: RegisterFormProps) 
           type="password"
           name="confirmPassword"
           placeholder="Nhập lại mật khẩu"
-          value={formData.password}
+          value={formData.confirmPassword}
           onChange={handleChange}
           required
           minLength={6}
           autoComplete="new-password"
         />
+
+        {/* Password Matching Validation */}
+        {formData.password && formData.confirmPassword && formData.password !== formData.confirmPassword && (
+          <div className="text-red-400 text-sm text-center bg-red-500/10 border border-red-500/20 rounded-lg p-3">
+            Mật khẩu không khớp
+          </div>
+        )}
 
         {/* Error Message */}
         {authError && (
@@ -150,13 +193,22 @@ export function RegisterForm({ onSwitchToLogin, onSuccess }: RegisterFormProps) 
           </div>
         )}
 
-        {/* Submit Button */}
+        {/* Submit Button - Chỉ để đăng ký tài khoản */}
         <button
           type="submit"
-          disabled={authLoading}
+          disabled={
+            registerLoading || 
+            formData.password !== formData.confirmPassword ||
+            !formData.email ||
+            !formData.code ||
+            !formData.username ||
+            !formData.fullName ||
+            !formData.password ||
+            formData.code.length !== 6
+          }
           className="w-full bg-blue-600 hover:bg-blue-500 disabled:bg-blue-600/50 text-white font-medium py-3 px-4 rounded-lg transition-colors disabled:cursor-not-allowed mt-1"
         >
-          {authLoading ? "Đang đăng ký..." : "Đăng ký"}
+          {registerLoading ? "Đang đăng ký..." : "Đăng ký tài khoản"}
         </button>
       </form>
     </div>

@@ -159,7 +159,7 @@ export class MoviesService {
   }
 
   // Cải thiện hàm mapping để phù hợp với MovieResponse DTO từ backend
-  private static mapMovieResponseToMovie(res: any): Movie {
+  public static mapMovieResponseToMovie(res: any): Movie {
     const { 
       id, title, originName, description = '', releaseYear, type = [], duration = '',
       posterUrl, thumbUrl, trailerUrl, totalEpisodes, director = [], status = [],
@@ -948,3 +948,6 @@ export class MoviesService {
     }
   }
 }
+
+// Export utility function for external use
+export const mapMovieResponseToMovie = MoviesService.mapMovieResponseToMovie;

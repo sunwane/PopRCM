@@ -1,6 +1,8 @@
 import { Movie } from "@/types/Movies";
 import { getStatusLabelColor } from "@/utils/getColorUtils";
 import { getStatusText } from "@/utils/getTextUtils";
+import { useFavoritesHistoryData } from "@/hooks/useData/useFavoritesHistoryData";
+import { useState } from "react";
 
 export type MovieCardSize = 'small' | 'medium' | 'large';
 
@@ -9,13 +11,15 @@ export interface MovieCardProps {
   size?: MovieCardSize;
   // Favorite functionality
   showFavoriteButton?: boolean;
-  isFavorited?: boolean;
-  onFavoriteToggle?: (movieId: string, isFavorited: boolean) => Promise<void>;
   // Progress functionality  
   showProgress?: boolean;
   progressPercent?: number; // 0-100
   currentTime?: number; // in seconds
   totalDuration?: number; // in seconds
+  // For favorites tab - shows delete icon instead of heart
+  inFavoritesTab?: boolean;
+  // Message callback
+  onMessage?: (content: string, type: 'success' | 'error') => void;
 }
 
 // Size configurations
@@ -55,24 +59,61 @@ export default function MovieCard({
   movie, 
   size = 'medium',
   showFavoriteButton = false,
-  isFavorited = false,
-  onFavoriteToggle,
   showProgress = false,
   progressPercent = 0,
   currentTime = 0,
-  totalDuration = 0
+  totalDuration = 0,
+  inFavoritesTab = false,
+  onMessage
 }: MovieCardProps) {
   const config = sizeConfig[size];
+  const [isProcessing, setIsProcessing] = useState(false);
+  
+  // Use favorites hook
+  const { addFavorite, removeFavorite, isFavorited } = useFavoritesHistoryData();
+  const isCurrentlyFavorited = isFavorited(movie.id);
   
   const goToDetails = () => {
     window.location.href = `/movie/${movie.id}`;
   }
 
   const handleFavoriteClick = async (e: React.MouseEvent) => {
-    e.stopPropagation();
-    if (onFavoriteToggle) {
-      await onFavoriteToggle(movie.id, isFavorited);
+    e.stopPropagation(); // Ngăn sự kiện click lan truyền lên thẻ cha
+    e.preventDefault(); // Ngăn các hành động mặc định
+
+    if (isProcessing) return;
+    setIsProcessing(true);
+
+    try {
+      if (inFavoritesTab || isCurrentlyFavorited) {
+        const success = await removeFavorite(movie.id);
+        if (success) {
+          onMessage?.('Đã xóa phim khỏi danh sách yêu thích', 'success');
+        } else {
+          onMessage?.('Có lỗi xảy ra khi xóa phim khỏi yêu thích', 'error');
+        }
+      } else {
+        const success = await addFavorite(movie.id);
+        if (success) {
+          onMessage?.('Đã thêm phim vào danh sách yêu thích', 'success');
+        } else {
+          onMessage?.('Có lỗi xảy ra khi thêm phim vào yêu thích', 'error');
+        }
+      }
+    } catch (error) {
+      console.error('Error handling favorite:', error);
+      onMessage?.('Có lỗi xảy ra khi xử lý yêu thích', 'error');
+    } finally {
+      setIsProcessing(false);
     }
+  }
+
+  const handleButtonMouseEnter = (e: React.MouseEvent) => {
+    e.stopPropagation(); // Ngăn hover effect lan truyền
+  }
+
+  const handleButtonMouseLeave = (e: React.MouseEvent) => {
+    e.stopPropagation(); // Ngăn hover effect lan truyền
   }
 
   // Calculate progress percentage if not provided
@@ -104,25 +145,44 @@ export default function MovieCard({
           className="w-full h-full object-cover rounded-md"
         />
 
-        {/* Favorite Button */}
+        {/* Favorite/Delete Button */}
         {showFavoriteButton && (
           <button
             onClick={handleFavoriteClick}
-            className={`absolute top-2 right-2 p-1.5 rounded-full backdrop-blur-sm transition-all duration-200 ${
-              isFavorited 
-                ? 'bg-red-500/80 text-white hover:bg-red-600/80' 
-                : 'bg-black/50 text-white hover:bg-black/70'
-            }`}
-            aria-label={isFavorited ? "Xóa khỏi yêu thích" : "Thêm vào yêu thích"}
+            onMouseEnter={handleButtonMouseEnter}
+            onMouseLeave={handleButtonMouseLeave}
+            disabled={isProcessing}
+            className={`absolute top-2 right-2 p-1.5 transition-all duration-200 disabled:opacity-50 z-10 ${
+              inFavoritesTab 
+                ? 'rounded bg-red-500/80 text-white hover:bg-red-600/80' 
+                : isCurrentlyFavorited
+                ? 'rounded-full bg-red-500/80 text-white hover:bg-red-600/80'
+                : 'rounded-full bg-black/50 text-white hover:bg-black/70'
+            } backdrop-blur-sm`}
+            aria-label={
+              inFavoritesTab 
+                ? "Xóa khỏi yêu thích" 
+                : isCurrentlyFavorited 
+                ? "Xóa khỏi yêu thích" 
+                : "Thêm vào yêu thích"
+            }
           >
-            {isFavorited ? (
-              <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24">
-                <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+            {isProcessing ? (
+              <svg className="w-4 h-4 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
               </svg>
+            ) : inFavoritesTab ? (
+              // Trash icon for favorites tab
+              <svg className="w-5 h-5 text-gray-800 dark:text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
+                <path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 7h14m-9 3v8m4-8v8M10 3h4a1 1 0 0 1 1 1v3H9V4a1 1 0 0 1 1-1ZM6 7h12v13a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V7Z"/>
+              </svg>
+            ) : isCurrentlyFavorited ? (
+              // Heart filled for favorited items
+              <img src="/icons/HeartHover.png" alt="Favorited" className="w-4 h-4" />
             ) : (
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
-              </svg>
+              // Heart outline for non-favorited items
+              <img src="/icons/Heart.png" alt="Add to favorites" className="w-4 h-4" />
             )}
           </button>
         )}

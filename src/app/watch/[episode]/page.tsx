@@ -13,12 +13,17 @@ import { Genre } from "@/types/Genres";
 import { getStatusText, getViewDisplayText } from "@/utils/getTextUtils";
 import { getStatusColor, getViewLabelColor } from "@/utils/getColorUtils";
 import { useRouter } from "next/navigation";
+import { useFavoriteHandler } from "@/hooks/useFavoriteHandler";
+import Message from "@/components/ui/Message";
 
 export default function WatchPage() {
   const params = useParams();
   const episode = params.episode;
   const route = useRouter();
   const movieId = new URLSearchParams(window.location.search).get('movieId');
+
+  // Use favorite handler hook
+  const { isProcessing, message, isFavorited, handleFavoriteToggle, clearMessage } = useFavoriteHandler();
 
   const { movieInfo: movie, loading} = useMoviesDataByID(movieId || "");
   const { episode: episodeData, loading: episodesLoading } = useEpisodeData(episode?.toString() || '');
@@ -142,7 +147,11 @@ export default function WatchPage() {
                 </div>
               </div>
               <div className="">
-                <div className="font-light text-gray-400 text-[15px] leading-7">{movie.description}</div>
+                <div 
+                  className="font-light text-gray-400 text-[15px] leading-7"
+                  dangerouslySetInnerHTML={{
+                  __html: movie.description || "Không có mô tả cho movie này."
+                }}/>
                 <button 
                   className="flex gap-1 items-center mt-4" 
                   onClick={() => {route.push(`/movie/${movie.id}`)}}
@@ -187,8 +196,23 @@ export default function WatchPage() {
                 <img src="/icons/CircledPlay.png" alt="Play" className="h-7 w-7 -m-0.5" />
                 <span>Xem ngay</span>
               </button>
-              <button className="w-full flex flex-col items-center justify-center gap-1 text-nowrap rounded transition-colors text-sm text-white">
-                <img src="/icons/Heart.png" alt="Heart" className="h-6 w-6" />
+              <button 
+                className="w-full flex flex-col items-center justify-center gap-1 text-nowrap rounded transition-colors text-sm text-white disabled:opacity-50"
+                onClick={() => movie && handleFavoriteToggle(movie.id)}
+                disabled={isProcessing}
+              >
+                {isProcessing ? (
+                  <svg className="w-6 h-6 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  </svg>
+                ) : (
+                  <img 
+                    src={isFavorited(movie.id) ? "/icons/HeartHover.png" : "/icons/Heart.png"} 
+                    alt="Heart" 
+                    className="h-6 w-6" 
+                  />
+                )}
                 <span>Yêu thích</span>
               </button>
               <button className="w-full flex flex-col items-center justify-center gap-1 text-nowrap rounded transition-colors text-sm text-white">
@@ -204,6 +228,20 @@ export default function WatchPage() {
           </div>
         </div>
       </div>
+
+      {/* Message component */}
+      {message && (
+        <Message
+          isVisible={true}
+          message={message.text}
+          type={message.type}
+          onClose={clearMessage}
+          autoClose={true}
+          autoCloseDelay={3000}
+          position="bottom-right"
+        />
+      )}
+
       <PageFooter />
     </div>
   );

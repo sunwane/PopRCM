@@ -10,10 +10,18 @@ import { Genre } from "@/types/Genres";
 import { getStatusColor, getViewLabelColor } from "@/utils/getColorUtils";
 import { getStatusText, getViewDisplayText } from "@/utils/getTextUtils";
 import { ListTopMovies } from "@/components/feature/movieDetails/ListTopMovies";
+import { useRouter } from "next/navigation";
+import { useFavoriteHandler } from "@/hooks/useFavoriteHandler";
+import Message from "@/components/ui/Message";
 
 export default function MoviesPage() {
   const params = useParams();
   const movie = params.movie;
+
+  const route = useRouter();
+  
+  // Use favorite handler hook
+  const { isProcessing, message, isFavorited, handleFavoriteToggle, clearMessage } = useFavoriteHandler();
 
   const { movieInfo, loading } = useMoviesDataByID(movie?.toString() ?? "");
   const { seriesInfo } = useSeriesDataByMovieId(movie?.toString() ?? "");
@@ -181,9 +189,10 @@ export default function MoviesPage() {
                   <div className="space-y-2 mb-6 text-sm">
                     <div className="flex flex-col gap-1.5 mb-4">
                       <span className="text-white font-semibold">Mô tả:</span>
-                      <span className="text-gray-400">
-                        {movieInfo.description || "Đang cập nhật mô tả cho phim này."}
-                      </span>
+                      <div className="text-gray-400" 
+                        dangerouslySetInnerHTML={{
+                          __html: movieInfo.description || "Không có mô tả cho movie này."
+                      }}/>
                     </div>
                     <div className="grid lg:grid-cols-2 md:grid-cols-2 grid-cols-1 gap-2.5 mb-3">
                       <div className="flex gap-2">
@@ -204,7 +213,7 @@ export default function MoviesPage() {
                       </div>
                       <div className="flex gap-2">
                         <span className="text-white font-semibold text-nowrap">Đạo diễn:</span>
-                        <span className="text-gray-400">{movieInfo.director}</span>
+                        <span className="text-gray-400">{movieInfo.director || "Không có thông tin"}</span>
                       </div>
                     </div>
                   </div>
@@ -221,13 +230,42 @@ export default function MoviesPage() {
             <div className="lg:w-86 md:w-72 sm:w-full w-full shrink-0 lg:-mt-20 md:-mt-16 sm:mt-0 mt-0">
 
               <div className="grid grid-cols-3 lg:bg-white/10 md:bg-white/10 py-3 px-4 rounded-lg border-2 border-white/50 shadow-lg">
-                <button className="w-full flex flex-col items-center justify-center gap-1 text-nowrap rounded transition-colors text-sm text-white">
-                  <img src="/icons/CircledPlay.png" alt="Play" className="h-7 w-7 -m-0.5" />
-                  <span>Xem ngay</span>
-                </button>
-                <button className="w-full flex flex-col items-center justify-center gap-1 text-nowrap rounded transition-colors text-sm text-white">
-                  <img src="/icons/Heart.png" alt="Heart" className="h-6 w-6" />
-                  <span>Yêu thích</span>
+                {(movieInfo.episodes ?? []).length > 0 ? (
+                  <button 
+                    className="w-full flex flex-col items-center justify-center gap-1 text-nowrap rounded transition-colors text-sm text-white"
+                    onClick={()=>{
+                      route.push(`/watch/${movieInfo.episodes?.[0]?.id}?movieId=${movieInfo.id}`);
+                    }}>
+                    <img src="/icons/CircledPlay.png" alt="Play" className="h-7 w-7 -m-0.5" />
+                    <span>Xem ngay</span>
+                  </button>
+                ) : (
+                  <button 
+                    className="w-full flex flex-col items-center justify-center gap-1 text-nowrap rounded transition-colors text-sm text-white disabled:opacity-50"
+                    disabled={true}
+                  >
+                    <img src="/icons/CircledPlay.png" alt="Play" className="h-7 w-7 -m-0.5" />
+                    <span>Xem ngay</span>
+                  </button>
+                )}
+                <button 
+                  className="w-full flex flex-col items-center justify-center gap-1 text-nowrap rounded transition-colors text-sm text-white disabled:opacity-50"
+                  onClick={() => handleFavoriteToggle(movieInfo.id)}
+                  disabled={isProcessing}
+                >
+                  {isProcessing ? (
+                    <svg className="w-6 h-6 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                  ) : (
+                    <img 
+                      src={isFavorited(movieInfo.id) ? "/icons/HeartHover.png" : "/icons/Heart.png"} 
+                      alt="Heart" 
+                      className="h-6 w-6" 
+                    />
+                  )}
+                  <span className={`${isFavorited(movieInfo.id) ? "text-(--hover)" : ""}`}>Yêu thích</span>
                 </button>
                 <button className="w-full flex flex-col items-center justify-center gap-1 text-nowrap rounded transition-colors text-sm text-white">
                   <img src="/icons/Popular.png" alt="Review" className="h-6 w-6" />
@@ -283,6 +321,19 @@ export default function MoviesPage() {
           </div>
         </div>
       </div>
+
+      {/* Message component */}
+      {message && (
+        <Message
+          isVisible={true}
+          message={message.text}
+          type={message.type}
+          onClose={clearMessage}
+          autoClose={true}
+          autoCloseDelay={3000}
+          position="bottom-right"
+        />
+      )}
 
       <PageFooter />
     </div>

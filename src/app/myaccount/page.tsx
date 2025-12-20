@@ -61,18 +61,6 @@ export default function MyAccountPage() {
     setMounted(true);
   }, []);
 
-  // Handle authentication redirect - chỉ redirect khi loading xong và chưa đăng nhập
-  useEffect(() => {
-    console.log('MyAccount - Auth check:', { 
-      loading, 
-      isAuthenticated, 
-      user: !!user,
-      token: typeof window !== 'undefined' ? localStorage.getItem('authToken') : null,
-      userData: typeof window !== 'undefined' ? localStorage.getItem('user') : null
-    });
-    
-  }, [loading, isAuthenticated, router, user]);
-
   // Handle URL tab parameter
   useEffect(() => {
     if (mounted && isAuthenticated) {
@@ -133,59 +121,43 @@ export default function MyAccountPage() {
               </div>
 
               {/* Desktop vertical tabs */}
-              <div className="hidden lg:block bg-slate-800 rounded-lg overflow-hidden">
-                {/* Header */}
-                <div className="px-6 py-4 bg-slate-900 border-b border-slate-700">
-                  <h2 className="text-white font-semibold text-base flex items-center">
-                    <span className="text-blue-400 mr-2">⚙️</span>
+              <div className="hidden lg:block bg-(--surface)/50 rounded-lg overflow-hidden">
+                <div className='px-6 py-8'>
+                  {/* Header */}
+                  <h2 className="text-white font-semibold text-lg flex items-center">
                     Quản lý tài khoản
                   </h2>
+                  
+                  {/* Navigation Tabs */}
+                  <nav className="py-2 min-h-[300px]">
+                    {tabs.map((tab) => (
+                      <button
+                        key={tab.id}
+                        onClick={() => handleTabChange(tab.id)}
+                        className={`w-full flex items-center space-x-3 border-b border-(--surface)/70 px-3 py-4 text-left transition-all duration-200 relative group`}>
+                        <div className='relative'>
+                          <img 
+                            src={tab.icon} 
+                            alt={tab.label} 
+                            className={`w-5 h-5 transition-all ${
+                              activeTab === tab.id 
+                                ? 'mix-blend-overlay' 
+                                : ''
+                            }`}
+                          />
+                          <div className='absolute bg-(--hover)'></div>
+                        </div>
+                        <span className={`font-medium text-sm flex-1 ${activeTab === tab.id ? 'text-(--hover)' : 'text-gray-300'}`}>
+                          {tab.label}
+                        </span>
+                        
+                      </button>
+                    ))}
+                  </nav>
                 </div>
                 
-                {/* Navigation Tabs */}
-                <nav className="py-2">
-                  {tabs.map((tab) => (
-                    <button
-                      key={tab.id}
-                      onClick={() => handleTabChange(tab.id)}
-                      className={`w-full flex items-center space-x-4 px-6 py-4 text-left transition-all duration-200 relative group ${
-                        activeTab === tab.id
-                          ? 'bg-blue-500/10 text-blue-400 border-r-3 border-blue-500'
-                          : 'text-gray-300 hover:text-white hover:bg-slate-700/50'
-                      }`}
-                    >
-                      {/* Active Indicator */}
-                      {activeTab === tab.id && (
-                        <div className="absolute left-0 top-0 bottom-0 w-1 bg-blue-500"></div>
-                      )}
-                      
-                      <div className={`p-2 rounded-lg transition-all ${
-                        activeTab === tab.id 
-                          ? 'bg-blue-500/20' 
-                          : 'bg-slate-700/50 group-hover:bg-slate-600/50'
-                      }`}>
-                        <img 
-                          src={tab.icon} 
-                          alt={tab.label} 
-                          className={`w-5 h-5 transition-all ${
-                            activeTab === tab.id 
-                              ? 'filter brightness-0 invert-[0.4] sepia-[1] saturate-[5] hue-rotate-180' 
-                              : 'opacity-80'
-                          }`}
-                        />
-                      </div>
-                      
-                      <span className="font-medium text-sm flex-1">{tab.label}</span>
-                      
-                      {activeTab === tab.id && (
-                        <div className="w-2 h-2 bg-blue-400 rounded-full"></div>
-                      )}
-                    </button>
-                  ))}
-                </nav>
-                
                 {/* User Info Section */}
-                <div className="px-6 py-4 border-t border-slate-700 bg-slate-900/50">
+                <div className="px-6 pt-4 pb-6 border-t border-slate-700 bg-slate-900/50">
                   <div className="flex items-center space-x-3">
                     {/* Avatar */}
                     <div className="shrink-0">

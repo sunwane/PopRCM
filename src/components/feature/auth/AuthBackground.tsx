@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 import { LoginForm } from "./LoginForm";
 import { RegisterForm } from "./RegisterForm";
 import { ForgotPasswordForm } from "./ForgotPasswordForm";
+import Message from "@/components/ui/Message";
 
 export type AuthMode = 'login' | 'register' | 'forgot-password';
 
@@ -14,6 +15,8 @@ interface AuthBackgroundProps {
 
 export function AuthBackground({ isOpen, onClose, initialMode = 'login' }: AuthBackgroundProps) {
   const [currentMode, setCurrentMode] = useState<AuthMode>(initialMode);
+  const [successMessage, setSuccessMessage] = useState('');
+  const [showMessage, setShowMessage] = useState(false);
   
   // Close overlay when auth succeeds
   useEffect(() => {
@@ -67,6 +70,22 @@ export function AuthBackground({ isOpen, onClose, initialMode = 'login' }: AuthB
     window.location.href = "/";
   };
 
+  const handleSuccess = (message: string) => {
+    setSuccessMessage(message);
+    setShowMessage(true);
+    
+    // Switch to login form after showing success message
+    setTimeout(() => {
+      setCurrentMode('login'); // Reset to login mode
+      setShowMessage(false);
+    }, 2000);
+  };
+
+  const handleLoginSuccess = () => {
+    // Only close modal on actual login success
+    onClose();
+  };
+
   const renderForm = () => {
     switch (currentMode) {
       case 'login':
@@ -74,21 +93,21 @@ export function AuthBackground({ isOpen, onClose, initialMode = 'login' }: AuthB
           <LoginForm 
             onSwitchToRegister={() => setCurrentMode('register')}
             onSwitchToForgotPassword={() => setCurrentMode('forgot-password')}
-            onSuccess={onClose}
+            onSuccess={handleLoginSuccess}
           />
         );
       case 'register':
         return (
           <RegisterForm 
             onSwitchToLogin={() => setCurrentMode('login')}
-            onSuccess={onClose}
+            onSuccess={() => handleSuccess('Đăng ký thành công, chuyển về đăng nhập...')}
           />
         );
       case 'forgot-password':
         return (
           <ForgotPasswordForm 
             onSwitchToLogin={() => setCurrentMode('login')}
-            onSuccess={onClose}
+            onSuccess={() => handleSuccess('Đặt lại mật khẩu thành công, chuyển về đăng nhập...')}
           />
         );
     }
@@ -146,6 +165,17 @@ export function AuthBackground({ isOpen, onClose, initialMode = 'login' }: AuthB
           {renderForm()}
         </div>
       </div>
+
+      {/* Success Message */}
+      <Message
+        isVisible={showMessage}
+        message={successMessage}
+        type="success"
+        onClose={() => setShowMessage(false)}
+        autoClose={true}
+        autoCloseDelay={2000}
+        position="bottom-right"
+      />
     </div>
   );
 }
