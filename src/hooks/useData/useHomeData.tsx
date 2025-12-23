@@ -185,3 +185,93 @@ export function useRankingsData() {
     error
   };
 }
+
+export function useTopSeriesThisWeek() {
+  const [moviesList, setMoviesList] = useState<Movie[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  
+  useEffect(() => {
+    const fetchTopSeries = async () => {
+      try {
+        setIsLoading(true);
+        setError(null);
+        const topSeries = await MoviesService.getTopViewedSeriesThisWeek(10);
+        setMoviesList(topSeries);
+      } catch (err) {
+        console.error('Error fetching top series this week:', err);
+        setError('Không thể tải danh sách series hot nhất tuần');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchTopSeries();
+  }, []);
+
+  return {
+    moviesList,
+    isLoading,
+    error
+  };
+}
+
+export function useTopSinglesThisWeek() {
+  const [moviesList, setMoviesList] = useState<Movie[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  
+  useEffect(() => {
+    const fetchTopSingles = async () => {
+      try {
+        setIsLoading(true);
+        setError(null);
+        const topSingles = await MoviesService.getTopViewedSinglesThisWeek(10);
+        setMoviesList(topSingles);
+      } catch (err) {
+        console.error('Error fetching top singles this week:', err);
+        setError('Không thể tải danh sách phim lẻ hot nhất tuần');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchTopSingles();
+  }, []);
+
+  return {
+    moviesList,
+    isLoading,
+    error
+  };
+}
+
+export function useAnimeMovies() {
+  const [animeList, setAnimeList] = useState<Movie[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  
+  useEffect(() => {
+    const fetchAnimeMovies = async () => {
+      try {
+        setIsLoading(true);
+        setError(null);
+        const animeMovies = await MoviesService.getAnimeMovies(15);
+        setAnimeList(animeMovies);
+      } catch (err) {
+        console.error('Error fetching anime movies:', err);
+        setError('Không thể tải danh sách anime');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchAnimeMovies();
+  }, []);
+
+  return {
+    animeList,
+    isLoading,
+    error
+  };
+}

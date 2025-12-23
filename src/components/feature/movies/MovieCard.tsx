@@ -128,7 +128,7 @@ export default function MovieCard({
 
   return (
     <div 
-      className={`${config.container} text-white cursor-pointer hover:scale-105 transition-transform`}
+      className={`${config.container} group text-white cursor-pointer hover:scale-105 transition-transform`}
       onClick={goToDetails}
     >
       {/* Image */}
@@ -142,7 +142,7 @@ export default function MovieCard({
             e.currentTarget.src = "/placeholder/placeholder-poster.png"
           }}
           alt={movie.title}
-          className="w-full h-full object-cover rounded-md"
+          className="w-full h-full object-cover rounded-md group-hover:brightness-120 transition duration-200"
         />
 
         {/* Favorite/Delete Button */}

@@ -54,13 +54,13 @@ export default function OneHeroMovies({
       </div>
 
       {/* Content */}
-      <div className="absolute left-0 bottom-4 z-10 px-4 sm:px-6 lg:px-8 pb-8 lg:max-w-[40vw] md:max-w-[50vw] sm:max-w-screen">
+      <div className="absolute left-0 bottom-4 z-10 px-4 sm:px-6 lg:px-8 pb-8 lg:max-w-[45vw] md:max-w-[60vw] sm:max-w-screen">
         {/* Title */}
         <h1 className="text-2xl sm:text-2xl lg:text-4xl font-extrabold tracking-wider text-white mb-1.5 text-shadow-lg">
           {movie.title}
         </h1>
         
-        <p className="text-(--text-highlight) text-sm sm:text-sm lg:text-lg md:text-lg mb-4">
+        <p className="text-(--text-highlight) text-xs sm:text-xs lg:text-lg md:text-sm mb-4">
           {movie.originalName}
         </p>
 

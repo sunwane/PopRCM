@@ -947,6 +947,135 @@ export class MoviesService {
       }
     }
   }
+
+  // Get top viewed series this week
+  static async getTopViewedSeriesThisWeek(limit: number = 10): Promise<Movie[]> {
+    if (!this.isServiceAvailable()) {
+      console.log('Using mock data for top viewed series this week');
+      return [...mockMovies]
+        .filter(movie => movie.type === 'series')
+        .sort((a, b) => b.view - a.view)
+        .slice(0, limit);
+    }
+
+    try {
+      console.log('Fetching top viewed series this week from API...');
+      const response = await fetch(`${this.API_BASE_URL}/top/week/series`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        }
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const apiResponse = await response.json();
+      
+      if (apiResponse.result && Array.isArray(apiResponse.result)) {
+        console.log('✅ Top viewed series this week fetched successfully from API');
+        return apiResponse.result.map((movie: any) => this.mapMovieResponseToMovie(movie)).slice(0, limit);
+      } else {
+        throw new Error('Invalid API response format');
+      }
+      
+    } catch (error) {
+      console.warn('Top viewed series this week API failed, using mock data:', error);
+      return [...mockMovies]
+        .filter(movie => movie.type === 'series')
+        .sort((a, b) => b.view - a.view)
+        .slice(0, limit);
+    }
+  }
+
+  // Get top viewed single movies this week
+  static async getTopViewedSinglesThisWeek(limit: number = 10): Promise<Movie[]> {
+    if (!this.isServiceAvailable()) {
+      console.log('Using mock data for top viewed singles this week');
+      return [...mockMovies]
+        .filter(movie => movie.type === 'single')
+        .sort((a, b) => b.view - a.view)
+        .slice(0, limit);
+    }
+
+    try {
+      console.log('Fetching top viewed singles this week from API...');
+      const response = await fetch(`${this.API_BASE_URL}/top/week/single`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        }
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const apiResponse = await response.json();
+      
+      if (apiResponse.result && Array.isArray(apiResponse.result)) {
+        console.log('✅ Top viewed singles this week fetched successfully from API');
+        return apiResponse.result.map((movie: any) => this.mapMovieResponseToMovie(movie)).slice(0, limit);
+      } else {
+        throw new Error('Invalid API response format');
+      }
+      
+    } catch (error) {
+      console.warn('Top viewed singles this week API failed, using mock data:', error);
+      return [...mockMovies]
+        .filter(movie => movie.type === 'single')
+        .sort((a, b) => b.view - a.view)
+        .slice(0, limit);
+    }
+  }
+
+  // Get anime movies
+  static async getAnimeMovies(limit: number = 15): Promise<Movie[]> {
+    if (!this.isServiceAvailable()) {
+      console.log('Using mock data for anime movies');
+      return [...mockMovies]
+        .filter(movie => 
+          movie.country.some(c => c.name.toLowerCase().includes('nhật bản')) &&
+          movie.genres.some(g => g.genresName.toLowerCase().includes('hoạt hình'))
+        )
+        .sort((a, b) => b.view - a.view)
+        .slice(0, limit);
+    }
+
+    try {
+      console.log('Fetching anime movies from API...');
+      const response = await fetch(`${this.API_BASE_URL}/anime`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        }
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const apiResponse = await response.json();
+      
+      if (apiResponse.result && Array.isArray(apiResponse.result)) {
+        console.log('✅ Anime movies fetched successfully from API');
+        return apiResponse.result.map((movie: any) => this.mapMovieResponseToMovie(movie)).slice(0, limit);
+      } else {
+        throw new Error('Invalid API response format');
+      }
+      
+    } catch (error) {
+      console.warn('Anime movies API failed, using mock data:', error);
+      return [...mockMovies]
+        .filter(movie => 
+          movie.country.some(c => c.name.toLowerCase().includes('nhật bản')) &&
+          movie.genres.some(g => g.genresName.toLowerCase().includes('hoạt hình'))
+        )
+        .sort((a, b) => b.view - a.view)
+        .slice(0, limit);
+    }
+  }
 }
 
 // Export utility function for external use
