@@ -32,7 +32,7 @@ export function useAuth() {
       
       if (response.token && response.user) {
         // Lưu vào localStorage
-        AuthService.setAuth(response.token, response.user);
+        AuthService.setAuth(response.token, response.user, response.refreshToken);
         
         // Cập nhật state
         setIsAuthenticated(true);

@@ -6,7 +6,7 @@ import {
 import { UserService } from './UserService';
 
 class AuthService {
-  private baseURL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8088/api/auth';
+  private baseURL = 'http://localhost:8088/api/auth';
 
   async login(request: LoginRequest): Promise<AuthResponse> {
 
@@ -51,9 +51,7 @@ class AuthService {
       throw new Error('Invalid API response');
       
     } catch (error: any) {
-      // Fallback về mock login nếu API thất bại
-      console.log('API failed, falling back to mock login...');
-      return this.mockLogin(request);
+      throw error;
     }
   }
 
@@ -65,9 +63,9 @@ class AuthService {
         id: 'admin-001',
         userName: 'admin',
         email: 'admin@poprcm.com',
-        fullName: 'Admin User', // Thêm thuộc tính fullName
-        gender: 'male', // Thêm thuộc tính gender
-        createdAt: new Date(), // Thêm thuộc tính createdAt
+        fullName: 'Admin User',
+        gender: 'male',
+        createdAt: new Date(),
         role: 'admin',
         avatarUrl: '',
       };
@@ -82,6 +80,98 @@ class AuthService {
 
     // Nếu không khớp với bất kỳ tài khoản nào, ném lỗi
     throw new Error('Email hoặc mật khẩu không đúng');
+  }
+
+  // Thêm method refresh token
+  async refreshToken(): Promise<string | null> {
+    const refreshToken = this.getRefreshToken();
+    
+    if (!refreshToken) {
+      console.log('No refresh token available');
+      return null;
+    }
+
+    try {
+      console.log('Attempting to refresh token...');
+      const response = await fetch(`${this.baseURL}/refresh-token`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ refreshToken }),
+      });
+
+      if (!response.ok) {
+        console.error('Refresh token failed');
+        this.clearAuthData();
+        return null;
+      }
+
+      const apiResponse = await response.json();
+      
+      if (apiResponse.result) {
+        // Lưu token mới
+        localStorage.setItem('authToken', apiResponse.result.token);
+        if (apiResponse.result.refreshToken) {
+          localStorage.setItem('refreshToken', apiResponse.result.refreshToken);
+        }
+        
+        console.log('✅ Token refreshed successfully');
+        return apiResponse.result.token;
+      }
+      
+      return null;
+    } catch (error: any) {
+      console.error('❌ Token refresh error:', error);
+      this.clearAuthData();
+      return null;
+    }
+  }
+
+  // Thêm method để lấy refresh token
+  getRefreshToken(): string | null {
+    if (typeof window !== 'undefined') {
+      const refreshToken = localStorage.getItem('refreshToken');
+      
+      if (!refreshToken || refreshToken === 'null' || refreshToken === 'undefined' || refreshToken === '') {
+        return null;
+      }
+      
+      return refreshToken;
+    }
+    return null;
+  }
+
+  // Thêm method để check token có hết hạn không
+  isTokenExpired(token: string): boolean {
+    try {
+      // Decode JWT payload (simple base64 decode, không verify signature)
+      const payload = JSON.parse(atob(token.split('.')[1]));
+      const currentTime = Date.now() / 1000; // Convert to seconds
+      
+      // Check if token expires within next 10 minutes (600 seconds)
+      return payload.exp && (payload.exp - currentTime) < 600;
+    } catch (error) {
+      console.error('Error parsing token:', error);
+      return true; // Treat as expired if can't parse
+    }
+  }
+
+  // Method để tự động refresh nếu token sắp hết hạn
+  async ensureValidToken(): Promise<string | null> {
+    const currentToken = this.getToken();
+    
+    if (!currentToken) {
+      return null;
+    }
+
+    // Nếu token sắp hết hạn (trong 10 phút tới), refresh nó
+    if (this.isTokenExpired(currentToken)) {
+      console.log('Token is expiring soon, refreshing...');
+      return await this.refreshToken();
+    }
+
+    return currentToken;
   }
 
   async logout(token?: string): Promise<void> {
@@ -118,6 +208,7 @@ class AuthService {
   private clearAuthData(): void {
     if (typeof window !== 'undefined') {
       localStorage.removeItem('authToken');
+      localStorage.removeItem('refreshToken');
       localStorage.removeItem('user');
       console.log('Auth data cleared from localStorage');
       
@@ -172,11 +263,16 @@ class AuthService {
     return null;
   }
 
-  setAuth(token: string, user: any) {
+  setAuth(token: string, user: any, refreshToken?: string) {
     if (typeof window !== 'undefined') {
       
       // Lưu token
       localStorage.setItem('authToken', token);
+      
+      // Lưu refresh token nếu có
+      if (refreshToken) {
+        localStorage.setItem('refreshToken', refreshToken);
+      }
       
       // Chỉ lưu user nếu nó có giá trị hợp lệ
       if (user && user !== undefined && user !== null) {
