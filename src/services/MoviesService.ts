@@ -176,8 +176,8 @@ export class MoviesService {
       type: Array.isArray(type) ? type[0] || '' : (type || ''), // Lấy type đầu tiên
       duration: duration || '',
       // Sửa lại URL mapping - posterUrl là poster chính, thumbUrl là thumbnail
-      posterUrl: `https://img.ophim.live/uploads/movies/${thumbUrl}`,
-      thumbnailUrl: `https://img.ophim.live/uploads/movies/${posterUrl}`,
+      posterUrl: thumbUrl,
+      thumbnailUrl: posterUrl,
       trailerUrl: trailerUrl || '',
       // Parse totalEpisodes nếu là string có format "24 Tập"
       totalEpisodes: totalEpisodes ? (
