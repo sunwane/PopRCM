@@ -10,11 +10,14 @@ export interface EpisodesTabProps {
   loading?: boolean;
 }
 
+const EPISODES_PER_PAGE = 24;
+
 export function EpisodesTab({ movieInfo, seriesInfo, loading }: EpisodesTabProps) {  
   // State cho server được chọn
   const [selectedServer, setSelectedServer] = useState<string>("");
   const [hoveredEpisodeId, setHoveredEpisodeId] = useState<string | null>(null);
   const [showDropdown, setShowDropdown] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
   const router = useRouter();
 
   // Lấy danh sách server names duy nhất từ episodes
@@ -29,6 +32,7 @@ export function EpisodesTab({ movieInfo, seriesInfo, loading }: EpisodesTabProps
   useEffect(() => {
     if (serverNames.length > 0 && !selectedServer) {
       setSelectedServer(serverNames[0]);
+      setCurrentPage(1);
     }
   }, [serverNames, selectedServer]);
 
@@ -40,6 +44,34 @@ export function EpisodesTab({ movieInfo, seriesInfo, loading }: EpisodesTabProps
       .filter(ep => ep.serverName === selectedServer)
       .sort((a, b) => a.episodeNumber - b.episodeNumber);
   }, [movieInfo.episodes, selectedServer]);
+
+  // Calculate pagination based on filtered episodes
+  const totalPages = Math.ceil(filteredEpisodes.length / EPISODES_PER_PAGE);
+  const startIndex = (currentPage - 1) * EPISODES_PER_PAGE;
+  const endIndex = startIndex + EPISODES_PER_PAGE;
+  const currentEpisodes = filteredEpisodes.slice(startIndex, endIndex);
+
+  // Generate episode ranges for display
+  const getEpisodeRanges = () => {
+    const ranges = [];
+    for (let i = 0; i < totalPages; i++) {
+      const start = i * EPISODES_PER_PAGE + 1;
+      const end = Math.min((i + 1) * EPISODES_PER_PAGE, filteredEpisodes.length);
+      ranges.push({ label: `${start} - ${end}`, page: i + 1 });
+    }
+    return ranges;
+  };
+
+  // Handle server change and reset page
+  const handleServerChange = (serverName: string) => {
+    setSelectedServer(serverName);
+    setCurrentPage(1); // Reset to first page when server changes
+  };
+
+  // Handle page change
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+  };
 
   if (loading) {
     return <LoadingEffect message="Đang tải tập phim..." />;
@@ -121,7 +153,7 @@ export function EpisodesTab({ movieInfo, seriesInfo, loading }: EpisodesTabProps
                 {serverNames.map((serverName) => (
                   <button
                     key={serverName}
-                    onClick={() => setSelectedServer(serverName)}
+                    onClick={() => handleServerChange(serverName)}
                     className={`px-4 py-2 rounded-lg text-sm font-medium transition ${
                       selectedServer === serverName
                         ? 'border-2 border-white/70 text-white shadow-lg'
@@ -151,10 +183,31 @@ export function EpisodesTab({ movieInfo, seriesInfo, loading }: EpisodesTabProps
           )}
         </div>
 
+        {/* Pagination Controls */}
+        {totalPages > 1 && (
+          <div className="overflow-x-auto no-scrollbar mb-4">
+            <div className="flex gap-2 min-w-max">
+              {getEpisodeRanges().map((rangeObj) => (
+                <button
+                  key={rangeObj.page}
+                  onClick={() => handlePageChange(rangeObj.page)}
+                  className={`px-3 py-1 text-sm rounded-md border transition-colors whitespace-nowrap ${
+                    currentPage === rangeObj.page
+                      ? 'bg-(--primary)/40 border-2 border-(--border-blue) text-white'
+                      : 'bg-white/15 border-none text-white/70 hover:text-white hover:bg-white/25'
+                  }`}
+                >
+                  Tập {rangeObj.label}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
         {/* Episodes Grid */}
         {filteredEpisodes.length > 0 ? (
           <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-3 lg:grid-cols-6 gap-3">
-            {filteredEpisodes.map((episode) => (
+            {currentEpisodes.map((episode) => (
               <button
                 key={episode.id}
                 className="bg-gray-700 hover:bg-(--hover) rounded-lg py-3 px-4 text-center transition-all duration-200 hover:shadow-lg text-white hover:text-black"

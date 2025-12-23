@@ -91,7 +91,6 @@ export class EpisodesService {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${authToken}`
         }
       });
       
@@ -117,37 +116,6 @@ export class EpisodesService {
     if (!episode) return null;
     const movie = mockMovies.find(mov => mov.id === episode.movieId);
     return movie || null;
-  }
-
-  static async getEpisodesByMovieId(movieId: string): Promise<Episode[]> {
-    try {
-      if (!this.isServiceAvailable()) {
-        console.log('Service not available, using mock data for episodes by movie ID');
-        return mockEpisodes.filter(ep => ep.movieId === movieId);
-      }
-
-      const response = await fetch(`${this.API_BASE_URL}/movie/${movieId}`, {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      const apiResponse = await response.json();
-      
-      if (apiResponse.result && Array.isArray(apiResponse.result)) {
-        return apiResponse.result.map((ep: any) => this.mapEpisodeResponseToEpisode(ep));
-      }
-      return [];
-      
-    } catch (error) {
-      console.warn('Failed to get episodes from API, using mock data:', error);
-      return mockEpisodes.filter(ep => ep.movieId === movieId);
-    }
   }
 
   // Clear cached episodes

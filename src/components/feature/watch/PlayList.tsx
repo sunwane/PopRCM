@@ -1,17 +1,19 @@
 import { useState, useMemo } from 'react';
 import { Episode } from '@/types/Movies';
 import { Movie } from '@/types/Movies';
+import { LoadingEffect } from '@/components/ui/LoadingEffect';
 
 export interface PlayListProps {
   movie: Movie;
   episodes: Episode[];
   currentEpisode?: Episode;
-  onEpisodeSelect: (episode: Episode, serverName?: string) => void;
+  onEpisodeSelect: (episode: Episode, serverName?: string, movieId?: string) => void;
+  loading?: boolean;
 }
 
 const EPISODES_PER_PAGE = 20;
 
-export function PlayList({ movie, episodes, currentEpisode, onEpisodeSelect }: PlayListProps) {
+export function PlayList({ movie, episodes, currentEpisode, onEpisodeSelect, loading }: PlayListProps) {
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedServer, setSelectedServer] = useState('');
   const [isServerDropdownOpen, setIsServerDropdownOpen] = useState(false);
@@ -34,18 +36,24 @@ export function PlayList({ movie, episodes, currentEpisode, onEpisodeSelect }: P
     }
   }, [availableServers, selectedServer]);
 
-  // Calculate pagination
-  const totalPages = Math.ceil(episodes.length / EPISODES_PER_PAGE);
+  // Filter episodes by selected server
+  const filteredEpisodes = useMemo(() => {
+    if (!selectedServer) return episodes;
+    return episodes.filter(episode => episode.serverName === selectedServer);
+  }, [episodes, selectedServer]);
+
+  // Calculate pagination based on filtered episodes
+  const totalPages = Math.ceil(filteredEpisodes.length / EPISODES_PER_PAGE);
   const startIndex = (currentPage - 1) * EPISODES_PER_PAGE;
   const endIndex = startIndex + EPISODES_PER_PAGE;
-  const currentEpisodes = episodes.slice(startIndex, endIndex);
+  const currentEpisodes = filteredEpisodes.slice(startIndex, endIndex);
 
   // Generate episode ranges for display
   const getEpisodeRanges = () => {
     const ranges = [];
     for (let i = 0; i < totalPages; i++) {
       const start = i * EPISODES_PER_PAGE + 1;
-      const end = Math.min((i + 1) * EPISODES_PER_PAGE, episodes.length);
+      const end = Math.min((i + 1) * EPISODES_PER_PAGE, filteredEpisodes.length);
       ranges.push({ label: `${start} - ${end}`, page: i + 1 });
     }
     return ranges;
@@ -53,6 +61,7 @@ export function PlayList({ movie, episodes, currentEpisode, onEpisodeSelect }: P
 
   const handleServerSelect = (serverName: string) => {
     setSelectedServer(serverName);
+    setCurrentPage(1); // Reset to first page when server changes
     setIsServerDropdownOpen(false);
   };
 
@@ -61,7 +70,7 @@ export function PlayList({ movie, episodes, currentEpisode, onEpisodeSelect }: P
   };
 
   const handleEpisodeSelect = (episode: Episode) => {
-    onEpisodeSelect(episode, selectedServer);
+    onEpisodeSelect(episode, selectedServer, movie.id);
   };
 
   return (
@@ -112,16 +121,16 @@ export function PlayList({ movie, episodes, currentEpisode, onEpisodeSelect }: P
 
         {/* Custom Episode Range Pagination */}
         {totalPages > 1 && (
-          <div className="overflow-x-auto no-scrollbar">
+          <div className="overflow-x-auto no-scrollbar mt-2">
             <div className="flex gap-2 min-w-max">
               {getEpisodeRanges().map((rangeObj) => (
                 <button
                   key={rangeObj.page}
                   onClick={() => handlePageChange(rangeObj.page)}
-                  className={`px-3 py-1 text-sm rounded-lg border transition-colors whitespace-nowrap ${
+                  className={`px-3 py-1 text-sm rounded-md border transition-colors whitespace-nowrap ${
                     currentPage === rangeObj.page
-                      ? 'bg-blue-600 border-blue-600 text-white'
-                      : 'bg-(--background) border-(--border-blue) text-gray-300 hover:border-blue-400'
+                      ? 'bg-(--primary)/40 border-2 border-(--border-blue) text-white'
+                      : 'bg-white/15 border-none'
                   }`}
                 >
                   {rangeObj.label}
@@ -133,8 +142,11 @@ export function PlayList({ movie, episodes, currentEpisode, onEpisodeSelect }: P
       </div>
 
       {/* Episodes Grid */}
-      <div className="p-4">
-        <div className="grid grid-cols-4 sm:grid-cols-5 lg:grid-cols-4 xl:grid-cols-5 gap-2 mb-4">
+      <div className="overflow-y-auto no-scrollbar max-h-[calc(100vh-300px)]">
+        {loading ? (
+          <LoadingEffect message="Đang tải danh sách tập..." />
+        ) : (
+          <div className="flex flex-col">
           {currentEpisodes.map((episode) => {
             const isCurrentEpisode = currentEpisode?.id === episode.id;
             
@@ -142,17 +154,26 @@ export function PlayList({ movie, episodes, currentEpisode, onEpisodeSelect }: P
               <button
                 key={episode.id}
                 onClick={() => handleEpisodeSelect(episode)}
-                className={`aspect-square rounded-lg border-2 flex items-center justify-center text-sm font-medium transition-all hover:scale-105 ${
+                className={`px-4 py-3 flex items-center text-sm font-medium gap-3 hover:bg-white/10 ${
                   isCurrentEpisode
-                    ? 'bg-blue-600 border-blue-600 text-white'
+                    ? 'bg-(--hover)/25'
                     : 'bg-(--background) border-(--border-blue) text-gray-300 hover:border-blue-400 hover:text-white'
                 }`}
               >
-                Tập {episode.episodeNumber}
+                <img
+                  src={movie.thumbnailUrl || '/placeholder-thumbnail.jpg'}
+                  alt={`Tập ${episode.episodeNumber}`}
+                  className="h-14 aspect-video object-cover rounded-sm"
+                />
+                <div className="flex flex-col text-left pr-2">
+                  <div>Tập {episode.episodeNumber}</div>
+                  <div className='text-gray-400 line-clamp-1 max-w-[250px]'>{episode.title}</div>
+                </div>
               </button>
             );
           })}
         </div>
+        )}
       </div>
     </div>
   );

@@ -1,6 +1,6 @@
 "use client";
-import { useEpisodeData, useEpisodesByMovieId } from "@/hooks/useData/useEpisodeData";
-import { useParams } from "next/navigation";
+import { useEpisodeData } from "@/hooks/useData/useEpisodeData";
+import { useParams, useSearchParams } from "next/navigation";
 import { PlayList } from "@/components/feature/watch/PlayList";
 import { Episode } from "@/types/Movies";
 import PageHeader from "@/components/layout/PageHeader";
@@ -15,36 +15,36 @@ import { getStatusColor, getViewLabelColor } from "@/utils/getColorUtils";
 import { useRouter } from "next/navigation";
 import { useFavoriteHandler } from "@/hooks/useFavoriteHandler";
 import Message from "@/components/ui/Message";
+import { LoadingPage } from "@/components/ui/LoadingPage";
 
 export default function WatchPage() {
   const params = useParams();
+  const searchParams = useSearchParams();
   const episode = params.episode;
   const route = useRouter();
-  const movieId = new URLSearchParams(window.location.search).get('movieId');
+  const movieId = searchParams.get('movieId');
 
   // Use favorite handler hook
   const { isProcessing, message, isFavorited, handleFavoriteToggle, clearMessage } = useFavoriteHandler();
 
   const { movieInfo: movie, loading} = useMoviesDataByID(movieId || "");
   const { episode: episodeData, loading: episodesLoading } = useEpisodeData(episode?.toString() || '');
-  const { episodes, loading: episodesListLoading } = useEpisodesByMovieId(movieId || null);
+  console.log("Episode Data:", episodeData);
   const { seriesInfo } = useSeriesDataByMovieId(movieId);
   const { recommendedMovies } = useRecommendedMovies(movieId || "");
 
   const { isMobile } = useResponsive();
 
-  const handleEpisodeSelect = (selectedEpisode: Episode, serverName?: string) => {
+  const handleEpisodeSelect = (selectedEpisode: Episode, serverName?: string, movieId?: string) => {
     // Navigate to the selected episode with optional server parameter
-    const url = serverName 
-      ? `/watch/${selectedEpisode.id}?server=${encodeURIComponent(serverName)}`
-      : `/watch/${selectedEpisode.id}`;
+    const url = `/watch/${selectedEpisode.id}?movieId=${encodeURIComponent(movieId ?? "")}&server=${encodeURIComponent(serverName ?? "")}`
     window.location.href = url;
   };
 
-  if (loading || episodesLoading || episodesListLoading) {
+  if (loading || episodesLoading) {
     return (
       <div className="min-h-screen bg-(--background) flex items-center justify-center">
-        <div className="text-white">Đang tải...</div>
+        <LoadingPage />
       </div>
     );
   }
@@ -181,11 +181,12 @@ export default function WatchPage() {
           </div>
 
           {/* Right Side - Playlist */}
-          <div className="w-96">
+          <div className="min-w-[400px]">
             {isMobile ? null : (
               <PlayList
                 movie={movie}
-                episodes={episodes}
+                episodes={movie.episodes ?? []}
+                loading={episodesLoading}
                 currentEpisode={episodeData}
                 onEpisodeSelect={handleEpisodeSelect}
               />

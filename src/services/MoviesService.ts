@@ -394,7 +394,6 @@ export class MoviesService {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${authToken}`
         }
       });
 
@@ -572,6 +571,11 @@ export class MoviesService {
           'Content-Type': 'application/json',
         }
       });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
       const apiResponse = await response.json();
       
       if (apiResponse.result && apiResponse.result.content && Array.isArray(apiResponse.result.content)) {
@@ -581,8 +585,12 @@ export class MoviesService {
       }
       return [];
     } catch (error) {
-      console.warn('API failed for getMoviesFromGenreSlug.', error);
-      throw error;
+      console.warn('API failed for getMoviesFromGenreSlug, falling back to mock...', error);
+      await this.loadMoviesData(0, 1000);
+      const moviesFromGenre = this.movies.filter(movie => 
+        movie.genres.some(genre => genre.id === genreSlug)
+      ).slice(0, limit);
+      return moviesFromGenre;
     }
   }
 
