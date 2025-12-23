@@ -163,7 +163,7 @@ export default function PageHeader() {
               </div>
 
               <a
-                href="#"
+                href="/aiSuggest"
                 className="hover:text-white transition flex items-top space-x-2 text-white opacity-70 hover:opacity-100"
               >
                 <div>AI gợi ý phim</div>
