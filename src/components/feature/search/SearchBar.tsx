@@ -41,12 +41,10 @@ export default function SearchBar({ placeholder = "Tìm kiếm phim, diễn viê
   };
 
   const handleBlur = () => {
-    setInputFocused(false);
-    // Delay hiding dropdown to allow clicks
+    // Delay hiding dropdown to allow clicks on dropdown items
     setTimeout(() => {
-      if (!inputFocused) {
-        setShowDropdown(false);
-      }
+      setInputFocused(false);
+      setShowDropdown(false);
     }, 200);
   };
 
@@ -55,6 +53,7 @@ export default function SearchBar({ placeholder = "Tìm kiếm phim, diễn viê
     const handleClickOutside = (event: MouseEvent) => {
       if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
         setShowDropdown(false);
+        setInputFocused(false);
       }
     };
 
@@ -64,8 +63,8 @@ export default function SearchBar({ placeholder = "Tìm kiếm phim, diễn viê
     };
   }, []);
 
-  // Show dropdown when there are suggestions and input is focused
-  const shouldShowDropdown = showDropdown && inputFocused;
+  // Show dropdown when there are suggestions and showDropdown is true
+  const shouldShowDropdown = showDropdown;
 
   return (
     <div ref={containerRef} className="relative flex grow items-center bg-blend-multiply">

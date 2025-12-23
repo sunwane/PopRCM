@@ -115,7 +115,6 @@ export class SeriesService {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${authToken}`
         }
       });
       

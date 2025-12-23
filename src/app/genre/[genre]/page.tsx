@@ -28,8 +28,9 @@ export default function GenrePage() {
 
   // Memoize genreIds để tránh tạo mảng mới mỗi lần render
   const genreIds = useMemo(() => {
-    return filterGenre ? [filterGenre.id] : undefined;
-  }, [filterGenre?.id]);
+    // Dùng genre trực tiếp từ URL, không phụ thuộc vào genreLoading
+    return genre ? [genre] : undefined;
+  }, [genre]); // Chỉ phụ thuộc vào genre, không phụ thuộc genreLoading
 
   // Use pagination with filter
   const {

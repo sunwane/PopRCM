@@ -27,7 +27,9 @@ export function SearchDropdown({ suggestions, loading, query, onClose }: SearchD
   }
 
   return (
-    <div className="absolute top-full left-0 right-0 mt-2 bg-slate-900/95 backdrop-blur-sm border border-white/20 rounded-lg shadow-xl z-50 max-h-96 overflow-hidden">
+    <div 
+      className="absolute top-full left-0 right-0 mt-2 bg-slate-900/95 backdrop-blur-sm border border-white/20 rounded-lg shadow-xl z-50 max-h-96 overflow-hidden"
+    >
       {loading ? (
         <div className="p-4 text-center">
           <div className="text-gray-400 text-sm">Đang tìm kiếm...</div>

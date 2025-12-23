@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useFilterOptions } from "@/hooks/useFilter";
 import { getMovieTypesText, getStatusText } from "@/utils/getTextUtils";
 import { useRouter } from "next/navigation";
+import { LoadingEffect } from "@/components/ui/LoadingEffect";
 
 export interface MoviesFilterProps {
   query?: string;
@@ -43,6 +44,7 @@ export default function MoviesFilter({
     genres,
     language,
     type,
+    loading,
     year,
     status,
     sortBy,
@@ -81,6 +83,14 @@ export default function MoviesFilter({
   const handleClick = () => {
     setIsActive((prev) => !prev);
   };
+
+  if (loading) {
+    return (
+      <div className="w-full flex justify-center py-8">
+        <LoadingEffect message="Đang tải bộ lọc..." />
+      </div>
+    )
+  }
 
   return (
     <div className="inline-block">

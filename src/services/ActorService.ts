@@ -73,12 +73,10 @@ export class ActorService {
     }
 
     try {
-      const authToken = localStorage.getItem('authToken');
       const response = await fetch(`${this.API_BASE_URL}?page=${page}&size=${size}`, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${authToken}`
         }
       });
       

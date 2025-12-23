@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import ServiceChecker from "@/services/ServiceChecker";
+import { AuthProvider } from "@/providers/AuthProvider";
+import { ClientLayout } from "@/components/layout/ClientLayout";
 
 const geistInter = Inter({
   variable: "--font-inter",
@@ -29,7 +31,11 @@ export default async function RootLayout({
   return (
     <html lang="en">
       <body className={`${geistInter.variable} antialiased mx-auto max-w-[2000px]`}>
-        {children}
+        <AuthProvider>
+          <ClientLayout>
+            {children}
+          </ClientLayout>
+        </AuthProvider>
       </body>
     </html>
   );

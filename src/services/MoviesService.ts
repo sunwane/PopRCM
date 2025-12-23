@@ -151,10 +151,8 @@ export class MoviesService {
       }
       
     } catch (error) {
-      console.warn('Failed to load movies from API, using mock data:', error);
-      // Fallback to mock data với đầy đủ relations
-      this.movies = this.loadAllMockData();
-      this.isDataLoaded = true;
+      console.warn('Failed to load movies from API', error);
+      throw error;
     }
   }
 
@@ -284,25 +282,62 @@ export class MoviesService {
     }
 
     try {
-      // API thật với endpoint /api/movies/filter
-      const filterRequest = {
-        query: query || undefined,
-        releaseYear: year || undefined,
-        type: type && type !== "all" ? [type] : undefined,
-        status: status && status !== "all" ? [status] : undefined,
-        language: language && language !== "all" ? [language] : undefined,
-        genreIds: genreIds && genreIds.length > 0 && !genreIds.includes("all") ? genreIds : undefined,
-        countryId: countryId && countryId !== "all" ? countryId : undefined,
-        sortBy: sortBy || undefined
-      };
-
-      // Remove undefined fields
-      Object.keys(filterRequest).forEach(key => {
-        const typedKey = key as keyof typeof filterRequest;
-        if (filterRequest[typedKey] === undefined) {
-          delete filterRequest[typedKey];
+      // API thật với endpoint /api/movies/filter - match với MovieFilterRequest backend
+      const filterRequest: any = {};
+      
+      // Chỉ add các field có giá trị
+      if (query && query.trim()) {
+        filterRequest.query = query.trim();
+      }
+      
+      if (year) {
+        filterRequest.releaseYear = year;
+      }
+      
+      if (type && type !== "all") {
+        filterRequest.types = [type];
+      }
+      
+      if (status && status !== "all") {
+        filterRequest.statuses = [status];
+      }
+      
+      if (language && language !== "all") {
+        filterRequest.languages = [language];
+      }
+      
+      if (genreIds && genreIds.length > 0 && !genreIds.includes("all")) {
+        filterRequest.genreIds = genreIds;
+      }
+      
+      if (countryId && countryId !== "all") {
+        filterRequest.countryIds = [countryId];
+      }
+      
+      if (sortBy) {
+        // Map sort options to backend format
+        switch(sortBy) {
+          case "Nhiều lượt xem":
+            filterRequest.sortBy = "views";
+            filterRequest.sortDirection = "desc";
+            break;
+          case "Điểm IMDB":
+            filterRequest.sortBy = "imdbScore";
+            filterRequest.sortDirection = "desc";
+            break;
+          case "Điểm TMDB":
+            filterRequest.sortBy = "tmdbScore";
+            filterRequest.sortDirection = "desc";
+            break;
+          case "Mới nhất":
+            filterRequest.sortBy = "updatedAt";
+            filterRequest.sortDirection = "desc";
+            break;
+          default:
+            filterRequest.sortBy = "updatedAt";
+            filterRequest.sortDirection = "desc";
         }
-      });
+      }
 
       const response = await fetch(`${this.API_BASE_URL}/filter?page=${page}&size=${size}`, {
         method: 'POST',
@@ -333,6 +368,7 @@ export class MoviesService {
       console.warn('API failed for getFilteredMovies, falling back to mock data...', error);
       // Fallback to mock data
       await this.loadMoviesData(0, 1000);
+      
       const filteredMovies = this.filterAndSortMovies(this.movies, {
         query, year, type, status, language, genreIds, countryId, sortBy
       });
@@ -424,9 +460,8 @@ export class MoviesService {
       return [];
       
     } catch (error) {
-      console.warn('Search API failed, falling back to local search:', error);
-      await this.loadMoviesData(0, 1000);
-      return this.filterAndSortMovies(this.movies, { query });
+      console.warn('Search API failed', error);
+      throw error;
     }
   }
 
@@ -537,11 +572,6 @@ export class MoviesService {
           'Content-Type': 'application/json',
         }
       });
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
       const apiResponse = await response.json();
       
       if (apiResponse.result && apiResponse.result.content && Array.isArray(apiResponse.result.content)) {
@@ -551,38 +581,15 @@ export class MoviesService {
       }
       return [];
     } catch (error) {
-      console.warn('API failed for getMoviesFromGenreSlug, falling back to mock...', error);
-      await this.loadMoviesData(0, 1000);
-      const moviesFromGenre = this.movies.filter(movie => 
-        movie.genres.some(genre => genre.id === genreSlug)
-      ).slice(0, limit);
-      return moviesFromGenre;
+      console.warn('API failed for getMoviesFromGenreSlug.', error);
+      throw error;
     }
   }
 
   // Helper method for unique value extraction (generic)
   private static async getUniqueValues<T>(
-    endpoint: string,
     extractorFn: (movie: Movie) => T | T[],
-    fallbackErrorMsg: string
   ): Promise<T[]> {
-    if (this.isServiceAvailable()) {
-      try {
-        const response = await fetch(`${this.API_BASE_URL}/${endpoint}`, {
-          method: 'GET',
-          headers: { 'Content-Type': 'application/json' }
-        });
-        if (response.ok) {
-          const apiResponse = await response.json();
-          if (apiResponse.result && Array.isArray(apiResponse.result)) {
-            return apiResponse.result.filter(Boolean);
-          }
-        }
-      } catch (error) {
-        console.warn(`${fallbackErrorMsg}:`, error);
-      }
-    }
-    
     await this.loadMoviesData(0, 1000);
     const allValues = this.movies.flatMap(movie => {
       const value = extractorFn(movie);
@@ -594,9 +601,7 @@ export class MoviesService {
   // Get unique release years
   static async getUniqueReleaseYears(): Promise<number[]> {
     const years = await this.getUniqueValues(
-      'years',
       (movie) => movie.releaseYear,
-      'Years API failed, falling back to local data'
     );
     return years.sort((a, b) => b - a);
   }
@@ -604,27 +609,21 @@ export class MoviesService {
   // Get unique types
   static async getUniqueTypes(): Promise<string[]> {
     return this.getUniqueValues(
-      'types',
       (movie) => movie.type,
-      'Types API failed, falling back to local data'
     );
   }
 
   // Get unique statuses
   static async getUniqueStatuses(): Promise<string[]> {
     return this.getUniqueValues(
-      'statuses',
       (movie) => movie.status,
-      'Statuses API failed, falling back to local data'
     );
   }
 
   // Get unique languages
   static async getUniqueLanguages(): Promise<string[]> {
     return this.getUniqueValues(
-      'languages',
       (movie) => movie.lang,
-      'Languages API failed, falling back to local data'
     );
   }
 

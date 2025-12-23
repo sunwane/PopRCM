@@ -29,7 +29,7 @@ export default function OneSearchDiv({ movie, onClick }: OneSearchDivProps) {
 
   return (
     <div 
-      className="flex items-center space-x-3 p-3 hover:bg-white/10 cursor-pointer transition-colors"
+      className="flex items-center space-x-3 p-3 hover:bg-white/10 cursor-pointer transition-colors relative"
       onClick={onClick}
     >
       {/* Movie Poster */}

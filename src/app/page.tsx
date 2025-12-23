@@ -209,6 +209,7 @@ export default function Home() {
               loading={mysteryLoading}
             />
           )}
+
         </div>
       </main>
       <PageFooter />

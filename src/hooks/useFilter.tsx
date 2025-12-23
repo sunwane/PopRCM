@@ -9,7 +9,7 @@ import { useMoviesData } from "@/hooks/useData/useMoviesData";
 export function useFilterOptions() {
   const { allGenres: allgenres } = useGenreData();
   const { allCountries: countries } = useCountryData();
-  const { languages, types, statuses } = useMoviesData();
+  const { languages, types, statuses, loading } = useMoviesData();
   
   const sortOptions = [
     "Mới cập nhật",
@@ -57,6 +57,7 @@ export function useFilterOptions() {
     country,
     genres,
     type,
+    loading,
     language,
     year,
     sortBy,
@@ -92,21 +93,23 @@ export function useFilterResults(
   // Tạo stable genreIds để tránh re-render không cần thiết
   const stableGenreIds = useMemo(() => {
     return genreIds ? [...genreIds] : [];
-  }, [genreIds?.join(',')]);
+  }, [genreIds ? genreIds.join(',') : '']); // Sử dụng empty string thay vì undefined
 
   // Tạo stable dependencies bằng useMemo
-  const filterParams = useMemo(() => ({
-    countryId: countryId || undefined,
-    genreIds: stableGenreIds,
-    type: type || undefined,
-    language: language || undefined,
-    year: year ? parseInt(year, 10) : undefined,
-    status: status || undefined,
-    sortBy: sortBy || undefined,
-    query: query || undefined,
-    page: page || 0,
-    size: size || 20,
-  }), [countryId, stableGenreIds, type, language, year, status, sortBy, query, page, size]);
+  const filterParams = useMemo(() => {
+    return {
+      countryId: countryId || undefined,
+      genreIds: stableGenreIds,
+      type: type || undefined,
+      language: language || undefined,
+      year: year ? parseInt(year, 10) : undefined,
+      status: status || undefined,
+      sortBy: sortBy || undefined,
+      query: query || undefined,
+      page: page || 0,
+      size: size || 20,
+    };
+  }, [countryId, stableGenreIds, type, language, year, status, sortBy, query, page, size]);
 
   useEffect(() => {
     const fetchFilteredMovies = async () => {
@@ -120,6 +123,7 @@ export function useFilterResults(
       } catch (err) {
         console.error("Lỗi khi lọc phim:", err);
         setError("Lỗi khi tải phim. Vui lòng thử lại.");
+        // Không set fallback data ở đây, để MoviesService xử lý
       } finally {
         setLoading(false);
       }
