@@ -3,17 +3,18 @@ import { useState } from "react";
 import { EpisodesTab } from "./EpisodesTab";
 import { SeriesTab } from "./SeriesTab";
 import { RecommendTab } from "./RecommendTab";
-import { Movie } from "@/types/Movies";
+import { Movie, Episode } from "@/types/Movies";
 import { Series } from "@/types/Series";
 
 export interface DetailsTabProps {
   movieInfo: Movie;
   seriesInfo?: Series;
   recommendations?: Movie[];
+  currentEpisode?: Episode;
   loading?: boolean;
 }
 
-export function DetailsTab({ movieInfo, seriesInfo, recommendations = [], loading }: DetailsTabProps) {
+export function DetailsTab({ movieInfo, seriesInfo, recommendations = [], currentEpisode, loading }: DetailsTabProps) {
   const [activeTab, setActiveTab] = useState<'episodes' | 'series' | 'recommended'>('episodes');
 
   const allTabs = [
@@ -59,6 +60,7 @@ export function DetailsTab({ movieInfo, seriesInfo, recommendations = [], loadin
           movieInfo={movieInfo}
           seriesInfo={seriesInfo}
           recommendedMovies={recommendations}
+          currentEpisode={currentEpisode}
           loading={loading}
         />
       </div>

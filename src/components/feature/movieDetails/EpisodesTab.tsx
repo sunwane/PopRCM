@@ -1,5 +1,5 @@
 import { LoadingEffect } from "@/components/ui/LoadingEffect";
-import { Movie } from "@/types/Movies";
+import { Movie, Episode } from "@/types/Movies";
 import { Series } from "@/types/Series";
 import { useState, useMemo, useEffect } from "react";
 import { useRouter } from "next/navigation";
@@ -7,12 +7,13 @@ import { useRouter } from "next/navigation";
 export interface EpisodesTabProps {
   movieInfo: Movie;
   seriesInfo?: Series;
+  currentEpisode?: Episode;
   loading?: boolean;
 }
 
 const EPISODES_PER_PAGE = 24;
 
-export function EpisodesTab({ movieInfo, seriesInfo, loading }: EpisodesTabProps) {  
+export function EpisodesTab({ movieInfo, seriesInfo, currentEpisode, loading }: EpisodesTabProps) {  
   // State cho server được chọn
   const [selectedServer, setSelectedServer] = useState<string>("");
   const [hoveredEpisodeId, setHoveredEpisodeId] = useState<string | null>(null);
@@ -207,24 +208,32 @@ export function EpisodesTab({ movieInfo, seriesInfo, loading }: EpisodesTabProps
         {/* Episodes Grid */}
         {filteredEpisodes.length > 0 ? (
           <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-3 lg:grid-cols-6 gap-3">
-            {currentEpisodes.map((episode) => (
-              <button
-                key={episode.id}
-                className="bg-gray-700 hover:bg-(--hover) rounded-lg py-3 px-4 text-center transition-all duration-200 hover:shadow-lg text-white hover:text-black"
-                onMouseEnter={() => setHoveredEpisodeId(episode.id)}
-                onMouseLeave={() => setHoveredEpisodeId(null)}
-                onClick={() => {
-                  router.push(`/watch/${episode.id}?movieId=${movieInfo.id}&server=${selectedServer}`);
-                }}
-              >
-                <div className="flex justify-center items-center space-x-2">
-                  <img src={hoveredEpisodeId === episode.id ? "/icons/Play.png" : "/icons/PlayWhite.png"} alt="Play" className="h-3 w-3" />
-                  <span className="lg:text-sm md:text-sm font-semibold text-xs">
-                    Tập {episode.episodeNumber}
-                  </span>
-                </div>
-              </button>
-            ))}
+            {currentEpisodes.map((episode) => {
+              const isCurrentEpisode = currentEpisode?.id === episode.id;
+              
+              return (
+                <button
+                  key={episode.id}
+                  className={`rounded-lg py-3 px-4 text-center transition-all duration-200 hover:shadow-lg ${
+                    isCurrentEpisode
+                      ? 'bg-(--hover) text-black border-none'
+                      : 'bg-gray-700 hover:bg-(--hover) text-white hover:text-black'
+                  }`}
+                  onMouseEnter={() => setHoveredEpisodeId(episode.id)}
+                  onMouseLeave={() => setHoveredEpisodeId(null)}
+                  onClick={() => {
+                    router.push(`/watch/${episode.id}?movieId=${movieInfo.id}&server=${selectedServer}`);
+                  }}
+                >
+                  <div className="flex justify-center items-center space-x-2">
+                    <img src={hoveredEpisodeId === episode.id || isCurrentEpisode ? "/icons/Play.png" : "/icons/PlayWhite.png"} alt="Play" className="h-3 w-3" />
+                    <span className="lg:text-sm md:text-sm font-semibold text-xs">
+                      Tập {episode.episodeNumber}
+                    </span>
+                  </div>
+                </button>
+              );
+            })}
           </div>
         ) : (
           <div className="text-center py-20 border-dashed border-2 border-gray-700 rounded-lg">

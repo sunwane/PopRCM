@@ -222,7 +222,12 @@ export default function MoviesPage() {
               
               {/* Movies */}
               <div className="mb-6 mt-6">
-                <DetailsTab movieInfo={movieInfo} seriesInfo={seriesInfo ?? undefined} recommendations={recommendedMovies} />
+                <DetailsTab 
+                  movieInfo={movieInfo} 
+                  seriesInfo={seriesInfo ?? undefined} 
+                  recommendations={recommendedMovies} 
+                  currentEpisode={undefined}
+                />
               </div>
             </div>
 

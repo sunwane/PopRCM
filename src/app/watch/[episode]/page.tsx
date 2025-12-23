@@ -176,7 +176,12 @@ export default function WatchPage() {
 
             {/* Movies */}
             <div className="mb-6 mt-6 mr-6 ml-2">
-              <DetailsTab movieInfo={movie} seriesInfo={seriesInfo ?? undefined} recommendations={recommendedMovies} />
+              <DetailsTab 
+                movieInfo={movie} 
+                seriesInfo={seriesInfo ?? undefined} 
+                recommendations={recommendedMovies} 
+                currentEpisode={episodeData ?? undefined}
+              />
             </div>
           </div>
 

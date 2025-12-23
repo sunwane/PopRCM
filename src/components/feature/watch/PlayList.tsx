@@ -142,7 +142,7 @@ export function PlayList({ movie, episodes, currentEpisode, onEpisodeSelect, loa
       </div>
 
       {/* Episodes Grid */}
-      <div className="overflow-y-auto no-scrollbar max-h-[calc(100vh-300px)]">
+      <div className="overflow-y-auto no-scrollbar max-h-[calc(100vh-330px)] rounded-b-lg">
         {loading ? (
           <LoadingEffect message="Đang tải danh sách tập..." />
         ) : (
