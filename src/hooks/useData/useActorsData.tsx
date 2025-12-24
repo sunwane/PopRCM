@@ -15,11 +15,11 @@ export function useActorsData(
   useEffect(() => {
     const fetchActors = async () => {
       try {
-        const actors = await ActorService.getAllActors(
+        const result = await ActorService.getAllActors(
           page ?? 0, 
           size ?? 1000
         );
-        setAllActors(actors);
+        setAllActors(result.actors);
       } catch (err) {
         setError("Lỗi khi tải danh sách diễn viên");
       } finally {

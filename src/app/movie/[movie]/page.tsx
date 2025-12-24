@@ -13,10 +13,16 @@ import { ListTopMovies } from "@/components/feature/movieDetails/ListTopMovies";
 import { useRouter } from "next/navigation";
 import { useFavoriteHandler } from "@/hooks/useFavoriteHandler";
 import Message from "@/components/ui/Message";
+import { CmtReviewSection } from "@/components/feature/commentReview/CmtReviewSection";
+import { AuthBackground } from "@/components/feature/auth/AuthBackground";
+import { ReviewPopup } from "@/components/feature/commentReview/ReviewPopup";
+import { useState } from "react";
 
 export default function MoviesPage() {
   const params = useParams();
   const movie = params.movie;
+  const [showAuthOverlay, setShowAuthOverlay] = useState(false);
+  const [showReviewPopup, setShowReviewPopup] = useState(false);
 
   const route = useRouter();
   
@@ -229,6 +235,17 @@ export default function MoviesPage() {
                   currentEpisode={undefined}
                 />
               </div>
+
+              {/* Comment and Review Section */}
+              <div className="mb-6">
+                <CmtReviewSection
+                  movieId={movieInfo.id}
+                  movieTitle={movieInfo.title}
+                  showCommentInput={false}
+                  onOpenAuth={() => setShowAuthOverlay(true)}
+                  initialTab="reviews"
+                />
+              </div>
             </div>
 
             {/* Right Column: Action Buttons */}
@@ -272,7 +289,10 @@ export default function MoviesPage() {
                   )}
                   <span className={`${isFavorited(movieInfo.id) ? "text-(--hover)" : ""}`}>Yêu thích</span>
                 </button>
-                <button className="w-full flex flex-col items-center justify-center gap-1 text-nowrap rounded transition-colors text-sm text-white">
+                <button 
+                  className="w-full flex flex-col items-center justify-center gap-1 text-nowrap rounded transition-colors text-sm text-white hover:bg-white/10"
+                  onClick={() => setShowReviewPopup(true)}
+                >
                   <img src="/icons/Popular.png" alt="Review" className="h-6 w-6" />
                   <span>Đánh giá</span>
                 </button>
@@ -339,6 +359,21 @@ export default function MoviesPage() {
           position="bottom-right"
         />
       )}
+
+      {/* Auth Overlay */}
+      <AuthBackground 
+        isOpen={showAuthOverlay}
+        onClose={() => setShowAuthOverlay(false)}
+      />
+
+      {/* Review Popup */}
+      <ReviewPopup 
+        isOpen={showReviewPopup}
+        onClose={() => setShowReviewPopup(false)}
+        movieId={movieInfo.id}
+        movieTitle={movieInfo.title}
+        onOpenAuth={() => setShowAuthOverlay(true)}
+      />
 
       <PageFooter />
     </div>

@@ -1,4 +1,5 @@
-import { Comment, Review } from "@/types/CommentReview";
+import { Comment } from "@/types/Comment";
+import { Review } from "@/types/Review";
 import { mockUsers } from "./mockUser";
 import { mockMovies } from "./mockMovies";
 import { mockEpisodes } from "./mockEpisodes";

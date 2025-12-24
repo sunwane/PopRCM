@@ -72,12 +72,12 @@ export function useSearchActorsResult(query: string) {
       try {
         if (query.trim()) {
           // Sử dụng ActorService.searchActors trực tiếp
-          const results = await ActorService.searchActors(query);
-          setFilteredActors(results);
+          const results = await ActorService.searchActors(query, 0, 1000);
+          setFilteredActors(results.actors);
         } else {
           // Nếu không có query, lấy tất cả actors
           const allActors = await ActorService.getAllActors(0, 1000);
-          setFilteredActors(allActors);
+          setFilteredActors(allActors.actors);
         }
       } catch (err) {
         setError('Lỗi khi tìm kiếm diễn viên');

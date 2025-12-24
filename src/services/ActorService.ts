@@ -47,6 +47,7 @@ export class ActorService {
       profilePath: actorResponse.profilePath,
       gender: this.mapGenderFromNumber(actorResponse.gender),
       alsoKnownAs: actorResponse.alsoKnownAs || [],
+      moviesCount: actorResponse.movieCount || 0
     };
   }
 
@@ -57,6 +58,82 @@ export class ActorService {
       case 2: return 'male';
       default: return 'unknown';
     }
+  }
+
+  // Chuyển đổi MovieResponse từ API sang Movie interface
+  private static mapMovieResponseToMovie(movieResponse: any): Movie {
+    const { 
+      id, title, originName, description = '', releaseYear, type = [], duration = '',
+      posterUrl, thumbUrl, trailerUrl, totalEpisodes, director = [], status = [],
+      createdAt, modifiedAt, views = 0, slug, tmdbScore, imdbScore, lang = [],
+      actors = [], genres = [], countries = [], episodes = [], currentEpisodeCount = 0
+    } = movieResponse;
+
+    return {
+      id,
+      title,
+      originalName: originName || title, // Giữ originalName từ originName
+      description,
+      releaseYear: releaseYear || 0,
+      type: Array.isArray(type) ? type[0] || '' : (type || ''), // Lấy type đầu tiên
+      duration: duration || '',
+      // Sửa lại URL mapping - posterUrl là poster chính, thumbUrl là thumbnail
+      posterUrl: thumbUrl,
+      thumbnailUrl: posterUrl,
+      trailerUrl: trailerUrl || '',
+      // Parse totalEpisodes nếu là string có format "24 Tập"
+      totalEpisodes: totalEpisodes ? (
+        typeof totalEpisodes === 'string' 
+          ? parseInt(totalEpisodes.replace(/\D/g, '')) || undefined
+          : totalEpisodes
+      ) : undefined,
+      currentEpisode: currentEpisodeCount || 0,
+      // Director: join array thành string
+      director: Array.isArray(director) ? director.join(', ') : (director || ''),
+      // Status: lấy status đầu tiên từ array
+      status: Array.isArray(status) ? status[0] || '' : (status || ''),
+      createdAt: createdAt ? new Date(createdAt) : new Date(),
+      modifiedAt: modifiedAt ? new Date(modifiedAt) : new Date(),
+      view: views || 0,
+      slug: slug || '',
+      tmdbScore: tmdbScore || undefined,
+      imdbScore: imdbScore || undefined,
+      // Lang: lấy language đầu tiên từ array
+      lang: Array.isArray(lang) ? lang[0] || '' : (lang || ''),
+      // Map countries từ CountryResponse
+      country: countries?.map((c: any) => ({ 
+        id: c.id || '', 
+        name: c.name || '' 
+      })) || [],
+      // Map actors từ ActorResponse
+      actors: actors?.map((a: any) => ({
+        actorId: a.actorId || a.id || '',
+        originName: a.originName || a.name || '',
+        characterName: a.characterName || '',
+        profilePath: a.profilePath || '',
+        alsoKnownAs: a.alsoKnownAs || null,
+        genderDisplay: a.genderDisplay || null,
+        tmdbId: a.tmdbId || null
+      })) || [],
+      // Map genres từ GenreResponse
+      genres: genres?.map((g: any) => ({ 
+        id: g.id || '', 
+        genresName: g.genresName || g.name || '' 
+      })) || [],
+      // Map episodes từ EpisodeResponse
+      episodes: episodes?.map((e: any) => ({
+        id: e.id || '',
+        title: e.title || `Tập ${e.episodeNumber || 1}`,
+        episodeNumber: e.episodeNumber || 0,
+        createdAt: e.createdAt ? new Date(e.createdAt) : new Date(),
+        videoUrl: e.videoUrl || '',
+        m3u8Url: e.m3u8Url || '',
+        serverName: e.serverName || 'Vietsub', // Default server name
+        movieId: e.movieId || id, // Đảm bảo có movieId
+        movieTitle: e.movieTitle || '',
+        movieSlug: e.movieSlug || ''
+      })) || []
+    };
   }
 
   // Load data from API or mock
@@ -103,23 +180,78 @@ export class ActorService {
     }
   }
 
-  // Get all actors - với pagination parameters
+  // Get all actors - với pagination parameters và cập nhật để phù hợp với controller
   static async getAllActors(
     page: number = 0,
     size: number = 24
-  ): Promise<Actor[]> {
-    // Quyết định size dựa trên availability của service
-    const loadSize = this.isServiceAvailable() ? size : 1000;
-    await this.loadActorsData(page, loadSize);
-    
-    // Nếu sử dụng mock data, thực hiện pagination local
+  ): Promise<{ actors: Actor[], totalElements: number }> {
     if (!this.isServiceAvailable()) {
+      console.info('API not available, using local data for all actors');
+      
+      // Đảm bảo mock data được load
+      if (!this.isDataLoaded) {
+        this.loadMockData();
+      }
+
+      // Pagination cho mock data
       const start = page * size;
       const end = start + size;
-      return this.actors.slice(start, end);
+      const paginatedActors = this.actors.slice(start, end);
+      
+      return {
+        actors: paginatedActors,
+        totalElements: this.actors.length
+      };
     }
-    
-    return [...this.actors];
+
+    try {
+      const response = await fetch(`${this.API_BASE_URL}?page=${page}&size=${size}`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        }
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const apiResponse = await response.json();
+      
+      // API trả về Page<ActorResponse>, cần extract content và totalElements
+      if (apiResponse.result && apiResponse.result.content) {
+        const actors = apiResponse.result.content.map((actorResponse: any) =>
+          this.mapActorResponseToActor(actorResponse)
+        ) || [];
+        
+        return {
+          actors,
+          totalElements: apiResponse.result.totalElements || 0
+        };
+      }
+      
+      return {
+        actors: apiResponse.result || [],
+        totalElements: 0
+      };
+    } catch (error) {
+      console.warn('Failed to get all actors from API, fallback to mock data:', error);
+      
+      // Fallback to mock data
+      if (!this.isDataLoaded) {
+        this.loadMockData();
+      }
+
+      // Pagination cho mock data
+      const start = page * size;
+      const end = start + size;
+      const paginatedActors = this.actors.slice(start, end);
+      
+      return {
+        actors: paginatedActors,
+        totalElements: this.actors.length
+      };
+    }
   }
 
   // Get actor by ID
@@ -142,12 +274,10 @@ export class ActorService {
     }
 
     try {
-      const authToken = localStorage.getItem('authToken');
       const response = await fetch(`${this.API_BASE_URL}/${id}`, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${authToken}`
         }
       });
       
@@ -181,8 +311,12 @@ export class ActorService {
     }
   }
 
-  // Helper function to get movies by actor ID - SỬA PHẦN NÀY
-  static async getMoviesByActorId(actorId: string): Promise<Movie[]> {
+  // Helper function to get movies by actor ID - Cập nhật để phù hợp với controller
+  static async getMoviesByActorId(
+    actorId: string, 
+    page: number = 0, 
+    size: number = 24
+  ): Promise<Movie[]> {
     if (!this.isServiceAvailable()) {
       console.info('API not available, using local data to get movies by actor');
       
@@ -202,16 +336,17 @@ export class ActorService {
         }
       }
 
-      return movies;
+      // Thực hiện pagination local cho mock data
+      const start = page * size;
+      const end = start + size;
+      return movies.slice(start, end);
     }
 
     try {
-      const authToken = localStorage.getItem('authToken');
-      const response = await fetch(`${this.API_BASE_URL}/${actorId}/movies`, {
+      const response = await fetch(`${this.API_BASE_URL}/${actorId}/movies?page=${page}&size=${size}`, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${authToken}`
         }
       });
 
@@ -220,7 +355,16 @@ export class ActorService {
       }
 
       const apiResponse = await response.json();
-      return apiResponse.result || [];
+      
+      // API trả về Page<MovieResponse>, cần extract content và map từng movie
+      if (apiResponse.result && apiResponse.result.content) {
+        return apiResponse.result.content.map((movieResponse: any) => 
+          this.mapMovieResponseToMovie(movieResponse)
+        ) || [];
+      }
+      return (apiResponse.result || []).map((movieResponse: any) => 
+        this.mapMovieResponseToMovie(movieResponse)
+      );
     } catch (error) {
       console.warn('Failed to get movies by actor from API, fallback to mock data:', error);
       
@@ -240,14 +384,21 @@ export class ActorService {
         }
       }
 
-      return movies;
+      // Thực hiện pagination local cho mock data
+      const start = page * size;
+      const end = start + size;
+      return movies.slice(start, end);
     }
   }
 
-  // Search actors
-  static async searchActors(query: string): Promise<Actor[]> {
+  // Search actors - Cập nhật để phù hợp với controller
+  static async searchActors(
+    query: string, 
+    page: number = 0, 
+    size: number = 24
+  ): Promise<{ actors: Actor[], totalElements: number }> {
     if (!query.trim()) {
-      return await this.getAllActors();
+      return await this.getAllActors(page, size);
     }
 
     if (!this.isServiceAvailable()) {
@@ -261,16 +412,23 @@ export class ActorService {
         (actor.tmdbId ?? '').includes(searchTerm) ||
         (actor.alsoKnownAs ?? []).some(alias => alias.toLowerCase().includes(searchTerm))
       );
-      return filteredActors;
+      
+      // Thực hiện pagination local cho mock data
+      const start = page * size;
+      const end = start + size;
+      const paginatedActors = filteredActors.slice(start, end);
+      
+      return {
+        actors: paginatedActors,
+        totalElements: filteredActors.length
+      };
     }
 
     try {
-      const authToken = localStorage.getItem('authToken');
-      const response = await fetch(`${this.API_BASE_URL}?search=${encodeURIComponent(query)}&page=0&size=100`, {
+      const response = await fetch(`${this.API_BASE_URL}/search?keyword=${encodeURIComponent(query)}&page=${page}&size=${size}`, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${authToken}`
         }
       });
       
@@ -281,11 +439,20 @@ export class ActorService {
       const apiResponse = await response.json();
       
       if (apiResponse.result && apiResponse.result.content && Array.isArray(apiResponse.result.content)) {
-        return apiResponse.result.content.map((actorResponse: any) => 
+        const actors = apiResponse.result.content.map((actorResponse: any) => 
           this.mapActorResponseToActor(actorResponse)
         );
+        
+        return {
+          actors,
+          totalElements: apiResponse.result.totalElements || 0
+        };
       }
-      return [];
+      
+      return {
+        actors: [],
+        totalElements: 0
+      };
       
     } catch (error) {
       console.warn('Search API failed, falling back to local search:', error);
@@ -299,7 +466,16 @@ export class ActorService {
         (actor.tmdbId ?? '').includes(searchTerm) ||
         (actor.alsoKnownAs ?? []).some(alias => alias.toLowerCase().includes(searchTerm))
       );
-      return filteredActors;
+      
+      // Thực hiện pagination local cho mock data
+      const start = page * size;
+      const end = start + size;
+      const paginatedActors = filteredActors.slice(start, end);
+      
+      return {
+        actors: paginatedActors,
+        totalElements: filteredActors.length
+      };
     }
   }
 
@@ -313,12 +489,10 @@ export class ActorService {
 
     // API call cho movie count
     try {
-      const authToken = localStorage.getItem('authToken');
       const response = await fetch(`${this.API_BASE_URL}/${actorId}/movies/count`, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${authToken}`
         }
       });
 

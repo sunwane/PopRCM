@@ -16,6 +16,10 @@ import { useRouter } from "next/navigation";
 import { useFavoriteHandler } from "@/hooks/useFavoriteHandler";
 import Message from "@/components/ui/Message";
 import { LoadingPage } from "@/components/ui/LoadingPage";
+import { CmtReviewSection } from "@/components/feature/commentReview/CmtReviewSection";
+import { AuthBackground } from "@/components/feature/auth/AuthBackground";
+import { ReviewPopup } from "@/components/feature/commentReview/ReviewPopup";
+import { useState } from "react";
 
 export default function WatchPage() {
   const params = useParams();
@@ -23,6 +27,9 @@ export default function WatchPage() {
   const episode = params.episode;
   const route = useRouter();
   const movieId = searchParams.get('movieId');
+  const [showAuthOverlay, setShowAuthOverlay] = useState(false);
+  const [showReviewPopup, setShowReviewPopup] = useState(false);
+  const [activeCommentTab, setActiveCommentTab] = useState<'comments' | 'reviews'>('comments');
 
   // Use favorite handler hook
   const { isProcessing, message, isFavorited, handleFavoriteToggle, clearMessage } = useFavoriteHandler();
@@ -39,6 +46,17 @@ export default function WatchPage() {
     // Navigate to the selected episode with optional server parameter
     const url = `/watch/${selectedEpisode.id}?movieId=${encodeURIComponent(movieId ?? "")}&server=${encodeURIComponent(serverName ?? "")}`
     window.location.href = url;
+  };
+
+  const scrollToCommentSection = (tab: 'comments' | 'reviews') => {
+    setActiveCommentTab(tab);
+    // Scroll to comment section after a brief delay to allow for state update
+    setTimeout(() => {
+      const commentSection = document.getElementById('comment-review-section');
+      if (commentSection) {
+        commentSection.scrollIntoView({ behavior: 'smooth' });
+      }
+    }, 100);
   };
 
   if (loading || episodesLoading) {
@@ -60,7 +78,7 @@ export default function WatchPage() {
   return (
     <div className="min-h-screen bg-(--background)">
       <PageHeader />
-      <div className="py-4 px-6 w-full">
+      <div className="py-2 px-6 w-full">
         {/* Main Layout */}
         <div className="flex flex-col lg:flex-row md:flex-row gap-6 w-full">
           
@@ -183,6 +201,18 @@ export default function WatchPage() {
                 currentEpisode={episodeData ?? undefined}
               />
             </div>
+
+            {/* Comment and Review Section */}
+            <div id="comment-review-section">
+              <CmtReviewSection
+                movieId={movieId || ""}
+                movieTitle={movie.title}
+                episodeId={episodeData?.id}
+                showCommentInput={true}
+                onOpenAuth={() => setShowAuthOverlay(true)}
+                initialTab={activeCommentTab}
+              />
+            </div>
           </div>
 
           {/* Right Side - Playlist */}
@@ -198,10 +228,6 @@ export default function WatchPage() {
             )}
 
             <div className="grid grid-cols-3 py-3 px-4 rounded-lg border-2 border-(--surface-divine) shadow-lg mt-6">
-              <button className="w-full flex flex-col items-center justify-center gap-1 text-nowrap rounded transition-colors text-sm text-white">
-                <img src="/icons/CircledPlay.png" alt="Play" className="h-7 w-7 -m-0.5" />
-                <span>Xem ngay</span>
-              </button>
               <button 
                 className="w-full flex flex-col items-center justify-center gap-1 text-nowrap rounded transition-colors text-sm text-white disabled:opacity-50"
                 onClick={() => movie && handleFavoriteToggle(movie.id)}
@@ -221,7 +247,17 @@ export default function WatchPage() {
                 )}
                 <span>Yêu thích</span>
               </button>
-              <button className="w-full flex flex-col items-center justify-center gap-1 text-nowrap rounded transition-colors text-sm text-white">
+              <button 
+                className="w-full flex flex-col items-center justify-center gap-1 text-nowrap rounded transition-colors text-sm text-white hover:bg-white/10"
+                onClick={() => scrollToCommentSection('comments')}
+              >
+                <img src="/icons/Comment.png" alt="Comment" className="h-6 w-6" />
+                <span>Bình luận</span>
+              </button>
+              <button 
+                className="w-full flex flex-col items-center justify-center gap-1 text-nowrap rounded transition-colors text-sm text-white hover:bg-white/10"
+                onClick={() => setShowReviewPopup(true)}
+              >
                 <img src="/icons/Popular.png" alt="Review" className="h-6 w-6" />
                 <span>Đánh giá</span>
               </button>
@@ -247,6 +283,21 @@ export default function WatchPage() {
           position="bottom-right"
         />
       )}
+
+      {/* Auth Overlay */}
+      <AuthBackground 
+        isOpen={showAuthOverlay}
+        onClose={() => setShowAuthOverlay(false)}
+      />
+
+      {/* Review Popup */}
+      <ReviewPopup 
+        isOpen={showReviewPopup}
+        onClose={() => setShowReviewPopup(false)}
+        movieId={movieId || ""}
+        movieTitle={movie?.title}
+        onOpenAuth={() => setShowAuthOverlay(true)}
+      />
 
       <PageFooter />
     </div>

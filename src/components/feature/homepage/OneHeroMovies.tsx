@@ -120,7 +120,10 @@ export default function OneHeroMovies({
         <div className="flex items-center gap-7">
           <button className="flex items-center gap-2 bg-linear-to-tr from-(--gradient-primary-start) to-(--gradient-primary-end)
             hover:bg-linear-to-tr hover:from-blue-600 hover:to-blue-400
-          text-white px-6 py-6 rounded-full font-semibold transition-colors cursor-pointer">
+          text-white px-6 py-6 rounded-full font-semibold transition-colors cursor-pointer"
+            onClick={()=>{
+              route.push(`/watch/${movie.episodes?.[0]?.id}?movieId=${movie.id}`);
+            }}>
             <img src="/icons/Play.png" alt="play" className="w-7 h-7" />
           </button>
 

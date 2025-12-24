@@ -60,7 +60,7 @@ export default function ActorPage() {
           lg:border-b-0 lg:pr-6 md:border-b-0 md:pr-6 sm:border-b-2 sm:pb-10 
           border-gray-800">
           <div className="mb-3">
-            {imageError ? (
+            {imageError || !actorInfo.profilePath ? (
               <div className="w-32 h-32 flex items-center justify-center bg-gray-800 rounded-2xl">
                 <span className="text-[16px] text-gray-500">No Avatar</span>
               </div>
@@ -86,7 +86,7 @@ export default function ActorPage() {
             </div>
             <div className="flex space-x-2">
               <strong>Tổng phim:</strong>
-              <div className="text-gray-400">{movieStats.totalMovies} phim</div>
+              <div className="text-gray-400">{actorInfo.moviesCount || movieStats.totalMovies} phim</div>
             </div>
             <div><strong>Tên khác:</strong></div>
             <ul className="list-disc pl-5">
@@ -104,7 +104,7 @@ export default function ActorPage() {
           <div className="flex items-center justify-between mb-6 sm:pt-4">
             <h2 className="lg:text-xl md:text-[16px] text-[16px] font-semibold">
               Các phim đã tham gia 
-              <span className=" text-gray-500 ml-1.5">({movieStats.totalMovies})</span>
+              <span className=" text-gray-500 ml-1.5">({actorInfo.moviesCount || movieStats.totalMovies})</span>
             </h2>
             
             <ToggleButton

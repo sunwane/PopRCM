@@ -18,7 +18,7 @@ export default function OneActor({ actor }: OneActorProps) {
                 cursor-pointer flex flex-col items-center hover:scale-105 transition"
       onClick={goToDetails}>
       <div className="relative w-full h-full">
-        {imageError ? (
+        {imageError || !actor.profilePath ? (
           <div className="w-full h-full flex items-center justify-center bg-gray-800 rounded-sm">
             <span className="text-[16px] text-gray-500">No Avatar</span>
           </div>

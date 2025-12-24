@@ -389,7 +389,6 @@ export class MoviesService {
   static async getMovieById(id: string): Promise<Movie | null> {
     try {
       // Gọi API thật để lấy chi tiết phim
-      const authToken = localStorage.getItem('authToken') || '';
       const response = await fetch(`${this.API_BASE_URL}/${id}`, {
         method: 'GET',
         headers: {
@@ -464,18 +463,6 @@ export class MoviesService {
     }
   }
 
-  // Get recent movies
-  static async getRecentMovies(limit: number = 10): Promise<Movie[]> {
-    // Chỉ load toàn bộ khi dùng mock data để sort, API có thể sort trực tiếp
-    const loadSize = this.isServiceAvailable() ? 24 : 1000;
-    await this.loadMoviesData(0, loadSize);
-    const sortedMovies = [...this.movies]
-      .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
-      .slice(0, limit);
-    
-    return sortedMovies;
-  }
-
   // Get popular movies (by view count)
   static async getPopularMovies(limit: number = 10): Promise<Movie[]> {
     // Chỉ load toàn bộ khi dùng mock data để sort, API có thể sort trực tiếp
@@ -485,30 +472,6 @@ export class MoviesService {
       .sort((a, b) => b.view - a.view)
       .slice(0, limit);
     
-    return sortedMovies;
-  }
-
-  // Get top rated movies
-  static async getTopRatedMovies(limit: number = 10): Promise<Movie[]> {
-    // Chỉ load toàn bộ khi dùng mock data để sort, API có thể sort trực tiếp
-    const loadSize = this.isServiceAvailable() ? 24 : 1000;
-    await this.loadMoviesData(0, loadSize);
-
-    const sortedMovies = [...this.movies]
-      .map(movie => {
-        // Tính điểm trung bình của imdbScore và tmdbScore
-        const imdbScore = movie.imdbScore || 0; // Nếu không có imdbScore, dùng 0
-        const tmdbScore = movie.tmdbScore || 0; // Nếu không có tmdbScore, dùng 0
-        const scoreCount = (movie.imdbScore ? 1 : 0) + (movie.tmdbScore ? 1 : 0); // Đếm số điểm hợp lệ
-        const averageScore = scoreCount > 0 ? (imdbScore + tmdbScore) / scoreCount : 0; // Tính trung bình
-        return {
-          ...movie,
-          averageScore // Thêm điểm trung bình vào đối tượng phim
-        };
-      })
-      .sort((a, b) => b.averageScore - a.averageScore) // Sắp xếp theo điểm trung bình giảm dần
-      .slice(0, limit); // Lấy số lượng phim theo limit
-
     return sortedMovies;
   }
 
@@ -527,7 +490,7 @@ export class MoviesService {
 
     try {
       const currentDate = new Date();
-      const currentMonth = currentDate.getMonth() + 1; // getMonth() returns 0-11
+      const currentMonth = currentDate.getMonth(); // getMonth() returns 0-11
       const currentYear = currentDate.getFullYear();
 
       const response = await fetch(`${this.API_BASE_URL}/top/views?month=${currentMonth}&year=${currentYear}&size=${limit}`, {
@@ -542,6 +505,10 @@ export class MoviesService {
       }
 
       const apiResponse = await response.json();
+
+      if (apiResponse.result && apiResponse.result.content.length === 0) {
+        return this.getPopularMovies(limit);
+      }
       
       if (apiResponse.result && apiResponse.result.content && Array.isArray(apiResponse.result.content)) {
         return apiResponse.result.content.map((movieResponse: any) => 
@@ -859,6 +826,10 @@ export class MoviesService {
       }
 
       const apiResponse = await response.json();
+
+      if (apiResponse.result && apiResponse.result.content.length === 0) {
+        return this.getPopularMovies(limit);
+      }
       
       if (apiResponse.result && apiResponse.result.content && Array.isArray(apiResponse.result.content)) {
         return apiResponse.result.content.map((movieResponse: any) => 
@@ -925,6 +896,10 @@ export class MoviesService {
       }
 
       const apiResponse = await response.json();
+
+      if (apiResponse.result && apiResponse.result.content.length === 0) {
+        return this.getPopularMovies(limit);
+      }
       
       if (apiResponse.result && apiResponse.result.content && Array.isArray(apiResponse.result.content)) {
         return apiResponse.result.content.map((movieResponse: any) => 

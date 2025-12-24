@@ -34,20 +34,18 @@ export function useActorPagination(props: ActorPaginationProps) {
       setError(null);
       
       try {
+        let result: { actors: Actor[], totalElements: number };
+        
         if (query.trim()) {
-          // Nếu có search query, sử dụng searchActors
-          const searchResults = await ActorService.searchActors(query);
-          setActors(searchResults);
-          setTotalItems(searchResults.length);
+          // Nếu có search query, sử dụng searchActors với pagination
+          result = await ActorService.searchActors(query, currentPage - 1, pageSize);
         } else {
           // Nếu không có query, lấy tất cả actors với pagination
-          const allActors = await ActorService.getAllActors(currentPage - 1, pageSize);
-          setActors(allActors);
-          
-          // Để tính totalItems chính xác, cần load toàn bộ dữ liệu một lần
-          const fullActors = await ActorService.getAllActors(0, 1000);
-          setTotalItems(fullActors.length);
+          result = await ActorService.getAllActors(currentPage - 1, pageSize);
         }
+        
+        setActors(result.actors);
+        setTotalItems(result.totalElements);
       } catch (err) {
         setError('Lỗi khi tải danh sách diễn viên');
         setActors([]);
