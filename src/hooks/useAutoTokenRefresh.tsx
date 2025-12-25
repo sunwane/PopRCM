@@ -2,11 +2,11 @@
 import { useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import AuthService from '@/services/AuthService';
-import TokenManager from '@/services/TokenManager';
 
 /**
- * Hook tự động refresh token ngầm mỗi 50 phút
- * Sử dụng trong layout để đảm bảo token luôn valid trên tất cả page
+ * Hook quản lý auto refresh token
+ * Chỉ chạy khi user đã authenticated
+ * Sử dụng AuthService thay vì trực tiếp TokenManager để đảm bảo consistency
  */
 export function useAutoTokenRefresh() {
   const { isAuthenticated } = useAuth();
@@ -16,41 +16,25 @@ export function useAutoTokenRefresh() {
     if (typeof window === 'undefined') return;
 
     if (isAuthenticated) {
-      const token = AuthService.getToken();
-      
-      // Nếu user đã đăng nhập và chưa có auto refresh, bắt đầu
-      if (token && !TokenManager.isAutoRefreshActive()) {
-        console.log('🔄 Starting background token refresh (every 50 minutes)...');
-        
-        TokenManager.startAutoRefresh(
-          // onRefreshSuccess - token đã được refresh thành công
-          (newToken: string) => {
-            const now = new Date().toLocaleTimeString();
-            console.log(`✅ Token auto-refreshed at ${now} (background)`);
-            
-            // Dispatch event để các component khác biết (nếu cần)
-            window.dispatchEvent(new CustomEvent('backgroundTokenRefresh', { 
-              detail: { token: newToken, timestamp: now } 
-            }));
-          },
-          // onRefreshFailed - token refresh thất bại
-          () => {
-            console.warn('❌ Background token refresh failed');
-            // TokenManager sẽ tự động clear auth data và logout user
-          }
-        );
+      // Kiểm tra xem đã có auto refresh chưa
+      if (!AuthService.isAutoRefreshActive()) {
+        console.log('🔄 Starting auto token refresh from useAutoTokenRefresh...');
+        AuthService.startAutoTokenRefresh();
+      } else {
+        console.log('✅ Auto token refresh already active');
       }
     } else {
-      // Nếu user logout, dừng auto refresh
-      if (TokenManager.isAutoRefreshActive()) {
-        console.log('⏹️ Stopping background token refresh (user logged out)');
-        TokenManager.stopAutoRefresh();
+      // User logged out - stop auto refresh
+      if (AuthService.isAutoRefreshActive()) {
+        console.log('⏹️ Stopping auto token refresh (user logged out)');
+        AuthService.stopAutoTokenRefresh();
       }
     }
 
-    // Cleanup khi component unmount hoặc auth state thay đổi
+    // Cleanup khi component unmount
     return () => {
       // Không stop auto refresh vì nó cần chạy global cho tất cả page
+      // Chỉ stop khi user logout (handled ở trên)
     };
   }, [isAuthenticated]); // Re-run khi auth state thay đổi
 

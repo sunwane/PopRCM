@@ -44,7 +44,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const [authLoading, setAuthLoading] = useState(false);
   const [authError, setAuthError] = useState('');
 
-  // Initialize auth state và setup auto refresh
+  // Initialize auth state - không setup auto refresh ở đây
   useEffect(() => {
     const initializeAuth = () => {
       const token = AuthService.getToken();
@@ -53,11 +53,6 @@ export function AuthProvider({ children }: AuthProviderProps) {
       if (token && userData) {
         setIsAuthenticated(true);
         setUser(userData);
-        
-        // Bắt đầu auto refresh nếu chưa chạy
-        if (!AuthService.isAutoRefreshActive()) {
-          AuthService.startAutoTokenRefresh();
-        }
       }
       setLoading(false);
     };

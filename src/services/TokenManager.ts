@@ -7,6 +7,7 @@ class TokenManager {
   private refreshInterval: NodeJS.Timeout | null = null;
   private readonly REFRESH_INTERVAL = 50 * 60 * 1000; // 50 phút tính bằng milliseconds
   private readonly TOKEN_REFRESH_THRESHOLD = 10 * 60; // 10 phút trước khi hết hạn (tính bằng seconds)
+  private readonly baseURL = 'http://localhost:8088/api';
 
   constructor() {
     if (TokenManager.instance) {
@@ -68,6 +69,7 @@ class TokenManager {
       if (!currentToken) {
         console.log('⚠️ No token found, stopping auto refresh');
         this.stopAutoRefresh();
+        onRefreshFailed?.();
         return;
       }
 
@@ -141,11 +143,13 @@ class TokenManager {
       const refreshToken = localStorage.getItem('refreshToken');
       
       if (!refreshToken || refreshToken === 'null' || refreshToken === 'undefined' || refreshToken === '') {
-        console.log('No refresh token available');
+        console.log('❌ No refresh token available for token refresh');
+        this.clearAuthData();
         return null;
       }
 
-      const response = await fetch('http://localhost:8088/api/auth/refresh-token', {
+      console.log('🔄 Calling refresh token API...');
+      const response = await fetch(`${this.baseURL}/auth/refresh-token`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -154,19 +158,24 @@ class TokenManager {
       });
 
       if (!response.ok) {
-        console.error('Refresh token API failed');
+        console.error(`❌ Refresh token API failed with status: ${response.status} ${response.statusText}`);
         this.clearAuthData();
         return null;
       }
 
       const apiResponse = await response.json();
+      console.log('📡 Refresh token API response:', apiResponse);
       
-      if (apiResponse.result) {
+      if (apiResponse.result && apiResponse.result.token) {
         // Lưu token mới
         localStorage.setItem('authToken', apiResponse.result.token);
+        
+        // Cập nhật refresh token nếu có mới
         if (apiResponse.result.refreshToken) {
           localStorage.setItem('refreshToken', apiResponse.result.refreshToken);
         }
+        
+        console.log('✅ Token refresh successful, new token saved');
         
         // Dispatch event để các component khác biết token đã được refresh
         window.dispatchEvent(new CustomEvent('tokenRefreshed', { 
@@ -174,11 +183,13 @@ class TokenManager {
         }));
         
         return apiResponse.result.token;
+      } else {
+        console.error('❌ Invalid API response structure:', apiResponse);
+        this.clearAuthData();
+        return null;
       }
-      
-      return null;
     } catch (error) {
-      console.error('Token refresh error:', error);
+      console.error('❌ Token refresh error:', error);
       this.clearAuthData();
       return null;
     }
