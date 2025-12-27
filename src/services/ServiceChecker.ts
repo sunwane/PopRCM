@@ -1,7 +1,7 @@
 class ServiceChecker {
   private static instance: ServiceChecker;
   private serviceAvailable: boolean | null = null;
-  private baseURL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8088/api';
+  private baseURL = 'http://localhost:8088/api';
 
   constructor() {
     if (ServiceChecker.instance) {

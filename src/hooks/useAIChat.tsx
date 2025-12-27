@@ -1,11 +1,13 @@
 import { useState, useRef, useEffect } from 'react';
 import AIService from '@/services/AIService';
+import { SimilarMovie } from '@/types/Movies';
 
 export interface ChatMessage {
   id: string;
   content: string;
   isUser: boolean;
   timestamp: Date;
+  movies?: SimilarMovie[]; // Add movies to chat message
 }
 
 export function useAIChat() {
@@ -57,13 +59,29 @@ Hãy hỏi tôi bất cứ điều gì về phim ảnh nhé! 😊`,
     setError(null);
 
     try {
-      const aiResponse = await AIService.chat(content);
+      const searchResult = await AIService.searchMovies(content);
+      
+      let responseContent = '';
+      let movieResults: SimilarMovie[] = [];
+      
+      if (searchResult.status === 'success') {
+        responseContent = searchResult.message;
+        movieResults = searchResult.movies;
+        
+        // Add additional context if movies found
+        if (movieResults.length > 0) {
+          responseContent += '\n\nDưới đây là những bộ phim tôi gợi ý cho bạn:';
+        }
+      } else {
+        responseContent = searchResult.message;
+      }
       
       const aiMessage: ChatMessage = {
         id: 'ai-' + Date.now(),
-        content: aiResponse,
+        content: responseContent,
         isUser: false,
-        timestamp: new Date()
+        timestamp: new Date(),
+        movies: movieResults.length > 0 ? movieResults : undefined
       };
 
       setMessages(prev => [...prev, aiMessage]);

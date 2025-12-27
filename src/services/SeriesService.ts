@@ -77,6 +77,46 @@ export class SeriesService {
 
   // Chuyển đổi SeriesResponse từ API sang Series interface
   private static mapSeriesResponseToSeries(seriesResponse: any): Series {
+    // Map movies từ MovieInSeriesResponse sang Movie format
+    const mappedMovies = seriesResponse.movies?.map((movieInSeries: any) => ({
+      id: movieInSeries.movieId,
+      title: movieInSeries.movieTitle,
+      originalName: movieInSeries.originName || '',
+      description: movieInSeries.description || '',
+      releaseYear: movieInSeries.releaseYear || new Date().getFullYear(),
+      duration: movieInSeries.duration || '',
+      posterUrl: movieInSeries.thumbUrl || '',
+      thumbnailUrl: movieInSeries.moviePosterUrl || '',
+      trailerUrl: movieInSeries.trailerUrl || '',
+      totalEpisodes: movieInSeries.currentEpisodeCount || 0,
+      currentEpisode: movieInSeries.currentEpisodeCount || 0,
+      director: Array.isArray(movieInSeries.director) ? movieInSeries.director.join(', ') : movieInSeries.director || '',
+      status: movieInSeries.status || '',
+      createdAt: new Date(),
+      modifiedAt: new Date(),
+      view: movieInSeries.views || 0,
+      slug: movieInSeries.movieSlug || '',
+      tmdbScore: movieInSeries.tmdbScore || 0,
+      imdbScore: movieInSeries.imdbScore || 0,
+      PopRating: 0,
+      lang: movieInSeries.lang || 'vietsub',
+      
+      // Map countries từ CountryResponse
+      country: [],
+      
+      // Map genres từ GenreResponse  
+      genres: [],
+      
+      // Actors sẽ empty vì API không trả về trong MovieInSeriesResponse
+      actors: [],
+      
+      // Episodes sẽ empty, cần gọi API khác để lấy
+      episodes: [],
+      
+      // Thêm thông tin season từ series
+      seasonNumber: movieInSeries.seasonNumber || 1
+    })) || [];
+
     return {
       id: seriesResponse.id,
       name: seriesResponse.name,
@@ -84,9 +124,10 @@ export class SeriesService {
       status: seriesResponse.status,
       posterUrl: seriesResponse.posterUrl || '',
       releaseYear: seriesResponse.releaseYear?.toString() || new Date().getFullYear().toString(),
-      // API trả về movies với thông tin đầy đủ
-      movies: seriesResponse.movies || [],
+      // Sử dụng mapped movies
+      movies: mappedMovies,
       seriesMovies: seriesResponse.seriesMovies || [],
+      movieCount: mappedMovies.length
     };
   }
 
@@ -110,7 +151,6 @@ export class SeriesService {
     }
 
     try {
-      const authToken = localStorage.getItem('authToken');
       const response = await fetch(`${this.API_BASE_URL}?page=${page}&size=${size}`, {
         method: 'GET',
         headers: {
@@ -198,6 +238,7 @@ export class SeriesService {
       }
 
       const apiResponse = await response.json();
+      console.log('API Response for getSeriesById:', apiResponse);
       
       if (apiResponse.result) {
         return this.mapSeriesResponseToSeries(apiResponse.result);
@@ -268,7 +309,38 @@ export class SeriesService {
     }
   }
 
-  // Get series by movie ID
+  // Map SeriesForMovieResponse thành Series format tương tự mockup data
+  private static async mapSeriesForMovieResponseToSeries(seriesForMovieResponse: any): Promise<Series | null> {
+    const { seriesId, seriesName, allMovieIdsInThisSeries } = seriesForMovieResponse;
+    
+    // Lấy thông tin series cơ bản bằng seriesId
+    const baseSeries = await this.getSeriesById(seriesId);
+    if (!baseSeries) return null;
+
+    // Tạo mock seriesMovies từ allMovieIdsInThisSeries
+    const seriesMovies = Array.from(allMovieIdsInThisSeries || []).map((movieId: unknown, index: number) => ({
+      id: `${seriesId}-${movieId}`,
+      movieId: movieId as string,
+      seriesId: seriesId,
+      seasonNumber: 1, // Default season
+      episodeOrder: index + 1
+    }));
+
+    // Trả về series với format tương tự mockup
+    return {
+      id: seriesId,
+      name: seriesName || baseSeries.name,
+      description: baseSeries.description || '',
+      status: baseSeries.status || 'active',
+      releaseYear: baseSeries.releaseYear || new Date().getFullYear().toString(),
+      posterUrl: baseSeries.posterUrl || '',
+      seriesMovies: seriesMovies,
+      movies: baseSeries.movies || [], // Sử dụng movies từ baseSeries
+      movieCount: Array.from(allMovieIdsInThisSeries || []).length
+    };
+  }
+
+  // Get series by movie ID - Sử dụng SeriesForMovieResponse mapping
   static async getSeriesByMovieId(movieId: string): Promise<Series | null> {
     if (!this.isServiceAvailable()) {
       // Mock data logic
@@ -295,25 +367,24 @@ export class SeriesService {
     }
 
     try {
-      // API call
-      const authToken = localStorage.getItem('authToken');
-      const response = await fetch(`${this.API_BASE_URL}/by-movie/${movieId}`, {
+      // Gọi API để lấy SeriesForMovieResponse
+      const response = await fetch(`http://localhost:8088/api/movies/${movieId}/series`, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${authToken}`
         }
       });
-      
+      const apiResponse = await response.json();
+      console.log('SeriesForMovieResponse:', apiResponse);
+
       if (!response.ok) {
         if (response.status === 404) return null;
         throw new Error(`HTTP error! status: ${response.status}`);
       }
-
-      const apiResponse = await response.json();
       
       if (apiResponse.result) {
-        return this.mapSeriesResponseToSeries(apiResponse.result);
+        // Sử dụng hàm mapping riêng để convert thành Series format
+        return await this.mapSeriesForMovieResponseToSeries(apiResponse.result);
       }
       return null;
       

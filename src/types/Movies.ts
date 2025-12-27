@@ -43,3 +43,24 @@ export interface Movie {
     episodes?: Episode[];
     seasonNumber?: number; // For series movies
 }
+
+// Type for AI semantic search results
+export interface SimilarMovie {
+    id: number;
+    title: string;
+    description: string;
+    genre: string[];
+    releaseYear: number;
+    rating: number;
+    posterUrl?: string;
+    similarity: number; // Similarity score from AI
+}
+
+// Type for AI search response
+export interface AISearchResponse {
+    status: 'success' | 'error';
+    query: string;
+    movies: SimilarMovie[];
+    count: number;
+    message: string;
+}

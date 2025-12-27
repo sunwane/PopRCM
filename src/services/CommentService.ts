@@ -1,7 +1,6 @@
 import { Comment, CommentRequest, CommentUpdateRequest, PaginatedComments } from '@/types/Comment';
-import { ApiResponse } from '@/types/APIResponse';
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8088';
+const API_BASE_URL = 'http://localhost:8088';
 
 export class CommentService {
   // Get comments for an episode (public)

@@ -79,7 +79,7 @@ export function EpisodesTab({ movieInfo, seriesInfo, currentEpisode, loading }: 
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 max-w-full lg:max-w-[69vw]">
       {/* Series Part */}
       {seriesInfo && (
         <div>

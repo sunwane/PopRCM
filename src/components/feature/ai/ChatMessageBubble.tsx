@@ -1,4 +1,5 @@
 import { ChatMessage } from '@/hooks/useAIChat';
+import Link from 'next/link';
 
 interface ChatMessageBubbleProps {
   message: ChatMessage;
@@ -55,6 +56,65 @@ export default function ChatMessageBubble({ message }: ChatMessageBubbleProps) {
             {formatContent(message.content)}
           </p>
         </div>
+        
+        {/* Display movies if available */}
+        {message.movies && message.movies.length > 0 && (
+          <div className="mt-3 w-full">
+            <div className="grid gap-3 max-w-md">
+              {message.movies.map((movie) => (
+                <div key={movie.id} className="bg-(--surface-secondary) border border-(--border-blue)/10 rounded-lg p-3 hover:shadow-md transition-shadow">
+                  <div className="flex items-start gap-3">
+                    {movie.posterUrl && (
+                      <img 
+                        src={movie.posterUrl || '/placeholder/placeholder-poster.png'} 
+                        alt={movie.title}
+                        className="w-12 h-16 object-cover rounded"
+                        onError={(e) => {
+                          const target = e.target as HTMLImageElement;
+                          target.src = '/placeholder/placeholder-poster.png';
+                        }}
+                      />
+                    )}
+                    <div className="flex-1 min-w-0">
+                      <h4 className="font-medium text-(--text-primary) text-sm truncate">
+                        {movie.title}
+                      </h4>
+                      <p className="text-xs text-(--text-secondary) mt-1 line-clamp-2">
+                        {movie.description}
+                      </p>
+                      <div className="flex items-center gap-2 mt-2">
+                        <span className="text-xs bg-(--primary)/10 text-(--primary) px-2 py-1 rounded">
+                          {movie.releaseYear}
+                        </span>
+                        <span className="text-xs text-(--text-secondary)">
+                          ⭐ {movie.rating}
+                        </span>
+                        <span className="text-xs text-(--accent) font-medium">
+                          {Math.round(movie.similarity * 100)}% phù hợp
+                        </span>
+                      </div>
+                      <div className="flex flex-wrap gap-1 mt-2">
+                        {movie.genre.slice(0, 3).map((g, index) => (
+                          <span key={index} className="text-xs bg-(--surface-tertiary) text-(--text-secondary) px-2 py-0.5 rounded">
+                            {g}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                  {/* Add view movie button */}
+                  <Link 
+                    href={`/movie/${movie.id}`}
+                    className="block mt-2 text-center bg-(--primary) hover:bg-(--primary-hover) text-white py-1.5 px-3 rounded text-xs transition-colors"
+                  >
+                    Xem chi tiết
+                  </Link>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+        
         <span className="text-xs text-(--text-secondary) mt-1 px-2">
           AI • {formatTime(message.timestamp)}
         </span>

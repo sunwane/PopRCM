@@ -811,7 +811,7 @@ export class MoviesService {
 
     try {
       const currentDate = new Date();
-      const currentMonth = currentDate.getMonth() + 1;
+      const currentMonth = currentDate.getMonth();
       const currentYear = currentDate.getFullYear();
 
       const response = await fetch(`${this.API_BASE_URL}/top/favorite?month=${currentMonth}&year=${currentYear}`, {
@@ -826,6 +826,7 @@ export class MoviesService {
       }
 
       const apiResponse = await response.json();
+      console.log('API response for top favorites movies ranking:', apiResponse);
 
       if (apiResponse.result && apiResponse.result.content.length === 0) {
         return this.getPopularMovies(limit);
@@ -881,7 +882,7 @@ export class MoviesService {
 
     try {
       const currentDate = new Date();
-      const currentMonth = currentDate.getMonth() + 1;
+      const currentMonth = currentDate.getMonth();
       const currentYear = currentDate.getFullYear();
 
       const response = await fetch(`${this.API_BASE_URL}/top/comment?month=${currentMonth}&year=${currentYear}`, {
@@ -896,6 +897,7 @@ export class MoviesService {
       }
 
       const apiResponse = await response.json();
+      console.log('API response for top comments movies ranking:', apiResponse);
 
       if (apiResponse.result && apiResponse.result.content.length === 0) {
         return this.getPopularMovies(limit);
@@ -909,24 +911,7 @@ export class MoviesService {
       return [];
     } catch (error) {
       console.warn('API failed for getTopCommentsMoviesRanking, falling back to mock...', error);
-      // Fallback to mock logic
-      try {
-        await this.loadMoviesData(0, 1000);
-        const shuffled = [...this.movies]
-          .filter(movie => (movie.imdbScore || 0) > 0 || (movie.tmdbScore || 0) > 0)
-          .sort((a, b) => {
-            const aScore = ((a.imdbScore || 0) + (a.tmdbScore || 0)) / 2;
-            const bScore = ((b.imdbScore || 0) + (b.tmdbScore || 0)) / 2;
-            return bScore - aScore;
-          })
-          .slice(0, 30)
-          .sort(() => Math.random() - 0.5)
-          .slice(0, limit);
-        return shuffled;
-      } catch (mockError) {
-        console.error('Error with mock comments ranking:', mockError);
-        return [];
-      }
+      return [];
     }
   }
 

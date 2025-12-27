@@ -9,14 +9,34 @@ import Message from '@/components/ui/Message';
 interface ListAnimeHeroMoviesProps {
   animeMovies: Movie[];
   isLoading?: boolean;
+  // Props for favorite functionality (optional to maintain backward compatibility)
+  isProcessing?: boolean;
+  isFavorited?: (movieId: string) => boolean;
+  onFavoriteToggle?: (movieId: string) => Promise<void>;
 }
 
-export default function ListAnimeHeroMovies({ animeMovies, isLoading }: ListAnimeHeroMoviesProps) {
+export default function ListAnimeHeroMovies({ 
+  animeMovies, 
+  isLoading,
+  isProcessing: parentIsProcessing,
+  isFavorited: parentIsFavorited,
+  onFavoriteToggle: parentOnFavoriteToggle
+}: ListAnimeHeroMoviesProps) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isAutoPlay, setIsAutoPlay] = useState(true);
 
-  const { isProcessing, message, isFavorited, handleFavoriteToggle, clearMessage } = useFavoriteHandler();
+  const [isFavHover, setFavHover] = useState(false);
+  const [isInfoHover, setInfoHover] = useState(false);
+
   const route = useRouter();
+  
+  // Use favorite handler hook as fallback if parent doesn't provide handlers
+  const { isProcessing: hookIsProcessing, message, isFavorited: hookIsFavorited, handleFavoriteToggle: hookHandleFavoriteToggle, clearMessage } = useFavoriteHandler();
+
+  // Use parent handlers if available, otherwise fall back to hook
+  const isProcessing = parentIsProcessing ?? hookIsProcessing;
+  const isFavorited = parentIsFavorited ?? hookIsFavorited;
+  const handleFavoriteToggle = parentOnFavoriteToggle ?? hookHandleFavoriteToggle;
 
   useEffect(() => {
     if (!isAutoPlay || animeMovies.length <= 1) return;
@@ -118,22 +138,53 @@ export default function ListAnimeHeroMovies({ animeMovies, isLoading }: ListAnim
                   dangerouslySetInnerHTML={{ __html: movie.description || "Không có mô tả cho anime này." }}></div>
               <div className="flex items-center gap-6">
                 <button
-                  className="flex items-center gap-2 bg-linear-to-tr from-blue-600 to-blue-400 hover:from-blue-700 hover:to-blue-500 text-white px-7 py-4 rounded-full font-semibold transition-colors"
-                  onClick={() => route.push(`/watch/${movie.id}`)}
+                  className="flex items-center gap-2 bg-linear-to-tr from-blue-600 to-blue-400 hover:from-blue-700 hover:to-blue-500 text-white px-5 py-5 rounded-full font-semibold transition-colors"
+                  onClick={() => {
+                    if (movie.episodes && movie.episodes.length > 0 && movie.episodes[0]?.id) {
+                      route.push(`/watch/${movie.episodes[0].id}?movieId=${movie.id}`);
+                    }
+                  }}
                 >
                   <img src="/icons/Play.png" alt="play" className="w-7 h-7" />
                 </button>
-                <button
-                  className="flex items-center gap-2 border-2 border-gray-500 rounded-full px-6 py-4 text-white hover:bg-gray-700 transition"
-                  onClick={() => handleFavoriteToggle(movie.id)}
-                  disabled={isProcessing}
-                >
-                  <img
-                    src={isFavorited(movie.id) ? "/icons/HeartHover.png" : "/icons/Heart.png"}
-                    alt="favorite"
-                    className="w-7 h-7"
-                  />
-                </button>
+                {/* Group 2 nút bo tròn, border, chia đôi */}
+                <div className="flex items-center rounded-3xl border-2 border-gray-500 overflow-hidden bg-transparent h-fit">
+                  <button 
+                    className="px-5 py-3.5 text-gray-300 border-r-2 border-gray-500 disabled:opacity-50"
+                    onMouseEnter={() => setFavHover(true)}
+                    onMouseLeave={() => setFavHover(false)}
+                    onClick={() => handleFavoriteToggle(movie.id)}
+                    disabled={isProcessing}
+                  >
+                    {isProcessing ? (
+                      <svg className="w-7 h-7 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                      </svg>
+                    ) : (
+                      <img 
+                        src={
+                          isFavorited(movie.id) 
+                            ? "/icons/HeartHover.png" 
+                            : isFavHover 
+                            ? "/icons/HeartHover.png" 
+                            : "/icons/Heart.png"
+                        } 
+                        alt="favorite" 
+                        className={`w-7 h-7 ${(isFavHover || isFavorited(movie.id)) ? "" : "opacity-75"}`} 
+                      />
+                    )}
+                  </button>
+                  <button className="px-5 py-3.5 text-gray-300"
+                    onMouseEnter={() => setInfoHover(true)}
+                    onMouseLeave={() => setInfoHover(false)}
+                    onClick={() => {
+                      route.push('/movie/' + movie.id);
+                    }}
+                  >
+                    <img src={isInfoHover? "/icons/InfoHover.png" : "/icons/Info.png"} alt="favorite" className={`w-7 h-7 ${isInfoHover? "" : "opacity-75"}`} />
+                  </button>
+                </div>
               </div>
             </div>
           </div>
@@ -159,8 +210,8 @@ export default function ListAnimeHeroMovies({ animeMovies, isLoading }: ListAnim
           ))}
         </div>
 
-        {/* Message */}
-        {message && (
+        {/* Message component - only show if using internal hook (no parent handlers) */}
+        {!parentOnFavoriteToggle && message && (
           <Message
             isVisible={true}
             message={message.text}

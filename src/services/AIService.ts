@@ -1,53 +1,156 @@
-class AIService {
-  private baseURL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8088/api/ai';
+import { SimilarMovie, AISearchResponse } from '@/types/Movies';
 
-  async chat(prompt: string): Promise<string> {
+class AIService {
+  private baseURL = 'http://localhost:8088/api';
+
+  async searchMovies(query: string): Promise<AISearchResponse> {
     if (localStorage.getItem('serviceAvailable') === 'false') {
-      const aiResponse = "Xin hãy kiểm tra kết nối mạng hoặc thử lại sau.";
-      return aiResponse;
+      return {
+        status: 'error',
+        query: query,
+        message: 'Xin hãy kiểm tra kết nối mạng hoặc thử lại sau.',
+        movies: [],
+        count: 0
+      };
     }
 
     try {
-      console.log('Attempting to call real AI API...');
-      const response = await fetch(`${this.baseURL}/chat`, {
+      console.log('Attempting to call AI search API...');
+      const authToken = localStorage.getItem('authToken') || '';
+      const response = await fetch(`${this.baseURL}/search`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${authToken}`
         },
-        body: JSON.stringify({ prompt }),
+        body: JSON.stringify({ query }),
       });
 
       if (!response.ok) {
-        throw new Error(`AI API error: ${response.status}`);
+        throw new Error(`AI Search API error: ${response.status}`);
       }
 
-      // Parse JSON response from OpenAI
       const jsonResponse = await response.json();
-      console.log('AI API Response:', jsonResponse);
+      console.log('AI Search API Response:', jsonResponse);
       
-      // Extract content from OpenAI response structure
-      let aiResponse = '';
-      if (jsonResponse.choices && jsonResponse.choices[0]) {
-        aiResponse = jsonResponse.choices[0].message?.content || jsonResponse.choices[0].text || '';
-      } else if (typeof jsonResponse === 'string') {
-        aiResponse = jsonResponse;
-      } else {
-        aiResponse = JSON.stringify(jsonResponse);
-      }
-
-      console.log('✅ AI response received');
-      return aiResponse || 'Xin lỗi, tôi không thể trả lời câu hỏi này lúc này.';
+      // Response structure từ controller:
+      // {
+      //   status: "success" | "error",
+      //   query: string,
+      //   movies: SimilarMovie[],
+      //   count: number,
+      //   message: string
+      // }
+      
+      return jsonResponse as AISearchResponse;
       
     } catch (error: any) {
-      console.error('❌ AI API error:', error);
-      console.log('Falling back to mock AI response...');
-      return this.mockChat(prompt);
+      console.error('❌ AI Search API error:', error);
+      console.log('Falling back to mock search response...');
+      return this.mockSearchMovies(query);
     }
   }
 
-  private mockChat(prompt: string): string {
+  // Deprecated: Giữ lại để backward compatibility
+  async chat(prompt: string): Promise<string> {
+    console.warn('chat() method is deprecated, use searchMovies() instead');
+    const result = await this.searchMovies(prompt);
+    
+    if (result.status === 'success') {
+      return result.message + '\n\nTìm thấy ' + result.count + ' phim phù hợp.';
+    } else {
+      return result.message;
+    }
+  }
+
+  private mockSearchMovies(query: string): AISearchResponse {
+    // Mock search responses based on query content
+    const lowerQuery = query.toLowerCase();
+    
+    // Mock movie data structure to match SimilarMovie
+    const mockMovies: SimilarMovie[] = [
+      {
+        id: 1,
+        title: "One Piece Film: Red",
+        description: "Phim điện ảnh về hành trình tìm kho báu One Piece",
+        genre: ["Anime", "Hành động", "Phiêu lưu"],
+        releaseYear: 2022,
+        rating: 8.5,
+        posterUrl: "/placeholder/onepiece.jpg",
+        similarity: 0.95
+      },
+      {
+        id: 2, 
+        title: "Your Name",
+        description: "Anime tình cảm về hoán đổi thân thể giữa hai người",
+        genre: ["Anime", "Romance", "Drama"],
+        releaseYear: 2016,
+        rating: 8.4,
+        posterUrl: "/placeholder/yourname.jpg", 
+        similarity: 0.88
+      },
+      {
+        id: 3,
+        title: "Demon Slayer: Mugen Train", 
+        description: "Hành trình tiêu diệt quỷ với đồ họa tuyệt đẹp",
+        genre: ["Anime", "Hành động", "Supernatural"],
+        releaseYear: 2020,
+        rating: 8.7,
+        posterUrl: "/placeholder/demonslayer.jpg",
+        similarity: 0.82
+      }
+    ];
+
+    if (lowerQuery.includes('anime') || lowerQuery.includes('hoạt hình')) {
+      return {
+        status: 'success',
+        query: query,
+        movies: mockMovies,
+        count: mockMovies.length,
+        message: `Tìm thấy ${mockMovies.length} phim anime phù hợp với yêu cầu của bạn`
+      };
+    }
+    
+    if (lowerQuery.includes('hành động') || lowerQuery.includes('action')) {
+      const actionMovies = mockMovies.filter(m => 
+        m.genre.some(g => g.toLowerCase().includes('hành động'))
+      );
+      return {
+        status: 'success', 
+        query: query,
+        movies: actionMovies,
+        count: actionMovies.length,
+        message: `Tìm thấy ${actionMovies.length} phim hành động phù hợp với yêu cầu của bạn`
+      };
+    }
+
+    if (lowerQuery.includes('romance') || lowerQuery.includes('tình cảm')) {
+      const romanceMovies = mockMovies.filter(m =>
+        m.genre.some(g => g.toLowerCase().includes('romance'))
+      );
+      return {
+        status: 'success',
+        query: query, 
+        movies: romanceMovies,
+        count: romanceMovies.length,
+        message: `Tìm thấy ${romanceMovies.length} phim tình cảm phù hợp với yêu cầu của bạn`
+      };
+    }
+
+    // Default case - return all mock movies
+    return {
+      status: 'success',
+      query: query,
+      movies: mockMovies.slice(0, 3), // Limit to 3 results
+      count: 3,
+      message: 'Tìm thấy 3 phim phù hợp với yêu cầu của bạn'
+    };
+  }
+
+  // Keep old mockChat for backward compatibility
+  private mockChat(query: string): string {
     // Mock AI responses based on prompt content
-    const lowerPrompt = prompt.toLowerCase();
+    const lowerPrompt = query.toLowerCase();
     
     if (lowerPrompt.includes('phim') || lowerPrompt.includes('movie')) {
       return `Dựa trên câu hỏi của bạn về phim, tôi khuyên bạn nên xem:

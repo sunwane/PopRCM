@@ -73,9 +73,10 @@ export default function SeriePage() {
         </div>
         <div className="lg:px-12 md:px-10 sm:px-6 px-6 py-2">
           <h2 className="lg:text-2xl md:text-xl sm:text-lg text-lg font-bold mb-2">Mô tả</h2>
-          <p className="text-(--text-secondary) lg:text-lg md:text[16px] sm:text-sm text-m leading-relaxed">
-            {serieInfo.description || "Không có mô tả cho series này."}
-          </p>
+          <p 
+            className="text-(--text-secondary) lg:text-lg md:text[16px] sm:text-sm text-m leading-relaxed"
+            dangerouslySetInnerHTML={{ __html: serieInfo.description || "Không có mô tả cho series này." }}
+          ></p>
           <h2 className="lg:text-2xl md:text-xl sm:text-lg text-lg font-bold mb-3 lg:mt-8 md:mt-8 mt-6">Các phần phim</h2>
           <MovieGridLayout filteredMovies={serieInfo.movies ?? []} loading={loading} gapWidth={96} />
         </div>
