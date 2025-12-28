@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState} from "react";
+import { useEffect, useState, Suspense} from "react";
 import MoviesFilter from "@/components/feature/movies/MoviesFilter";
 import PageHeader from "@/components/layout/PageHeader";
 import { useParams } from "next/navigation";
@@ -12,6 +12,14 @@ import PageFooter from "@/components/layout/PageFooter";
 import { LoadingPage } from "@/components/ui/LoadingPage";
 
 export default function CountryPage() {
+  return (
+    <Suspense fallback={<div className="max-w-[2000px]"><LoadingPage /></div>}>
+      <CountryPageContent />
+    </Suspense>
+  );
+}
+
+function CountryPageContent() {
   const params = useParams();
   const country = params.country as string;
 

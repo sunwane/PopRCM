@@ -6,8 +6,18 @@ import { useSearchParams } from "next/navigation";
 import { useMoviesPagination } from "@/hooks/usePagination/useMoviesPagination";
 import MovieGridLayout from "@/components/feature/movies/MoviesGridLayout";
 import PageFooter from "@/components/layout/PageFooter";
+import { Suspense } from "react";
+import { LoadingPage } from "@/components/ui/LoadingPage";
 
 export default function SearchResultPage() {
+  return (
+    <Suspense fallback={<div className="max-w-[2000px]"><LoadingPage /></div>}>
+      <SearchResultPageContent />
+    </Suspense>
+  );
+}
+
+function SearchResultPageContent() {
   const params = useSearchParams();
   const query = params.get("query") || "";
 

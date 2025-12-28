@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useState, useMemo, Suspense } from "react";
 import MoviesFilter from "@/components/feature/movies/MoviesFilter";
 import PageHeader from "@/components/layout/PageHeader";
 import { useParams } from "next/navigation";
@@ -12,6 +12,14 @@ import PageFooter from "@/components/layout/PageFooter";
 import { LoadingPage } from "@/components/ui/LoadingPage";
 
 export default function GenrePage() {
+  return (
+    <Suspense fallback={<div className="max-w-[2000px]"><LoadingPage /></div>}>
+      <GenrePageContent />
+    </Suspense>
+  );
+}
+
+function GenrePageContent() {
   const params = useParams();
   const genre = params.genre as string;
 

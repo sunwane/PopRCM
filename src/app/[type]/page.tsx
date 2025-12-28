@@ -7,8 +7,18 @@ import { useMoviesPagination } from "@/hooks/usePagination/useMoviesPagination";
 import MovieGridLayout from "@/components/feature/movies/MoviesGridLayout";
 import { getMovieTypesText } from "@/utils/getTextUtils";
 import PageFooter from "@/components/layout/PageFooter";
+import { Suspense } from "react";
+import { LoadingPage } from "@/components/ui/LoadingPage";
 
 export default function TypePage() {
+  return (
+    <Suspense fallback={<div className="max-w-[2000px]"><LoadingPage /></div>}>
+      <TypePageContent />
+    </Suspense>
+  );
+}
+
+function TypePageContent() {
   const params = useParams(); // Lấy dynamic route params
   const type = params.type; // Lấy giá trị của [type]
 

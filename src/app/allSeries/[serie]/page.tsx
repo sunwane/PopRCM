@@ -9,8 +9,17 @@ import { useSeriesDataByID } from "@/hooks/useData/useSeriesData";
 import { getStatusText } from "@/utils/getTextUtils";
 import { getStatusLabelColor } from "@/utils/getColorUtils";
 import MovieGridLayout from "@/components/feature/movies/MoviesGridLayout";
+import { Suspense } from "react";
 
 export default function SeriePage() {
+  return (
+    <Suspense fallback={<div className="max-w-[2000px]"><LoadingPage /></div>}>
+      <SeriePageContent />
+    </Suspense>
+  );
+}
+
+function SeriePageContent() {
   const params = useParams();
   const serie = params.serie;
 

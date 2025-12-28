@@ -16,9 +16,17 @@ import Message from "@/components/ui/Message";
 import { CmtReviewSection } from "@/components/feature/commentReview/CmtReviewSection";
 import { AuthBackground } from "@/components/feature/auth/AuthBackground";
 import { ReviewPopup } from "@/components/feature/commentReview/ReviewPopup";
-import { useState } from "react";
+import { useState, Suspense } from "react";
 
 export default function MoviesPage() {
+  return (
+    <Suspense fallback={<div className="max-w-[2000px]"><LoadingPage /></div>}>
+      <MoviePageContent />
+    </Suspense>
+  );
+}
+
+function MoviePageContent() {
   const params = useParams();
   const movie = params.movie;
   const [showAuthOverlay, setShowAuthOverlay] = useState(false);

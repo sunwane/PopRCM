@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuth } from '@/hooks/useAuth';
 import { useUserData } from '@/hooks/useData/useUserData';
@@ -48,6 +48,21 @@ const tabs: TabConfig[] = [
 ];
 
 export default function MyAccountPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-(--background) flex items-center justify-center">
+        <div className="text-white text-center">
+          <div className="animate-spin w-8 h-8 border-4 border-(--primary) border-t-transparent rounded-full mx-auto mb-4"></div>
+          <p>Đang tải trang tài khoản...</p>
+        </div>
+      </div>
+    }>
+      <MyAccountPageContent />
+    </Suspense>
+  );
+}
+
+function MyAccountPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { isAuthenticated, user, loading } = useAuth();

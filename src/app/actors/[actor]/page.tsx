@@ -10,9 +10,17 @@ import { getGenderText } from "@/utils/getTextUtils";
 import MovieGridLayout from "@/components/feature/movies/MoviesGridLayout";
 import MoviesByYear from "@/components/feature/movies/MoviesByYear";
 import ToggleButton from "@/components/ui/ToggleButton";
-import { useState } from "react";
+import { useState, Suspense } from "react";
 
 export default function ActorPage() {
+  return (
+    <Suspense fallback={<div className="max-w-[2000px]"><LoadingPage /></div>}>
+      <ActorPageContent />
+    </Suspense>
+  );
+}
+
+function ActorPageContent() {
   const params = useParams();
   const actor = params.actor;
   const [imageError, setImageError] = useState(false);

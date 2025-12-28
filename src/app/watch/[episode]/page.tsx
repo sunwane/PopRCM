@@ -19,9 +19,17 @@ import { LoadingPage } from "@/components/ui/LoadingPage";
 import { CmtReviewSection } from "@/components/feature/commentReview/CmtReviewSection";
 import { AuthBackground } from "@/components/feature/auth/AuthBackground";
 import { ReviewPopup } from "@/components/feature/commentReview/ReviewPopup";
-import { useState } from "react";
+import { useState, Suspense } from "react";
 
 export default function WatchPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-(--background) flex items-center justify-center"><LoadingPage /></div>}>
+      <WatchPageContent />
+    </Suspense>
+  );
+}
+
+function WatchPageContent() {
   const params = useParams();
   const searchParams = useSearchParams();
   const episode = params.episode;
