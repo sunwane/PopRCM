@@ -1,9 +1,12 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
+import { Suspense } from "react";
 import "./globals.css";
 import ServiceChecker from "@/services/ServiceChecker";
 import { AuthProvider } from "@/providers/AuthProvider";
 import { ClientLayout } from "@/components/layout/ClientLayout";
+import { LoadingPage } from "@/components/ui/LoadingPage";
+import { LoadingEffect } from "@/components/ui/LoadingEffect";
 
 const geistInter = Inter({
   variable: "--font-inter",
@@ -31,11 +34,15 @@ export default async function RootLayout({
   return (
     <html lang="en">
       <body className={`${geistInter.variable} antialiased mx-auto max-w-[2000px]`}>
-        <AuthProvider>
-          <ClientLayout>
-            {children}
-          </ClientLayout>
-        </AuthProvider>
+        <Suspense fallback={<LoadingPage />}>
+          <AuthProvider>
+            <ClientLayout>
+              <Suspense fallback={<LoadingEffect message="Đang tải nội dung..." />}>
+                {children}
+              </Suspense>
+            </ClientLayout>
+          </AuthProvider>
+        </Suspense>
       </body>
     </html>
   );
