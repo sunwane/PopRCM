@@ -120,23 +120,24 @@ export function useSeriesDataByMovieId(movieId: string | null) {
       try {
         setLoading(true);
         const seriesData = await SeriesService.getSeriesByMovieId(movieId);
+        console.log("Fetched series data by movie ID:", seriesData);  
         
         if (seriesData) {
-          // Thêm seasonNumber vào movies
-          const seriesWithSeasonNumbers = addSeasonNumberToMovies(seriesData);
-          
-          // Thêm movieCount nếu chưa có
-          const seriesWithMovieCount = {
-            ...seriesWithSeasonNumbers,
-            movieCount: seriesWithSeasonNumbers.movies ? seriesWithSeasonNumbers.movies.length : 0,
-          };
-
-          setSeriesInfo(seriesWithMovieCount);
-          console.log("Fetched series by movie ID:", seriesWithMovieCount);
-          console.log("Movies in series with season numbers:", seriesWithMovieCount.movies);
+          if (seriesData?.movies && seriesData.movies.length > 0 && seriesData.movies[0].seasonNumber === null) {
+            // Thêm seasonNumber vào movies
+            const seriesWithSeasonNumbers = addSeasonNumberToMovies(seriesData);
+            const serieWithMovieCount = {
+              ...seriesWithSeasonNumbers,
+              movieCount: seriesWithSeasonNumbers.movies ? seriesWithSeasonNumbers.movies.length : 0,
+            };
+            setSeriesInfo(serieWithMovieCount);
+            console.log("Fetched series by movie ID with season numbers:", serieWithMovieCount);
+          } else {
+            setSeriesInfo(seriesData);
+            console.log("Fetched series by movie ID:", seriesData);
+          }
         } else {
           setSeriesInfo(null);
-          console.log("No series found for movie ID:", movieId);
         }
       } catch (err) {
         console.error("Error fetching series by movie ID:", err);

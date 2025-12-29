@@ -19,6 +19,7 @@ export interface MovieGridLayoutProps {
   // Additional MovieCard props
   showFavoriteButton?: boolean;
   inFavoritesTab?: boolean;
+  inHistoryTab?: boolean;
   showProgress?: boolean;
   progressPercent?: number;
   currentTime?: number;
@@ -41,6 +42,7 @@ export default function MovieGridLayout({
   cardSize = 'medium',
   showFavoriteButton,
   inFavoritesTab,
+  inHistoryTab,
   showProgress,
   progressPercent,
   currentTime,
@@ -149,10 +151,13 @@ export default function MovieGridLayout({
               size={cardSize}
               showFavoriteButton={showFavoriteButton}
               inFavoritesTab={inFavoritesTab}
+              inHistoryTab={inHistoryTab}
               showProgress={extraData?.showProgress || showProgress}
               progressPercent={extraData?.progressPercent || progressPercent}
               currentTime={extraData?.currentTime || currentTime}
               totalDuration={extraData?.totalDuration || totalDuration}
+              episodeId={extraData?.episodeId}
+              episodeNumber={extraData?.episodeNumber}
               onMessage={onMessage}
             />
           );

@@ -31,12 +31,28 @@ export default function HistoryTab() {
     refreshData();
   }, []);
 
+  // Calculate progress percentage (assuming 45 minutes = 2700 seconds per episode)
+  const getProgressInfo = (currentTime: number) => {
+    const assumedDuration = 2700; // 45 minutes in seconds
+    const progressPercent = (currentTime / assumedDuration) * 100;
+    return {
+      progressPercent: Math.min(100, progressPercent),
+      currentTime: Math.floor(currentTime),
+      totalDuration: assumedDuration
+    };
+  };
+
   // Convert WatchHistory to Movie data with progress info
   const historyMovies: Movie[] = watchHistory.map(history => {
-    // Create a mock movie from episode data (in real app, you'd fetch movie details)
+    // Use actual movie data from API response if available
+    if (history.movie) {
+      return history.movie;
+    }
+    
+    // Fallback to creating movie from episode data (for mock data compatibility)
     const movie: Movie = {
       id: history.episode.movieId,
-      title: `Movie for ${history.episode.title}`,
+      title: history.episode.movieTitle || `Movie for ${history.episode.title}`,
       originalName: history.episode.title,
       description: `Watched episode: ${history.episode.title}`,
       releaseYear: 2024,
@@ -49,7 +65,7 @@ export default function HistoryTab() {
       createdAt: new Date(),
       modifiedAt: new Date(),
       view: 0,
-      slug: `movie-${history.episode.movieId}`,
+      slug: history.episode.movieSlug || `movie-${history.episode.movieId}`,
       lang: 'Vietsub',
       country: [],
       actors: [],
@@ -70,23 +86,15 @@ export default function HistoryTab() {
       progressPercent: progressInfo.progressPercent,
       currentTime: progressInfo.currentTime,
       totalDuration: progressInfo.totalDuration,
+      // Episode information for navigation and display
+      episodeId: history.episode.id,
+      episodeNumber: history.episode.episodeNumber,
       episodeInfo: {
         episodeNumber: history.episode.episodeNumber,
         watchedAt: history.watchedAt
       }
     };
   });
-
-  // Calculate progress percentage (assuming 45 minutes = 2700 seconds per episode)
-  const getProgressInfo = (currentTime: number) => {
-    const assumedDuration = 2700; // 45 minutes in seconds
-    const progressPercent = (currentTime / assumedDuration) * 100;
-    return {
-      progressPercent: Math.min(100, progressPercent),
-      currentTime: Math.floor(currentTime),
-      totalDuration: assumedDuration
-    };
-  };
 
   if (historyLoading && watchHistory.length === 0) {
     return <LoadingEffect message="Đang tải lịch sử xem..." />;
@@ -116,26 +124,28 @@ export default function HistoryTab() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-5">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-bold text-white mb-2">Lịch sử xem</h2>
+          <h2 className="text-2xl font-bold text-white mb-0.5">Lịch sử xem</h2>
           <p className="text-gray-400">
-            {historyPagination.totalElements} phim đã xem gần đây
+            {historyPagination.totalElements} phim đã xem
           </p>
         </div>
         
-        <button
-          onClick={refreshData}
-          disabled={historyLoading}
-          className="flex items-center space-x-2 px-4 py-2 bg-(--surface) text-white rounded-lg hover:bg-(--primary)/20 transition disabled:opacity-50"
-        >
-          <svg className={`w-4 h-4 ${historyLoading ? 'animate-spin' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-          </svg>
-          <span>Làm mới</span>
-        </button>
+        <div className="flex items-center space-x-4">
+          <button
+            onClick={refreshData}
+            disabled={historyLoading}
+            className="flex items-center space-x-2 px-4 py-2 bg-(--surface) text-white rounded-lg hover:bg-(--primary)/20 transition disabled:opacity-50"
+          >
+            <svg className={`w-4 h-4 ${historyLoading ? 'animate-spin' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+            </svg>
+            <span>Làm mới</span>
+          </button>
+        </div>
       </div>
 
       {/* Error display if any */}
@@ -157,39 +167,9 @@ export default function HistoryTab() {
         cardSize="medium"
         movieExtraData={movieExtraData}
         onMessage={handleMessage}
+        showFavoriteButton={false}
+        inHistoryTab={true}
       />
-
-      {/* Additional History Info */}
-      {historyMovies.length > 0 && (
-        <div className="mt-6 space-y-3">
-          <h3 className="text-lg font-semibold text-white mb-4 flex items-center space-x-2">
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-            </svg>
-            <span>Thông tin xem gần đây</span>
-          </h3>
-          
-          <div className="grid gap-3">
-            {watchHistory.slice(0, 5).map((history, index) => (
-              <div key={`${history.episode.id}-${index}`} className="bg-(--surface)/30 rounded-lg p-3">
-                <div className="flex justify-between items-center text-sm">
-                  <div className="text-white">
-                    <span className="font-medium">{history.episode.title}</span>
-                    <span className="text-gray-400 ml-2">• Tập {history.episode.episodeNumber}</span>
-                  </div>
-                  <div className="text-gray-400 text-xs">
-                    {new Date(history.watchedAt).toLocaleDateString('vi-VN')} • {' '}
-                    {new Date(history.watchedAt).toLocaleTimeString('vi-VN', { 
-                      hour: '2-digit', 
-                      minute: '2-digit' 
-                    })}
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
 
       {/* Global Message Component */}
       {message && (

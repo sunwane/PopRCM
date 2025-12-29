@@ -26,8 +26,9 @@ export function SeriesTab({ seriesInfo }: SeriesTabProps) {
           </div>
 
           <div className="mt-6 px-4">
-            <div className="font-bold lg:text-[16px] md:text-[16px] sm:text-sm text-sm">Mô tả:</div>
-            <div className="text-gray-400 leading-7 lg:text-sm md:text-sm sm:text-xs text-xs">{seriesInfo.description}</div>
+            <div className="font-bold lg:text-[16px] md:text-[16px] sm:text-sm text-sm mb-1">Mô tả:</div>
+            <div className="text-gray-400 leading-7 lg:text-sm md:text-sm sm:text-xs text-xs"
+                dangerouslySetInnerHTML={{ __html: seriesInfo.description || "" }}></div>
           </div>
 
           <div className="mt-6 px-4">

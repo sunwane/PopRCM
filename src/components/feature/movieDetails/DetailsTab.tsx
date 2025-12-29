@@ -12,9 +12,10 @@ export interface DetailsTabProps {
   recommendations?: Movie[];
   currentEpisode?: Episode;
   loading?: boolean;
+  watchedEpisodes?: Set<string>;
 }
 
-export function DetailsTab({ movieInfo, seriesInfo, recommendations = [], currentEpisode, loading }: DetailsTabProps) {
+export function DetailsTab({ movieInfo, seriesInfo, recommendations = [], currentEpisode, loading, watchedEpisodes }: DetailsTabProps) {
   const [activeTab, setActiveTab] = useState<'episodes' | 'series' | 'recommended'>('episodes');
 
   const allTabs = [
@@ -62,6 +63,7 @@ export function DetailsTab({ movieInfo, seriesInfo, recommendations = [], curren
           recommendedMovies={recommendations}
           currentEpisode={currentEpisode}
           loading={loading}
+          watchedEpisodes={watchedEpisodes}
         />
       </div>
     </div>

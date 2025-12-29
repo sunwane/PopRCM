@@ -58,7 +58,10 @@ export interface Notification {
 }
 
 export interface WatchHistory {
-    episode: Episode;
+    episode: Episode & {
+        movieTitle?: string;
+        movieSlug?: string;
+    };
     currentTime: number;
     watchedAt: Date;
 }

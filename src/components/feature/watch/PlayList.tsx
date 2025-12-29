@@ -9,11 +9,12 @@ export interface PlayListProps {
   currentEpisode?: Episode;
   onEpisodeSelect: (episode: Episode, serverName?: string, movieId?: string) => void;
   loading?: boolean;
+  watchedEpisodes?: Set<string>;
 }
 
 const EPISODES_PER_PAGE = 20;
 
-export function PlayList({ movie, episodes, currentEpisode, onEpisodeSelect, loading }: PlayListProps) {
+export function PlayList({ movie, episodes, currentEpisode, onEpisodeSelect, loading, watchedEpisodes }: PlayListProps) {
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedServer, setSelectedServer] = useState('');
   const [isServerDropdownOpen, setIsServerDropdownOpen] = useState(false);
@@ -149,25 +150,45 @@ export function PlayList({ movie, episodes, currentEpisode, onEpisodeSelect, loa
           <div className="flex flex-col">
           {currentEpisodes.map((episode) => {
             const isCurrentEpisode = currentEpisode?.id === episode.id;
+            const isWatched = watchedEpisodes?.has(episode.id) || false;
             
             return (
               <button
                 key={episode.id}
                 onClick={() => handleEpisodeSelect(episode)}
-                className={`px-4 py-3 flex items-center text-sm font-medium gap-3 hover:bg-white/10 ${
+                className={`px-4 py-3 flex items-center text-sm font-medium gap-3 hover:bg-white/10 relative ${
                   isCurrentEpisode
                     ? 'bg-(--hover)/25'
+                    : isWatched
+                    ? 'bg-gray-800/60 text-gray-400' // Darker background for watched episodes
                     : 'bg-(--background) border-(--border-blue) text-gray-300 hover:border-blue-400 hover:text-white'
                 }`}
               >
+                {/* Watched indicator */}
+                {isWatched && !isCurrentEpisode && (
+                  <div className="absolute top-2 right-2">
+                    <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                  </div>
+                )}
+                
                 <img
                   src={movie.thumbnailUrl || '/placeholder-thumbnail.jpg'}
                   alt={`Tập ${episode.episodeNumber}`}
-                  className="h-14 aspect-video object-cover rounded-sm"
+                  className={`h-14 aspect-video object-cover rounded-sm ${
+                    isWatched && !isCurrentEpisode ? 'opacity-60' : ''
+                  }`}
                 />
                 <div className="flex flex-col text-left pr-2">
-                  <div>Tập {episode.episodeNumber}</div>
-                  <div className='text-gray-400 line-clamp-1 max-w-[250px]'>{episode.title}</div>
+                  <div className={isWatched && !isCurrentEpisode ? 'text-gray-500' : ''}>
+                    Tập {episode.episodeNumber}
+                  </div>
+                  <div className={`line-clamp-1 max-w-[250px] ${
+                    isWatched && !isCurrentEpisode 
+                      ? 'text-gray-500' 
+                      : 'text-gray-400'
+                  }`}>
+                    {episode.title}
+                  </div>
                 </div>
               </button>
             );

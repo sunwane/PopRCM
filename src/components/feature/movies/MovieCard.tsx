@@ -18,6 +18,10 @@ export interface MovieCardProps {
   totalDuration?: number; // in seconds
   // For favorites tab - shows delete icon instead of heart
   inFavoritesTab?: boolean;
+  // Episode information for history tab
+  inHistoryTab?: boolean;
+  episodeId?: string;
+  episodeNumber?: number;
   // Message callback
   onMessage?: (content: string, type: 'success' | 'error') => void;
 }
@@ -64,6 +68,9 @@ export default function MovieCard({
   currentTime = 0,
   totalDuration = 0,
   inFavoritesTab = false,
+  inHistoryTab = false,
+  episodeId,
+  episodeNumber,
   onMessage
 }: MovieCardProps) {
   const config = sizeConfig[size];
@@ -74,7 +81,13 @@ export default function MovieCard({
   const isCurrentlyFavorited = isFavorited(movie.id);
   
   const goToDetails = () => {
-    window.location.href = `/movie/${movie.id}`;
+    // If in history tab and has episode info, go to episode watch page
+    if (inHistoryTab && episodeId) {
+      window.location.href = `/watch/${episodeId}?movieId=${movie.id}`;
+    } else {
+      // Default behavior: go to movie details page
+      window.location.href = `/movie/${movie.id}`;
+    }
   }
 
   const handleFavoriteClick = async (e: React.MouseEvent) => {
@@ -197,25 +210,6 @@ export default function MovieCard({
           </div>
         )}
 
-        {/* Progress Bar */}
-        {showProgress && calculatedProgress > 0 && (
-          <div className="absolute bottom-0 left-0 right-0 bg-black/60 backdrop-blur-sm rounded-b-md">
-            <div className="p-2">
-              <div className="w-full bg-gray-700/70 rounded-full h-1.5 mb-1">
-                <div 
-                  className="bg-(--primary) h-1.5 rounded-full transition-all duration-300"
-                  style={{ width: `${Math.min(100, Math.max(0, calculatedProgress))}%` }}
-                ></div>
-              </div>
-              {totalDuration > 0 && (
-                <div className="text-xs text-white/90 text-center font-medium">
-                  {formatTime(currentTime)} / {formatTime(totalDuration)}
-                </div>
-              )}
-            </div>
-          </div>
-        )}
-
         {/* Status and ReleaseYear Badge */}
         <div className={`absolute left-1/2 transform -translate-x-1/2 flex gap-0 space-x-0 ${config.badge}`}>
           {movie.status && (
@@ -231,12 +225,39 @@ export default function MovieCard({
         </div>
       </div>
 
+      {/* Progress Bar */}
+      {showProgress && calculatedProgress > 0 && (
+        <div className="pb-0.5">
+          <div className="w-full bg-gray-700/70 rounded-full h-1.5 mb-0.5">
+            <div 
+              className="bg-(--primary) h-1.5 rounded-full transition-all duration-300"
+              style={{ width: `${Math.min(100, Math.max(0, calculatedProgress))}%` }}
+            ></div>
+          </div>
+          <div className="flex items-center gap-2 justify-center">
+            {inHistoryTab && episodeNumber && (
+              <div className={`text-xs text-gray-500 font-medium`}>
+                Tập {episodeNumber}
+              </div>
+            )}
+            <div className="text-gray-300 mb-0.5">•</div>
+            {totalDuration > 0 && (
+              <div className="text-xs text-white/50 text-center font-medium">
+                {formatTime(currentTime)} / {formatTime(totalDuration)}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
       {/* Title and originName */}
       <div className="text-center">
         <h2 className={`${config.title} lg:font-bold md:font-bold font-medium truncate line-clamp-1 mb-0.5`}>
           {movie.title}
         </h2>
-        <p className={`${config.subtitle} text-gray-500 truncate line-clamp-1`}>{movie.originalName}</p>
+        <p className={`${config.subtitle} text-gray-500 truncate line-clamp-1 ${inHistoryTab && episodeNumber ? 'mb-1' : ''}`}>
+          {movie.originalName}
+        </p>
       </div>
     </div>
   );

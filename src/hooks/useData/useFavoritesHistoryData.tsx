@@ -19,8 +19,8 @@ export function useFavoritesHistoryData() {
     hasPrev: false
   });
 
-  // Watch History state
-  const [watchHistory, setWatchHistory] = useState<WatchHistory[]>([]);
+  // Watch History state - now includes movie data
+  const [watchHistory, setWatchHistory] = useState<(WatchHistory & { movie?: any })[]>([]);
   const [historyLoading, setHistoryLoading] = useState(false);
   const [historyError, setHistoryError] = useState('');
   const [historyPagination, setHistoryPagination] = useState({
@@ -157,7 +157,7 @@ export function useFavoritesHistoryData() {
    * WATCH HISTORY FUNCTIONS
    */
 
-  // Load watch history with page-based pagination
+  // Load watch history with page-based pagination (now loads latest per movie with movie data)
   const loadWatchHistory = async (page: number = 1, size: number = 20) => {
     if (!isAuthenticated) return;
 
@@ -167,7 +167,7 @@ export function useFavoritesHistoryData() {
 
       // Convert UI page (1-based) to API page (0-based)
       const apiPage = page - 1;
-      const response = await FavoritesHistoryService.getWatchHistory(apiPage, size);
+      const response = await FavoritesHistoryService.getLatestWatchHistoryWithMovies(apiPage, size);
       if (response) {
         setWatchHistory(response.content);
 
@@ -185,6 +185,8 @@ export function useFavoritesHistoryData() {
       setHistoryLoading(false);
     }
   };
+
+  // Load latest watch history per movie (chỉ tập mới nhất của mỗi movie) - REMOVED, now integrated into loadWatchHistory
 
   // Update watch progress
   const updateWatchProgress = async (episodeId: string, currentTime: number): Promise<boolean> => {
@@ -227,16 +229,21 @@ export function useFavoritesHistoryData() {
     if (isAuthenticated) {
       await Promise.all([
         loadFavorites(1, 20),
-        loadWatchHistory(1, 20)
+        loadWatchHistory(1, 20) // Now loads latest per movie automatically
       ]);
     }
   };
+
+  // Refresh data - remove toggle option since we only support latest history now
+  // const refreshDataWithHistoryType = async (useLatestOnly: boolean = true) => {
+  //   // Removed since we always use latest history now
+  // };
 
   // Auto-load data when user logs in
   useEffect(() => {
     if (isAuthenticated && user) {
       console.log('🔥 User authenticated, loading data...');
-      refreshData();
+      refreshData(); // Sử dụng latest history mặc định
     } else {
       console.log('🔥 User not authenticated, clearing data...');
       // Clear data when user logs out

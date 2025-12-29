@@ -9,11 +9,12 @@ export interface EpisodesTabProps {
   seriesInfo?: Series;
   currentEpisode?: Episode;
   loading?: boolean;
+  watchedEpisodes?: Set<string>;
 }
 
 const EPISODES_PER_PAGE = 24;
 
-export function EpisodesTab({ movieInfo, seriesInfo, currentEpisode, loading }: EpisodesTabProps) {  
+export function EpisodesTab({ movieInfo, seriesInfo, currentEpisode, loading, watchedEpisodes }: EpisodesTabProps) {  
   // State cho server được chọn
   const [selectedServer, setSelectedServer] = useState<string>("");
   const [hoveredEpisodeId, setHoveredEpisodeId] = useState<string | null>(null);
@@ -21,13 +22,45 @@ export function EpisodesTab({ movieInfo, seriesInfo, currentEpisode, loading }: 
   const [currentPage, setCurrentPage] = useState(1);
   const router = useRouter();
 
+  // Hàm xác định movieInfo hiện tại từ seriesInfo và gán season number
+  // Xử lý cả trường hợp có và không có seriesInfo
+  const getCurrentMovieWithSeason = useMemo(() => {
+    if (!seriesInfo || !seriesInfo.movies || seriesInfo.movies.length === 0) {
+      // Không có seriesInfo hoặc không có movies trong series
+      // Trả về movieInfo gốc với seasonNumber mặc định (phim đơn lẻ)
+      return {
+        ...movieInfo,
+        seasonNumber: movieInfo.seasonNumber || 1
+      };
+    }
+
+    // Tìm movie hiện tại trong seriesInfo.movies dựa trên movieInfo.id
+    const currentMovieInSeries = seriesInfo.movies.find(movie => movie.id === movieInfo.id);
+    
+    if (currentMovieInSeries) {
+      // Tìm thấy trong series → sử dụng seasonNumber từ seriesInfo
+      return {
+        ...movieInfo,
+        seasonNumber: currentMovieInSeries.seasonNumber || 1
+      };
+    } else {
+      // Không tìm thấy trong series → có thể là movie đơn lẻ được truyền nhầm seriesInfo
+      // Hoặc là movie mới chưa được cập nhật vào series
+      // Vẫn trả về movieInfo gốc
+      return {
+        ...movieInfo,
+        seasonNumber: movieInfo.seasonNumber || 1
+      };
+    }
+  }, [movieInfo, seriesInfo]);
+
   // Lấy danh sách server names duy nhất từ episodes
   const serverNames = useMemo(() => {
-    if (!movieInfo.episodes || movieInfo.episodes.length === 0) return [];
+    if (!getCurrentMovieWithSeason.episodes || getCurrentMovieWithSeason.episodes.length === 0) return [];
     
-    const uniqueServers = [...new Set(movieInfo.episodes.map(ep => ep.serverName))];
+    const uniqueServers = [...new Set(getCurrentMovieWithSeason.episodes.map(ep => ep.serverName))];
     return uniqueServers.filter(Boolean); // Loại bỏ server name rỗng
-  }, [movieInfo.episodes]);
+  }, [getCurrentMovieWithSeason.episodes]);
 
   // Set server đầu tiên làm default nếu chưa chọn
   useEffect(() => {
@@ -39,12 +72,12 @@ export function EpisodesTab({ movieInfo, seriesInfo, currentEpisode, loading }: 
 
   // Lọc episodes theo server được chọn
   const filteredEpisodes = useMemo(() => {
-    if (!movieInfo.episodes || !selectedServer) return [];
+    if (!getCurrentMovieWithSeason.episodes || !selectedServer) return [];
     
-    return movieInfo.episodes
+    return getCurrentMovieWithSeason.episodes
       .filter(ep => ep.serverName === selectedServer)
       .sort((a, b) => a.episodeNumber - b.episodeNumber);
-  }, [movieInfo.episodes, selectedServer]);
+  }, [getCurrentMovieWithSeason.episodes, selectedServer]);
 
   // Calculate pagination based on filtered episodes
   const totalPages = Math.ceil(filteredEpisodes.length / EPISODES_PER_PAGE);
@@ -111,23 +144,25 @@ export function EpisodesTab({ movieInfo, seriesInfo, currentEpisode, loading }: 
         <div className="flex items-center space-x-4 mb-4">
           <div className="flex items-center space-x-1.5 relative">
             <img src="/icons/Part.png" alt="part" className="h-4 w-6" />
-            {movieInfo.seasonNumber ? (
+            {/* Chỉ hiển thị dropdown nếu có seriesInfo và có nhiều hơn 1 movie */}
+            {seriesInfo && seriesInfo.movies && seriesInfo.movies.length > 1 ? (
               <>
                 <button
                   className="flex items-center space-x-2"
                   onClick={() => setShowDropdown((prev) => !prev)}
                 >
-                  <div className="font-bold text-lg">Phần {movieInfo.seasonNumber}</div>
+                  <div className="font-bold text-lg">Phần {getCurrentMovieWithSeason.seasonNumber}</div>
                   <img src="/icons/Down.png" alt="dropdown" className="h-2 w-3" />
                 </button>
-                {showDropdown && seriesInfo && (
+                {showDropdown && (
                   <div className="absolute left-0 top-full mt-2 bg-(--surface) rounded-lg shadow-lg z-20 min-w-[120px]">
-                    {seriesInfo.movies?.map((partMovie, idx, arr) => (
+                    {seriesInfo.movies.map((partMovie, idx, arr) => (
                       <button
                         key={partMovie.id}
                         className={`block w-full text-left px-4 py-2 hover:bg-(--primary) text-white
                           ${idx === 0 ? "rounded-t-lg" : ""}
                           ${idx === arr.length - 1 ? "rounded-b-lg" : ""}
+                          ${partMovie.id === movieInfo.id ? "bg-(--primary)/30" : ""}
                         `}
                         onClick={() => {
                           setShowDropdown(false);
@@ -136,14 +171,15 @@ export function EpisodesTab({ movieInfo, seriesInfo, currentEpisode, loading }: 
                           }
                         }}
                       >
-                        Phần {partMovie.seasonNumber}
+                        Phần {partMovie.seasonNumber || idx + 1}
                       </button>
                     ))}
                   </div>
                 )}
               </>
             ) : (
-              <div className="font-bold text-lg ml-0.5">Phần 1</div>
+              // Hiển thị season number đơn giản cho movie đơn lẻ hoặc series chỉ có 1 movie
+              <div className="font-bold text-lg ml-0.5">Phần {getCurrentMovieWithSeason.seasonNumber}</div>
             )}
           </div>
           <div className="text-gray-500 font-light text-xl">|</div>
@@ -210,24 +246,40 @@ export function EpisodesTab({ movieInfo, seriesInfo, currentEpisode, loading }: 
           <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-3 lg:grid-cols-6 gap-3">
             {currentEpisodes.map((episode) => {
               const isCurrentEpisode = currentEpisode?.id === episode.id;
+              const isWatched = watchedEpisodes?.has(episode.id) || false;
               
               return (
                 <button
                   key={episode.id}
-                  className={`rounded-lg py-3 px-4 text-center transition-all duration-200 hover:shadow-lg ${
+                  className={`rounded-lg py-3 px-4 text-center transition-all duration-200 hover:shadow-lg relative ${
                     isCurrentEpisode
                       ? 'bg-(--hover) text-black border-none'
+                      : isWatched
+                      ? 'bg-gray-800/70 hover:bg-(--hover) text-gray-300 hover:text-black' // Darker for watched episodes
                       : 'bg-gray-700 hover:bg-(--hover) text-white hover:text-black'
                   }`}
                   onMouseEnter={() => setHoveredEpisodeId(episode.id)}
                   onMouseLeave={() => setHoveredEpisodeId(null)}
                   onClick={() => {
-                    router.push(`/watch/${episode.id}?movieId=${movieInfo.id}&server=${selectedServer}`);
+                    router.push(`/watch/${episode.id}?movieId=${getCurrentMovieWithSeason.id}&server=${selectedServer}`);
                   }}
                 >
+                  {/* Watched indicator */}
+                  {isWatched && !isCurrentEpisode && (
+                    <div className="absolute top-1 right-1">
+                      <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                    </div>
+                  )}
+                  
                   <div className="flex justify-center items-center space-x-2">
-                    <img src={hoveredEpisodeId === episode.id || isCurrentEpisode ? "/icons/Play.png" : "/icons/PlayWhite.png"} alt="Play" className="h-3 w-3" />
-                    <span className="lg:text-sm md:text-sm font-semibold text-xs">
+                    <img 
+                      src={hoveredEpisodeId === episode.id || isCurrentEpisode ? "/icons/Play.png" : "/icons/PlayWhite.png"} 
+                      alt="Play" 
+                      className={`h-3 w-3 ${isWatched && !isCurrentEpisode ? 'opacity-70' : ''}`} 
+                    />
+                    <span className={`lg:text-sm md:text-sm font-semibold text-xs ${
+                      isWatched && !isCurrentEpisode ? 'opacity-70' : ''
+                    }`}>
                       Tập {episode.episodeNumber}
                     </span>
                   </div>

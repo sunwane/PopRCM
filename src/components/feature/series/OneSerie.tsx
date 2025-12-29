@@ -31,7 +31,7 @@ export default function OneSerie({ serie }: OneSerieProps) {
             {serie.name}
           </h2>
           <p className="lg:text-xs md:text-xs text-[11px] font-semibold text-(--text-secondary) mb-2">
-            {serie.movieCount ?? 0} phim
+            {(serie.movieCount || serie.movies?.length) ?? 0} phim
           </p>
         </div>
     </div>

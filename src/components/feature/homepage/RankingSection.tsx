@@ -73,7 +73,7 @@ export function RankingSection() {
           title="NHIỀU VIEW NHẤT"
           icon="/icons/Ranking.png"
           titleColor="text-fire"
-          onShowMore={() => openPopup(rankings.topViewed, "SÔI NỔI NHẤT", "/icons/Ranking.png", "text-blue-400")}
+          onShowMore={() => openPopup(rankings.topViewed, "NHIỀU VIEW NHẤT", "/icons/Ranking.png", "text-fire")}
           maxDisplay={5}
           containerClassName="flex-1 pr-6 py-6 border-r-2 border-(--border-blue) min-w-0"
         />
@@ -91,7 +91,7 @@ export function RankingSection() {
           title="SÔI NỔI NHẤT"
           icon="/icons/Popular.png"
           titleColor="text-green"
-          onShowMore={() => openPopup(rankings.topComments, "XEM NHIỀU NHẤT", "/icons/Popular.png", "text-green-400")}
+          onShowMore={() => openPopup(rankings.topComments, "SÔI NỔI NHẤT", "/icons/Popular.png", "text-green-400")}
           maxDisplay={5}
           containerClassName="flex-1 py-6 min-w-0"
         />

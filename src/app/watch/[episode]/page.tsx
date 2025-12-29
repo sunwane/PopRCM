@@ -19,7 +19,11 @@ import { LoadingPage } from "@/components/ui/LoadingPage";
 import { CmtReviewSection } from "@/components/feature/commentReview/CmtReviewSection";
 import { AuthBackground } from "@/components/feature/auth/AuthBackground";
 import { ReviewPopup } from "@/components/feature/commentReview/ReviewPopup";
-import { useState, Suspense } from "react";
+import { useState, Suspense, useRef, useEffect } from "react";
+import { useWatchProgress } from "@/hooks/useWatchProgress";
+import { useWatchedEpisodes } from "@/hooks/useWatchedEpisodes";
+import { useEpisodeProgress } from "@/hooks/useEpisodeProgress";
+import { formatTime } from "@/utils/timeUtils";
 
 export default function WatchPage() {
   return (
@@ -39,6 +43,9 @@ function WatchPageContent() {
   const [showReviewPopup, setShowReviewPopup] = useState(false);
   const [activeCommentTab, setActiveCommentTab] = useState<'comments' | 'reviews'>('comments');
 
+  // Video element ref để tracking progress
+  const videoRef = useRef<HTMLVideoElement | null>(null);
+
   // Use favorite handler hook
   const { isProcessing, message, isFavorited, handleFavoriteToggle, clearMessage } = useFavoriteHandler();
 
@@ -47,6 +54,73 @@ function WatchPageContent() {
   console.log("Episode Data:", episodeData);
   const { seriesInfo } = useSeriesDataByMovieId(movieId);
   const { recommendedMovies } = useRecommendedMovies(movieId || "");
+
+  // Watch progress tracking hooks
+  const { isTracking } = useWatchProgress({
+    episodeId: episodeData?.id || '',
+    movieId: movieId || '',
+    videoElement: videoRef.current
+  });
+
+  // Watched episodes tracking
+  const { 
+    watchedEpisodesSet, 
+    isEpisodeWatched, 
+    refreshWatchedEpisodes 
+  } = useWatchedEpisodes(movieId || '');
+
+  // Episode progress for auto-resume
+  const { 
+    savedProgress, 
+    hasProgress, 
+    loading: progressLoading 
+  } = useEpisodeProgress(episodeData?.id || '');
+
+  // Set video ref when video element is available và auto-play/resume
+  useEffect(() => {
+    const video = document.querySelector('video') as HTMLVideoElement;
+    if (video && episodeData) {
+      videoRef.current = video;
+      console.log('Video element found and attached to ref');
+
+      const handleLoadedMetadata = () => {
+        console.log('Video metadata loaded');
+        
+        // Auto-resume from saved progress if available
+        if (hasProgress && savedProgress > 0) {
+          console.log(`Resuming from saved progress: ${savedProgress}s`);
+          video.currentTime = savedProgress;
+        }
+        
+        // Auto-play video
+        video.play().then(() => {
+          console.log('Video auto-play started');
+        }).catch((error) => {
+          console.log("Auto-play failed (user interaction required):", error);
+        });
+      };
+
+      const handleLoadedData = () => {
+        console.log('Video data loaded');
+        handleLoadedMetadata();
+      };
+
+      // Add event listeners
+      video.addEventListener('loadedmetadata', handleLoadedMetadata);
+      video.addEventListener('loadeddata', handleLoadedData);
+
+      // If video is already loaded
+      if (video.readyState >= 1) {
+        handleLoadedMetadata();
+      }
+
+      // Cleanup function
+      return () => {
+        video.removeEventListener('loadedmetadata', handleLoadedMetadata);
+        video.removeEventListener('loadeddata', handleLoadedData);
+      };
+    }
+  }, [episodeData, hasProgress, savedProgress]);
 
   const { isMobile } = useResponsive();
 
@@ -94,7 +168,13 @@ function WatchPageContent() {
           <div className="grow">
             {/* Video Player */}
             <div className="relative aspect-video bg-black rounded-lg overflow-hidden mb-4">
+              {progressLoading && (
+                <div className="absolute inset-0 bg-black/50 flex items-center justify-center z-10">
+                  <div className="text-white text-sm">Đang tải vị trí phát lại...</div>
+                </div>
+              )}
               <video 
+                ref={videoRef}
                 className="w-full h-full"
                 controls
                 poster="/placeholder/video-thumbnail.jpg"
@@ -107,7 +187,14 @@ function WatchPageContent() {
             <div className="grid grid-cols-2 gap-6 px-4">
               <div>
                 <h1 className="text-2xl font-bold text-white">{movie.title}</h1>
-                <p className="text-gray-300 mb-4">Đang xem: {episodeData.title}</p>
+                <div className="flex items-center gap-2">
+                  <p className="text-gray-300 mb-4">Đang xem: {episodeData.title}</p>
+                  {hasProgress && savedProgress > 0 && (
+                    <div className="mb-4 px-2 py-1 bg-blue-500/20 border border-blue-500/50 rounded text-xs text-blue-300">
+                      Tiếp tục từ {formatTime(savedProgress)}
+                    </div>
+                  )}
+                </div>
                 
                 {/* Rating and Labels */}
                 <div className="flex flex-wrap items-center gap-2 mb-2">
@@ -207,6 +294,7 @@ function WatchPageContent() {
                 seriesInfo={seriesInfo ?? undefined} 
                 recommendations={recommendedMovies} 
                 currentEpisode={episodeData ?? undefined}
+                watchedEpisodes={watchedEpisodesSet}
               />
             </div>
 
@@ -232,6 +320,7 @@ function WatchPageContent() {
                 loading={episodesLoading}
                 currentEpisode={episodeData}
                 onEpisodeSelect={handleEpisodeSelect}
+                watchedEpisodes={watchedEpisodesSet}
               />
             )}
 
