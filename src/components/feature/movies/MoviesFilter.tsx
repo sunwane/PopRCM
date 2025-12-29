@@ -84,10 +84,26 @@ export default function MoviesFilter({
     setIsActive((prev) => !prev);
   };
 
-  if (loading) {
+  // Chỉ hiển thị loading khi bộ lọc đang mở VÀ đang loading
+  if (isActive && loading) {
     return (
-      <div className="w-full flex justify-center py-8">
-        <LoadingEffect message="Đang tải bộ lọc..." />
+      <div className="inline-block">
+        <button
+          className="flex items-center px-2 transition bg-(--background) text-(--hover) absolute left-8"
+          onClick={handleClick}
+        >
+          <img
+            src="/icons/FilterOnFocus.png"
+            alt=""
+            className="w-4.5 h-4.5 inline-block mr-1.5"
+          />
+          <div className="text-[15px] font-bold">Bộ lọc</div>
+        </button>
+        <div className="mt-3 pt-3 px-6 pb-2 border border-[#939393] rounded-2xl">
+          <div className="w-full flex justify-center py-8">
+            <LoadingEffect message="Đang tải bộ lọc..." />
+          </div>
+        </div>
       </div>
     )
   }

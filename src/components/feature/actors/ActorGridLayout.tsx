@@ -1,3 +1,4 @@
+"use client";
 import { useEffect, useState } from "react";
 import { LoadingEffect } from "@/components/ui/LoadingEffect";
 import NotFoundDiv from "@/components/ui/NotFoundDiv";

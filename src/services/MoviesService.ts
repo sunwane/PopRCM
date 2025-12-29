@@ -465,7 +465,6 @@ export class MoviesService {
 
   // Get popular movies (by view count)
   static async getPopularMovies(limit: number = 10): Promise<Movie[]> {
-    // Chỉ load toàn bộ khi dùng mock data để sort, API có thể sort trực tiếp
     const loadSize = this.isServiceAvailable() ? 24 : 1000;
     await this.loadMoviesData(0, loadSize);
     const sortedMovies = [...this.movies]
@@ -517,8 +516,7 @@ export class MoviesService {
       }
       return [];
     } catch (error) {
-      console.warn('API failed for getMostViewedMoviesOfMonth, falling back to mock...', error);
-      return this.getPopularMovies(limit);
+      return [];
     }
   }
 
@@ -840,19 +838,7 @@ export class MoviesService {
       return [];
     } catch (error) {
       console.warn('API failed for getTopFavoritesMoviesRanking, falling back to mock...', error);
-      // Fallback to mock logic
-      try {
-        await this.loadMoviesData(0, 1000);
-        const shuffled = [...this.movies]
-          .sort((a, b) => b.view - a.view)
-          .slice(0, 30)
-          .sort(() => Math.random() - 0.5)
-          .slice(0, limit);
-        return shuffled;
-      } catch (mockError) {
-        console.error('Error with mock favorites ranking:', mockError);
-        return [];
-      }
+      return [];
     }
   }
 
@@ -939,6 +925,10 @@ export class MoviesService {
       }
 
       const apiResponse = await response.json();
+
+      if (apiResponse.result && apiResponse.result.length === 0) {
+        return this.getPopularMovies(limit);
+      }
       
       if (apiResponse.result && Array.isArray(apiResponse.result)) {
         console.log('✅ Top viewed series this week fetched successfully from API');
@@ -948,11 +938,7 @@ export class MoviesService {
       }
       
     } catch (error) {
-      console.warn('Top viewed series this week API failed, using mock data:', error);
-      return [...mockMovies]
-        .filter(movie => movie.type === 'series')
-        .sort((a, b) => b.view - a.view)
-        .slice(0, limit);
+      return [];
     }
   }
 
@@ -980,6 +966,10 @@ export class MoviesService {
       }
 
       const apiResponse = await response.json();
+
+      if (apiResponse.result && apiResponse.result.length === 0) {
+        return this.getPopularMovies(limit);
+      }
       
       if (apiResponse.result && Array.isArray(apiResponse.result)) {
         console.log('✅ Top viewed singles this week fetched successfully from API');
@@ -989,11 +979,7 @@ export class MoviesService {
       }
       
     } catch (error) {
-      console.warn('Top viewed singles this week API failed, using mock data:', error);
-      return [...mockMovies]
-        .filter(movie => movie.type === 'single')
-        .sort((a, b) => b.view - a.view)
-        .slice(0, limit);
+      return [];
     }
   }
 

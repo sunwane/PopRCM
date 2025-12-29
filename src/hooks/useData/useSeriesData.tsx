@@ -80,17 +80,17 @@ export function useSeriesDataByID(id: string) {
         const seriesData = await SeriesService.getSeriesById(id);
 
         if (seriesData) {
-          // Thêm seasonNumber vào movies
-          const seriesWithSeasonNumbers = addSeasonNumberToMovies(seriesData);
-          
-          const serieWithMovieCount = {
-            ...seriesWithSeasonNumbers,
-            movieCount: seriesWithSeasonNumbers.movies ? seriesWithSeasonNumbers.movies.length : 0,
-          };
-
-          setSerieInfo(serieWithMovieCount);
-          console.log("Fetched series by ID:", seriesWithSeasonNumbers);
-          console.log("Movies with season numbers:", seriesWithSeasonNumbers.movies);
+          if (seriesData?.movies && seriesData.movies.length > 0 && seriesData.movies[0].seasonNumber === null) {
+            // Thêm seasonNumber vào movies
+            const seriesWithSeasonNumbers = addSeasonNumberToMovies(seriesData);
+            const serieWithMovieCount = {
+              ...seriesWithSeasonNumbers,
+              movieCount: seriesWithSeasonNumbers.movies ? seriesWithSeasonNumbers.movies.length : 0,
+            };
+            setSerieInfo(serieWithMovieCount);
+          } else {
+            setSerieInfo(seriesData);
+          }
         } else {
           setSerieInfo(null);
         }

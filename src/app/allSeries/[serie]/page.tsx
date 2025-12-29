@@ -37,7 +37,9 @@ function SeriePageContent() {
     return (
       <div className="max-w-[2000px]">
         <PageHeader />
-        <NotFoundDiv message="Không tìm thấy diễn viên" />
+        <div className="px-6 py-4">
+          <NotFoundDiv message="Không tìm thấy series" />
+        </div>
         <PageFooter />
       </div>
     );

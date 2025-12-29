@@ -28,7 +28,7 @@ export default function TopMoviesCard({ movie, rank }: TopMoviesCardProps) {
       </div>
       <div className="flex gap-4 mt-4 w-full">
         {/* Số thứ tự lớn ở góc dưới trái */}
-        <div className="text-blue-500 font-extrabold text-5xl drop-shadow-lg select-none pointer-events-none">
+        <div className="text-gradient font-black text-5xl drop-shadow-lg select-none pointer-events-none">
           {rank}
         </div>
         <div className="w-[80%]">
