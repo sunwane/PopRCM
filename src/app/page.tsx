@@ -122,7 +122,7 @@ export default function Home() {
                     Top 10 phim lẻ tuần này
                   </div>
                   <div className="p-24 border-2 border-gray-800 text-gray-300 rounded-2xl mt-4 text-center">
-                    Chưa có dữ liệu phim bộ tuần này
+                    Chưa có dữ liệu phim lẻ tuần này
                   </div>
                 </div>
               ) : (

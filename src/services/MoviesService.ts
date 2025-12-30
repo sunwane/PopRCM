@@ -489,7 +489,7 @@ export class MoviesService {
 
     try {
       const currentDate = new Date();
-      const currentMonth = currentDate.getMonth(); // getMonth() returns 0-11
+      const currentMonth = currentDate.getMonth() + 1; // getMonth() returns 0-11
       const currentYear = currentDate.getFullYear();
 
       const response = await fetch(`${this.API_BASE_URL}/top/views?month=${currentMonth}&year=${currentYear}&size=${limit}`, {
@@ -809,7 +809,7 @@ export class MoviesService {
 
     try {
       const currentDate = new Date();
-      const currentMonth = currentDate.getMonth();
+      const currentMonth = currentDate.getMonth() + 1;
       const currentYear = currentDate.getFullYear();
 
       const response = await fetch(`${this.API_BASE_URL}/top/favorite?month=${currentMonth}&year=${currentYear}`, {
@@ -868,7 +868,7 @@ export class MoviesService {
 
     try {
       const currentDate = new Date();
-      const currentMonth = currentDate.getMonth();
+      const currentMonth = currentDate.getMonth() + 1;
       const currentYear = currentDate.getFullYear();
 
       const response = await fetch(`${this.API_BASE_URL}/top/comment?month=${currentMonth}&year=${currentYear}`, {

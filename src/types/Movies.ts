@@ -44,16 +44,25 @@ export interface Movie {
     seasonNumber?: number; // For series movies
 }
 
-// Type for AI semantic search results
+// Type for AI search response từ API
+export interface AIMovieResult {
+    movieId: string;
+    title: string;
+    similarity: number;
+    reason: string;
+}
+
+// Type for AI semantic search results (đã enhance với thông tin đầy đủ)
 export interface SimilarMovie {
     id: number;
+    movieId?: string; // Add movieId from API
     title: string;
-    description: string;
-    genre: string[];
-    releaseYear: number;
-    rating: number;
+    description?: string;
+    genre?: string[];
+    releaseYear?: number;
+    rating?: number;
     posterUrl?: string;
-    similarity: number; // Similarity score from AI
+    similarity?: number; // Similarity score from AI
 }
 
 // Type for AI search response

@@ -1,7 +1,11 @@
 import { SimilarMovie, AISearchResponse } from '@/types/Movies';
+import { MoviesService } from '@/services/MoviesService';
 
 class AIService {
-  private baseURL = 'http://localhost:8088/api';
+  static searchMovies(content: string) {
+    throw new Error('Method not implemented.');
+  }
+  private baseURL = 'http://localhost:8088/api/ai';
 
   async searchMovies(query: string): Promise<AISearchResponse> {
     if (localStorage.getItem('serviceAvailable') === 'false') {
@@ -15,13 +19,10 @@ class AIService {
     }
 
     try {
-      console.log('Attempting to call AI search API...');
-      const authToken = localStorage.getItem('authToken') || '';
       const response = await fetch(`${this.baseURL}/search`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${authToken}`
         },
         body: JSON.stringify({ query }),
       });
@@ -33,14 +34,75 @@ class AIService {
       const jsonResponse = await response.json();
       console.log('AI Search API Response:', jsonResponse);
       
-      // Response structure từ controller:
+      // Response structure từ API:
       // {
       //   status: "success" | "error",
       //   query: string,
-      //   movies: SimilarMovie[],
+      //   message: string,
       //   count: number,
-      //   message: string
+      //   movies: [{ movieId, title, similarity, reason }]
       // }
+
+      if (jsonResponse.status === 'success' && jsonResponse.movies) {
+        // Fetch chi tiết từng phim dựa trên movieId
+        const movieDetails = await Promise.allSettled(
+          jsonResponse.movies.map(async (apiMovie: any) => {
+            try {
+              const movieDetail = await MoviesService.getMovieById(apiMovie.movieId);
+              if (movieDetail) {
+                return {
+                  id: parseInt(apiMovie.movieId.slice(-6), 36) || Math.random() * 1000000, // Convert string to number
+                  movieId: apiMovie.movieId,
+                  title: movieDetail.title,
+                  description: movieDetail.description,
+                  genre: movieDetail.genres?.map(g => g.genresName) || [],
+                  releaseYear: movieDetail.releaseYear,
+                  rating: movieDetail.PopRating || movieDetail.imdbScore || movieDetail.tmdbScore || 0,
+                  posterUrl: movieDetail.posterUrl,
+                  similarity: apiMovie.similarity
+                } as SimilarMovie;
+              } else {
+                // Fallback nếu không tìm thấy chi tiết phim
+                return {
+                  id: parseInt(apiMovie.movieId.slice(-6), 36) || Math.random() * 1000000,
+                  movieId: apiMovie.movieId,
+                  title: apiMovie.title,
+                  description: 'Đang cập nhật thông tin...',
+                  genre: [],
+                  similarity: apiMovie.similarity
+                } as SimilarMovie;
+              }
+            } catch (error) {
+              console.warn(`Failed to fetch details for movie ${apiMovie.movieId}:`, error);
+              // Fallback với thông tin cơ bản từ API
+              return {
+                id: parseInt(apiMovie.movieId.slice(-6), 36) || Math.random() * 1000000,
+                movieId: apiMovie.movieId,
+                title: apiMovie.title,
+                description: 'Không thể tải thông tin chi tiết',
+                genre: [],
+                similarity: apiMovie.similarity
+              } as SimilarMovie;
+            }
+          })
+        );
+
+        // Extract successful results
+        const successfulResults = movieDetails
+          .filter(result => result.status === 'fulfilled')
+          .map(result => (result as PromiseFulfilledResult<SimilarMovie>).value)
+          .filter(Boolean);
+
+        return {
+          status: 'success',
+          query: jsonResponse.query,
+          message: jsonResponse.message,
+          movies: successfulResults,
+          count: successfulResults.length
+        };
+      }
+
+      console.log('Parsed AI Search Response:', jsonResponse);
       
       return jsonResponse as AISearchResponse;
       
@@ -113,7 +175,7 @@ class AIService {
     
     if (lowerQuery.includes('hành động') || lowerQuery.includes('action')) {
       const actionMovies = mockMovies.filter(m => 
-        m.genre.some(g => g.toLowerCase().includes('hành động'))
+        m.genre && Array.isArray(m.genre) && m.genre.some(g => g.toLowerCase().includes('hành động'))
       );
       return {
         status: 'success', 
@@ -126,7 +188,7 @@ class AIService {
 
     if (lowerQuery.includes('romance') || lowerQuery.includes('tình cảm')) {
       const romanceMovies = mockMovies.filter(m =>
-        m.genre.some(g => g.toLowerCase().includes('romance'))
+        m.genre && Array.isArray(m.genre) && m.genre.some(g => g.toLowerCase().includes('romance'))
       );
       return {
         status: 'success',
@@ -145,56 +207,6 @@ class AIService {
       count: 3,
       message: 'Tìm thấy 3 phim phù hợp với yêu cầu của bạn'
     };
-  }
-
-  // Keep old mockChat for backward compatibility
-  private mockChat(query: string): string {
-    // Mock AI responses based on prompt content
-    const lowerPrompt = query.toLowerCase();
-    
-    if (lowerPrompt.includes('phim') || lowerPrompt.includes('movie')) {
-      return `Dựa trên câu hỏi của bạn về phim, tôi khuyên bạn nên xem:
-
-🎬 **One Piece: Đảo Hải tặc** - Anime huyền thoại với hành trình tìm kho báu
-🎭 **Your Name** - Anime tình cảm siêu hay về hoán đổi cơ thể  
-🔥 **Demon Slayer** - Hành động đỉnh cao với đồ họa tuyệt đẹp
-
-Bạn thích thể loại nào nhất? Tôi có thể gợi ý thêm!`;
-    }
-    
-    if (lowerPrompt.includes('anime')) {
-      return `Anime là một thế giới tuyệt vời! Dựa trên sở thích của bạn, tôi gợi ý:
-
-✨ **Thể loại hành động:** Attack on Titan, Demon Slayer, Jujutsu Kaisen
-💕 **Romance:** Your Name, A Silent Voice, Weathering with You
-😄 **Comedy:** One Punch Man, Mob Psycho 100
-🎭 **Drama:** Spirited Away, Princess Mononoke
-
-Bạn muốn khám phá thể loại nào?`;
-    }
-
-    if (lowerPrompt.includes('gợi ý') || lowerPrompt.includes('recommend')) {
-      return `Tôi sẽ gợi ý cho bạn những bộ phim hot nhất hiện tại:
-
-🔥 **Top trending:**
-• One Piece (Anime) - Hành trình huyền thoại
-• Spirited Away - Kiệt tác Ghibli  
-• Demon Slayer - Hành động mãn nhãn
-• Your Name - Romance cảm động
-
-💡 **Mẹo:** Hãy cho tôi biết bạn thích thể loại gì để tôi gợi ý chính xác hơn!`;
-    }
-
-    // Default response
-    return `Xin chào! Tôi là AI assistant của PopRCM
-
-Tôi có thể giúp bạn:
-🎬 Tìm phim hay theo sở thích
-📺 Gợi ý anime/series hot
-⭐ Đánh giá và review phim
-🔍 Tìm kiếm nội dung theo thể loại
-
-Hãy hỏi tôi bất cứ điều gì về phim ảnh nhé! 😊`;
   }
 }
 

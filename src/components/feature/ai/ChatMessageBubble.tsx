@@ -81,27 +81,34 @@ export default function ChatMessageBubble({ message }: ChatMessageBubbleProps) {
                         }}
                       />
                     )}
-                    <div className="flex-1 min-w-0">
+                    <div className="flex-1">
                       <h4 className="font-medium text-(--text-primary) text-sm truncate">
-                        {movie.title}
+                        {movie.title || 'Không có tiêu đề'}
                       </h4>
-                      <p className="text-xs text-(--text-secondary) mt-1 line-clamp-2">
-                        {movie.description}
+                      <p 
+                        className="text-xs text-(--text-secondary) mt-1 line-clamp-2"
+                        dangerouslySetInnerHTML={{__html: movie.description || 'Không có mô tả'}}>
                       </p>
-                      <div className="flex items-center gap-2 mt-2">
-                        <span className="text-xs bg-(--primary)/10 text-(--primary) px-2 py-1 rounded">
-                          {movie.releaseYear}
-                        </span>
-                        <span className="text-xs text-(--text-secondary)">
-                          {movie.rating}
-                        </span>
-                        <span className="text-xs text-(--accent) font-medium">
-                          {Math.round(movie.similarity * 100)}% phù hợp
-                        </span>
+                      <div className="flex items-center gap-1.5 mt-2">
+                        {movie.releaseYear && (
+                          <span className="text-xs bg-(--primary)/10 text-(--primary) px-2 py-1 rounded">
+                            {movie.releaseYear}
+                          </span>
+                        )}
+                        {movie.rating ? (
+                          <span className="text-xs text-yellow-400 bg-(--surface) px-2 py-1 rounded">
+                            {movie.rating}
+                          </span>
+                        ) : null}
+                        {movie.similarity && (
+                          <span className="ml-0.5 text-xs text-(--accent) font-medium">
+                            {Math.round((movie.similarity || 0) * 100)}% phù hợp
+                          </span>
+                        )}
                       </div>
                       <div className="flex flex-wrap gap-1 mt-2">
-                        {movie.genre.slice(0, 3).map((g, index) => (
-                          <span key={index} className="text-xs bg-(--surface-tertiary) text-(--text-secondary) px-2 py-0.5 rounded">
+                        {movie.genre && Array.isArray(movie.genre) && movie.genre.slice(0, 3).map((g, index) => (
+                          <span key={index} className="text-xs bg-white/10 py-1 px-2 text-gray-400 rounded">
                             {g}
                           </span>
                         ))}
@@ -110,8 +117,8 @@ export default function ChatMessageBubble({ message }: ChatMessageBubbleProps) {
                   </div>
                   {/* Add view movie button */}
                   <Link 
-                    href={`/movie/${movie.id}`}
-                    className="block mt-2 text-center bg-(--primary) hover:bg-(--primary-hover) text-white py-1.5 px-3 rounded text-xs transition-colors"
+                    href={`/movie/${movie.movieId || movie.id}`}
+                    className="block mt-3 text-center bg-(--gradient-primary-start) hover:bg-(--primary) text-white py-2 px-3 rounded text-xs transition-colors"
                   >
                     Xem chi tiết
                   </Link>
