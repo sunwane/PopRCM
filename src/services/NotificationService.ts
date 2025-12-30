@@ -2,7 +2,7 @@ import { ApiResponse, PageResponse, Notification } from '@/types/User';
 import ServiceChecker from './ServiceChecker';
 
 export class NotificationService {
-  private static readonly API_BASE_URL = 'http://localhost:8088/api/notifications';
+  private static readonly API_BASE_URL = 'https://poprcm-be.onrender.com/api/notifications';
   
   // Kiểm tra service availability từ localStorage
   private static isServiceAvailable(): boolean {

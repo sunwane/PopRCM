@@ -8,7 +8,7 @@ import { mockEpisodes } from '@/mocksData/mockEpisodes';
 export class MoviesService {
   private static movies: Movie[] = [...mockMovies]; // Initialize with mock data
   private static isDataLoaded = false; // Changed to false to force loading
-  private static readonly API_BASE_URL = 'http://localhost:8088/api/movies';
+  private static readonly API_BASE_URL = 'https://poprcm-be.onrender.com/api/movies';
 
   // Kiểm tra service availability từ localStorage
   private static isServiceAvailable(): boolean {

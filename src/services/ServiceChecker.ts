@@ -1,7 +1,7 @@
 class ServiceChecker {
   private static instance: ServiceChecker;
   private serviceAvailable: boolean | null = null;
-  private baseURL = 'http://localhost:8088/api';
+  private baseURL = 'https://poprcm-be.onrender.com/api';
 
   constructor() {
     if (ServiceChecker.instance) {

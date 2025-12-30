@@ -7,7 +7,7 @@ class TokenManager {
   private refreshInterval: NodeJS.Timeout | null = null;
   private readonly REFRESH_INTERVAL = 50 * 60 * 1000; // 50 phút tính bằng milliseconds
   private readonly TOKEN_REFRESH_THRESHOLD = 10 * 60; // 10 phút trước khi hết hạn (tính bằng seconds)
-  private readonly baseURL = 'http://localhost:8088/api';
+  private readonly baseURL = 'https://poprcm-be.onrender.com/api';
 
   constructor() {
     if (TokenManager.instance) {

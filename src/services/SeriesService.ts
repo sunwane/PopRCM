@@ -3,7 +3,7 @@ import { mockSeries, mockSeriesMovies } from '@/mocksData/mockSeries';
 import { mockMovies } from '@/mocksData/mockMovies';
 
 export class SeriesService {
-  private static readonly API_BASE_URL = 'http://localhost:8088/api/series';
+  private static readonly API_BASE_URL = 'https://poprcm-be.onrender.com/api/series';
   private static series: Series[] = [...mockSeries];
 
   // Kiểm tra service availability từ localStorage
@@ -321,7 +321,7 @@ export class SeriesService {
 
     try {
       // Gọi API để lấy seriesId từ MovieController
-      const response = await fetch(`http://localhost:8088/api/movies/${movieId}/series`, {
+      const response = await fetch(`https://poprcm-be.onrender.com/api/movies/${movieId}/series`, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',

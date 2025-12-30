@@ -4,7 +4,7 @@ import ServiceChecker from './ServiceChecker';
 import { mapMovieResponseToMovie } from './MoviesService';
 
 export class FavoritesHistoryService {
-  private static readonly API_BASE_URL = 'http://localhost:8088/api';
+  private static readonly API_BASE_URL = 'https://poprcm-be.onrender.com/api';
   
   // Kiểm tra service availability từ localStorage
   private static isServiceAvailable(): boolean {

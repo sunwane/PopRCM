@@ -7,7 +7,7 @@ import { UserService } from './UserService';
 import TokenManager from './TokenManager';
 
 class AuthService {
-  private baseURL = 'http://localhost:8088/api/auth';
+  private baseURL = 'https://poprcm-be.onrender.com/api/auth';
 
   async login(request: LoginRequest): Promise<AuthResponse> {
 

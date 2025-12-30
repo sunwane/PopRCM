@@ -5,7 +5,7 @@ import { mockCountries } from '@/mocksData/mockCountries';
 export class CountryService {
   private static countries: Country[] = [];
   private static isDataLoaded = false;
-  private static readonly API_BASE_URL = 'http://localhost:8088/api/countries';
+  private static readonly API_BASE_URL = 'https://poprcm-be.onrender.com/api/countries';
 
   // Kiểm tra service availability từ localStorage (giống AuthService)
   private static isServiceAvailable(): boolean {
