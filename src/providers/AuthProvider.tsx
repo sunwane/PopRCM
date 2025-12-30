@@ -17,6 +17,7 @@ interface AuthContextType {
   // Actions
   login: (credentials: LoginRequest) => Promise<AuthResponse>;
   logout: () => Promise<void>;
+  updateUser: (updatedUser: Omit<User, "password">) => void;
   
   // Auth form methods
   clearAuthError: () => void;
@@ -77,14 +78,25 @@ export function AuthProvider({ children }: AuthProviderProps) {
       // Token đã được refresh, auth state vẫn valid
     };
 
+    // Listen for user updates from other components
+    const handleUserUpdate = (event: CustomEvent) => {
+      console.log('User updated via AuthProvider');
+      const updatedUser = event.detail;
+      if (updatedUser) {
+        setUser(updatedUser);
+      }
+    };
+
     window.addEventListener('storage', handleStorageChange);
     window.addEventListener('authChanged', handleAuthChange);
     window.addEventListener('tokenRefreshed', handleTokenRefresh as EventListener);
+    window.addEventListener('userUpdated', handleUserUpdate as EventListener);
 
     return () => {
       window.removeEventListener('storage', handleStorageChange);
       window.removeEventListener('authChanged', handleAuthChange);
       window.removeEventListener('tokenRefreshed', handleTokenRefresh as EventListener);
+      window.removeEventListener('userUpdated', handleUserUpdate as EventListener);
     };
   }, []);
 
@@ -192,6 +204,15 @@ export function AuthProvider({ children }: AuthProviderProps) {
     return AuthService.isAdmin();
   };
 
+  // Update user info and localStorage
+  const updateUser = (updatedUser: Omit<User, "password">) => {
+    setUser(updatedUser);
+    // Cập nhật localStorage
+    localStorage.setItem('user', JSON.stringify(updatedUser));
+    // Dispatch event để các components khác biết user đã được cập nhật
+    window.dispatchEvent(new CustomEvent('userUpdated', { detail: updatedUser }));
+  };
+
   const value: AuthContextType = {
     // State
     isAuthenticated,
@@ -205,6 +226,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     // Actions
     login,
     logout,
+    updateUser,
     
     // Auth form methods
     clearAuthError,

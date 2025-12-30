@@ -47,9 +47,15 @@ export default function ChatMessageBubble({ message }: ChatMessageBubbleProps) {
 
   return (
     <div className="flex justify-start mb-4">
-      <div className="w-8 h-8 bg-linear-to-br from-(--gradient-secondary-start) to-(--gradient-secondary-end) rounded-full flex items-center justify-center mr-3 mt-1 shrink-0">
-        <span className="text-white text-sm">🤖</span>
-      </div>
+    <div className="w-10 h-10 mr-2 bg-linear-to-br from-(--surface) to-(--gradient-secondary-end) rounded-full flex items-center justify-center">
+      <span className="flex items-center justify-center">
+        <img
+          src={"/LogoIcon.png"}
+          alt="PopRCM Icon"
+          className="h-[60%] w-[60%]"
+        />
+      </span>
+    </div>
       <div className="flex flex-col items-start max-w-[80%]">
         <div className="bg-(--surface) text-(--text-primary) px-6 py-3 rounded-2xl rounded-bl-md shadow-lg border border-(--border-blue)/20">
           <p className="text-sm leading-relaxed whitespace-pre-wrap">
@@ -87,7 +93,7 @@ export default function ChatMessageBubble({ message }: ChatMessageBubbleProps) {
                           {movie.releaseYear}
                         </span>
                         <span className="text-xs text-(--text-secondary)">
-                          ⭐ {movie.rating}
+                          {movie.rating}
                         </span>
                         <span className="text-xs text-(--accent) font-medium">
                           {Math.round(movie.similarity * 100)}% phù hợp

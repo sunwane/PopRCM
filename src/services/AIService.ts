@@ -186,7 +186,7 @@ Bạn muốn khám phá thể loại nào?`;
     }
 
     // Default response
-    return `Xin chào! Tôi là AI assistant của PopRCM 🤖
+    return `Xin chào! Tôi là AI assistant của PopRCM
 
 Tôi có thể giúp bạn:
 🎬 Tìm phim hay theo sở thích

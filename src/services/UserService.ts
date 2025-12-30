@@ -217,6 +217,7 @@ export class UserService {
       
       // Convert User data to API format
       const apiData = {
+        userName: updatedData.userName,
         fullName: updatedData.fullName,
         gender: updatedData.gender?.toUpperCase()
       };

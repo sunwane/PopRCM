@@ -43,11 +43,18 @@ export default function PageHeader() {
       checkAuth();
     };
     
+    // Listen for user updates
+    const handleUserUpdate = () => {
+      checkAuth(); // Recheck auth state when user is updated
+    };
+    
     window.addEventListener('authChanged', handleAuthChange);
+    window.addEventListener('userUpdated', handleUserUpdate);
 
     return () => {
       window.removeEventListener('storage', handleStorageChange);
       window.removeEventListener('authChanged', handleAuthChange);
+      window.removeEventListener('userUpdated', handleUserUpdate);
     };
   }, []);
 

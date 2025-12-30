@@ -29,7 +29,7 @@ export function useAIChat() {
   useEffect(() => {
     const welcomeMessage: ChatMessage = {
       id: 'welcome-' + Date.now(),
-      content: `Xin chào! Tôi là AI assistant của PopRCM 🤖
+      content: `Xin chào! Tôi là AI assistant của PopRCM
 
 Tôi có thể giúp bạn:
 🎬 Tìm phim hay theo sở thích
@@ -110,7 +110,7 @@ Hãy hỏi tôi bất cứ điều gì về phim ảnh nhé! 😊`,
     // Re-add welcome message
     const welcomeMessage: ChatMessage = {
       id: 'welcome-' + Date.now(),
-      content: `Xin chào! Tôi là AI assistant của PopRCM 🤖
+      content: `Xin chào! Tôi là AI assistant của PopRCM
 
 Tôi có thể giúp bạn:
 🎬 Tìm phim hay theo sở thích

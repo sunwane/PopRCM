@@ -22,13 +22,6 @@ export default function ChatInput({ onSendMessage, isLoading }: ChatInputProps) 
     }
   };
 
-  const suggestions = [
-    "🎬 Gợi ý phim hay hôm nay",
-    "📺 Anime nào đang hot?", 
-    "⭐ Top phim được xem nhiều nhất",
-    "🔍 Tìm phim theo thể loại"
-  ];
-
   return (
     <div className="border-t border-(--border-blue)/20 bg-(--surface) p-4">
       {/* Input Area */}
@@ -79,7 +72,7 @@ export default function ChatInput({ onSendMessage, isLoading }: ChatInputProps) 
       </div>
 
       {/* Disclaimer */}
-      <p className="text-xs text-(--text-secondary)/70 mt-2 text-center">
+      <p className="text-xs text-(--text-secondary) mt-2 text-center">
         AI có thể mắc lỗi. Vui lòng kiểm tra thông tin quan trọng.
       </p>
     </div>

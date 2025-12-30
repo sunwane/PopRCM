@@ -19,8 +19,14 @@ export default function AISuggestPage() {
         {/* Sidebar trái: header chat + gợi ý */}
         <aside className="hidden md:flex flex-col w-[320px] min-w-[260px] max-w-[360px] h-full border-r border-(--border-blue)/10 bg-linear-to-b from-(--background) to-(--surface) p-0">
           <div className="flex flex-col items-center gap-4 px-6 py-8">
-            <div className="w-16 h-16 bg-linear-to-br from-(--gradient-secondary-start) to-(--gradient-secondary-end) rounded-full flex items-center justify-center">
-              <span className="text-white text-3xl">🤖</span>
+            <div className="w-16 h-16 bg-linear-to-br from-(--surface) to-(--gradient-secondary-end) rounded-full flex items-center justify-center">
+              <span className="flex items-center justify-center">
+                <img
+                  src={"/LogoIcon.png"}
+                  alt="PopRCM Icon"
+                  className="h-[60%] w-[60%]"
+                />
+              </span>
             </div>
             <div className="text-center">
               <h2 className="font-bold text-xl text-(--text-primary)">Trò chuyện với AI PopRCM</h2>
@@ -28,7 +34,7 @@ export default function AISuggestPage() {
             </div>
             <button
               onClick={clearChat}
-              className="mt-4 px-4 py-2 text-sm bg-(--background-secondary) hover:bg-(--background-secondary)/80 text-(--text-focus) border border-(--border-blue)/30 transition-colors rounded-lg"
+              className="mt-4 px-4 py-2 text-sm bg-(--background-secondary) hover:bg-(--background-secondary)/80 text-(--text-focus) border border-(--border-blue)/50 transition-colors rounded-lg"
             >
               🗑️ Xóa đoạn chat
             </button>
@@ -64,7 +70,7 @@ export default function AISuggestPage() {
               >
                 <div className="flex items-center gap-3">
                   <span className="text-lg">⭐</span>
-                  <span>Top phim được xem nhiều nhất</span>
+                  <span>Phim được xem nhiều nhất?</span>
                 </div>
               </button>
               <button 
@@ -88,8 +94,14 @@ export default function AISuggestPage() {
             <div className="w-full px-8 py-4">
               {messages.length === 0 ? (
                 <div className="flex flex-col items-center justify-center h-full text-center py-16">
-                  <div className="w-24 h-24 bg-linear-to-br from-(--gradient-primary-start) to-(--gradient-primary-end) rounded-full flex items-center justify-center mb-6">
-                    <span className="text-white text-4xl">🤖</span>
+                  <div className="w-16 h-16 bg-linear-to-br from-(--surface) to-(--gradient-secondary-end) rounded-full flex items-center justify-center">
+                    <span className="flex items-center justify-center">
+                      <img
+                        src={"/LogoIcon.png"}
+                        alt="PopRCM Icon"
+                        className="h-[60%] w-[60%]"
+                      />
+                    </span>
                   </div>
                   <h2 className="text-2xl font-bold text-(--text-primary) mb-2">
                     Chào mừng đến với AI Chat

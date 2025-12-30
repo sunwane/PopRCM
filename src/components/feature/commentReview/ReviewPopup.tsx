@@ -113,11 +113,11 @@ export function ReviewPopup({
         </div>
 
         {/* Content */}
-        <div className="p-6">
+        <div className="py-4 px-6">
           {movieTitle && (
-            <div className="mb-4">
+            <div className="mb-4 flex w-full flex-col items-center">
               <p className="text-gray-300 text-sm">Đánh giá cho:</p>
-              <p className="text-white font-medium">{movieTitle}</p>
+              <p className="text-white text-lg font-medium">{movieTitle}</p>
             </div>
           )}
 
@@ -144,31 +144,31 @@ export function ReviewPopup({
             /* Authenticated view */
             <>
               {/* Rating */}
-              <div className="mb-6">
-                <label className="block text-white text-sm font-medium mb-2">
-                  Điểm đánh giá *
+              <div className="mb-3">
+                <label className="block text-gray-200 text-sm font-medium mb-2">
+                  Điểm đánh giá <div className='text-red-400 inline'>*</div>
                 </label>
-                <div className="flex items-center gap-1 mb-2">
+                <div className="flex items-center justify-center gap-1 mb-2 py-4 px-4 border-2 border-(--border-blue) rounded-lg">
                   {renderStars()}
                 </div>
-                <p className="text-gray-400 text-xs">
+                <p className="flex items-center justify-end text-gray-400 text-xs">
                   {rating > 0 ? `${rating}/10 điểm` : 'Chọn số sao để đánh giá'}
                 </p>
               </div>
 
               {/* Content */}
               <div className="mb-6">
-                <label className="block text-white text-sm font-medium mb-2">
-                  Nội dung đánh giá *
+                <label className="block text-gray-200 text-sm font-medium mb-2">
+                  Nội dung đánh giá <div className='text-red-400 inline'>*</div>
                 </label>
                 <textarea
                   value={content}
                   onChange={(e) => setContent(e.target.value)}
                   placeholder="Chia sẻ cảm nhận của bạn về bộ phim..."
-                  className="w-full bg-(--surface) border border-(--border-blue) rounded-lg p-3 text-white text-sm resize-none"
+                  className="w-full bg-(--surface)/50 rounded-lg py-3 px-4 text-white text-sm resize-none"
                   rows={5}
                 />
-                <p className="text-gray-400 text-xs mt-1">
+                <p className="flex items-center justify-end text-gray-400 text-xs mt-1">
                   {content.length}/500 ký tự
                 </p>
               </div>
@@ -178,7 +178,7 @@ export function ReviewPopup({
                 <button
                   onClick={handleSubmit}
                   disabled={!rating || !content.trim() || isSubmitting}
-                  className="flex-1 bg-(--primary) text-white py-2 px-4 rounded-lg hover:bg-(--primary)/80 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="flex-1 bg-(--gradient-primary-start) text-white py-2 px-4 rounded-lg hover:bg-(--primary)/80 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {isSubmitting ? 'Đang gửi...' : (existingReview ? 'Cập nhật' : 'Gửi đánh giá')}
                 </button>

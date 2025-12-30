@@ -4,7 +4,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { User } from '@/types/User';
 
 export function useUserData() {
-  const { isAuthenticated, user: authUser } = useAuth();
+  const { isAuthenticated, user: authUser, updateUser } = useAuth();
   const [userProfile, setUserProfile] = useState<Omit<User, "password"> | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -26,6 +26,14 @@ export function useUserData() {
       const updatedUser = await UserService.updateProfile(userId, updatedData);
       if (updatedUser) {
         setUserProfile(updatedUser);
+        // Cập nhật vào AuthProvider và localStorage
+        updateUser(updatedUser);
+        
+        // Reload trang sau khi cập nhật thành công
+        setTimeout(() => {
+          window.location.reload();
+        }, 1000);
+        
         return true;
       }
       return false;
@@ -46,6 +54,13 @@ export function useUserData() {
       if (avatarUrl && userProfile) {
         const updatedProfile = { ...userProfile, avatarUrl };
         setUserProfile(updatedProfile);
+        // Cập nhật vào AuthProvider và localStorage
+        updateUser(updatedProfile);
+        
+        // Reload trang sau khi upload thành công
+        setTimeout(() => {
+          window.location.reload();
+        }, 1000);
       }
       return avatarUrl;
     } catch (err: any) {
@@ -65,6 +80,13 @@ export function useUserData() {
       if (success && userProfile) {
         const updatedProfile = { ...userProfile, avatarUrl: '' };
         setUserProfile(updatedProfile);
+        // Cập nhật vào AuthProvider và localStorage
+        updateUser(updatedProfile);
+        
+        // Reload trang sau khi xóa thành công
+        setTimeout(() => {
+          window.location.reload();
+        }, 1000);
       }
       return success;
     } catch (err: any) {

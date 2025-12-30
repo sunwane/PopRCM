@@ -6,6 +6,7 @@ interface FormInputProps extends InputHTMLAttributes<HTMLInputElement> {
   variant?: "input" | "gender";
   genderValue?: string;
   onGenderChange?: (value: string) => void;
+  customLabelStyle?: string;
 }
 
 export const FormInput: FC<FormInputProps> = ({
@@ -15,6 +16,7 @@ export const FormInput: FC<FormInputProps> = ({
   variant = "input",
   genderValue,
   onGenderChange,
+  customLabelStyle,
   ...props
 }) => {
   const [showPassword, setShowPassword] = useState(false);
@@ -26,9 +28,9 @@ export const FormInput: FC<FormInputProps> = ({
     return (
       <div className="relative w-full">
         {label && (
-          <label className="block mb-1 text-white font-medium text-xs">{label}</label>
+          <div className={`${customLabelStyle ? customLabelStyle : "block text-white font-medium text-xs"}`} >{label}</div>
         )}
-        <div className="flex gap-2">
+        <div className={`flex gap-2 ${customLabelStyle ? "mt-2" : 'mt-1'}`}>
           <button
             type="button"
             onClick={() => onGenderChange?.("male")}
@@ -66,11 +68,11 @@ export const FormInput: FC<FormInputProps> = ({
   return (
     <div className="relative w-full">
       {label && (
-        <label className="block mb-1 text-white font-medium text-xs">{label}</label>
+        <div className={`${customLabelStyle ? customLabelStyle : "block text-white font-medium text-xs"}`} >{label}</div>
       )}
       <input
         type={inputType}
-        className={`w-full px-4 py-3.5 lg:text-sm md:text-sm text-xs bg-white/15 rounded-md text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-(--primary) focus:border-transparent pr-${isPassword ? '12' : '4'} ${className}`}
+        className={`w-full ${customLabelStyle ? "mt-2" : 'mt-1'} px-4 py-3.5 lg:text-sm md:text-sm text-xs bg-white/15 rounded-md text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-(--primary) focus:border-transparent pr-${isPassword ? '12' : '4'} ${className}`}
         {...props}
       />
       {isPassword && (
