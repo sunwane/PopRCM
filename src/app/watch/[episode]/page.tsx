@@ -23,7 +23,6 @@ import { useState, Suspense, useRef, useEffect } from "react";
 import { useWatchProgress } from "@/hooks/useWatchProgress";
 import { useWatchedEpisodes } from "@/hooks/useWatchedEpisodes";
 import { useEpisodeProgress } from "@/hooks/useEpisodeProgress";
-import { formatTime } from "@/utils/timeUtils";
 
 export default function WatchPage() {
   return (
@@ -42,6 +41,7 @@ function WatchPageContent() {
   const [showAuthOverlay, setShowAuthOverlay] = useState(false);
   const [showReviewPopup, setShowReviewPopup] = useState(false);
   const [activeCommentTab, setActiveCommentTab] = useState<'comments' | 'reviews'>('comments');
+  const [showVideoError, setShowVideoError] = useState(false);
 
   // Video element ref để tracking progress
   const videoRef = useRef<HTMLVideoElement | null>(null);
@@ -78,6 +78,20 @@ function WatchPageContent() {
 
   // Set video ref when video element is available và auto-play/resume
   useEffect(() => {
+    if (!episodeData) return;
+
+    // Kiểm tra cả 2 link có rỗng không
+    const hasValidVideoUrl = episodeData.videoUrl && episodeData.videoUrl.trim() !== '';
+    const hasValidM3u8Url = episodeData.m3u8Url && episodeData.m3u8Url.trim() !== '';
+    
+    if (!hasValidVideoUrl && !hasValidM3u8Url) {
+      console.log('Both video URLs are empty, showing error overlay');
+      setShowVideoError(true);
+      return;
+    } else {
+      setShowVideoError(false);
+    }
+
     const video = document.querySelector('video') as HTMLVideoElement;
     if (video && episodeData) {
       videoRef.current = video;
@@ -92,7 +106,7 @@ function WatchPageContent() {
           video.currentTime = savedProgress;
         }
         
-        // Auto-play video
+        // Auto-play video (cứ vào page là tự phát)
         video.play().then(() => {
           console.log('Video auto-play started');
         }).catch((error) => {
@@ -173,13 +187,42 @@ function WatchPageContent() {
                   <div className="text-white text-sm">Đang tải vị trí phát lại...</div>
                 </div>
               )}
+
+              {/* Video Error Overlay */}
+              {showVideoError && (
+                <div className="absolute inset-0 bg-black/80 flex flex-col items-center justify-center z-20 text-center p-6">
+                  <div className="text-red-400 text-6xl mb-4">⚠️</div>
+                  <h3 className="text-white text-xl font-bold mb-2">Lỗi link phim</h3>
+                  <p className="text-gray-300 text-sm mb-4">
+                    Rất tiếc, link phim hiện tại đang gặp sự cố.<br />
+                    Mong bạn thông cảm, chúng tôi sẽ khắc phục sớm nhất.
+                  </p>
+                  <button 
+                    onClick={() => route.back()}
+                    className="bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded-lg text-sm transition-colors"
+                  >
+                    Quay lại
+                  </button>
+                </div>
+              )}
+
               <video 
                 ref={videoRef}
                 className="w-full h-full"
                 controls
+                autoPlay
                 poster="/placeholder/video-thumbnail.jpg"
               >
-                <source src={episodeData.m3u8Url} type="video/mp4" />
+                {!showVideoError && (
+                  <source 
+                    src={
+                      episodeData.m3u8Url && episodeData.m3u8Url.trim() !== "" 
+                        ? episodeData.m3u8Url 
+                        : episodeData.videoUrl
+                    } 
+                    type="video/mp4" 
+                  />
+                )}
               </video>
             </div>
 
@@ -189,11 +232,6 @@ function WatchPageContent() {
                 <h1 className="text-2xl font-bold text-white">{movie.title}</h1>
                 <div className="flex items-center gap-2">
                   <p className="text-gray-300 mb-4">Đang xem: {episodeData.title}</p>
-                  {hasProgress && savedProgress > 0 && (
-                    <div className="mb-4 px-2 py-1 bg-blue-500/20 border border-blue-500/50 rounded text-xs text-blue-300">
-                      Tiếp tục từ {formatTime(savedProgress)}
-                    </div>
-                  )}
                 </div>
                 
                 {/* Rating and Labels */}

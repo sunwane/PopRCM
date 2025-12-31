@@ -53,7 +53,7 @@ export default function AccountDropdown({ isOpen, onClose }: AccountDropdownProp
           ) : null}
           <div className={userProfile.avatarUrl ? 'hidden' : ''}>
             <GradientAvatar 
-              initial={getUserAvatarText(userProfile.fullName)} 
+              initial={getUserAvatarText(userProfile?.userName || userProfile?.fullName)} 
               size="w-12 h-12 text-lg"
             />
           </div>

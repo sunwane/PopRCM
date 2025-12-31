@@ -2,9 +2,11 @@
 import { useState, useRef, useEffect } from 'react';
 import { useUserData } from '@/hooks/useData/useUserData';
 import { useAuth } from '@/hooks/useAuth';
+import { UserService } from '@/services/UserService';
 import GradientAvatar from '@/components/ui/GradientAvatar';
 import { FormInput } from '@/components/ui/FormInput';
 import { LoadingEffect } from '@/components/ui/LoadingEffect';
+import ChangePasswordModal from '@/components/ui/ChangePasswordModal';
 import { validateImageFile } from '@/utils/uploadUtils';
 
 export default function InfoTab() {
@@ -29,6 +31,7 @@ export default function InfoTab() {
   const [previewUrl, setPreviewUrl] = useState<string>('');
   const [successMessage, setSuccessMessage] = useState('');
   const [avatarError, setAvatarError] = useState('');
+  const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
 
   // Initialize form data when userProfile changes
   useEffect(() => {
@@ -131,6 +134,36 @@ export default function InfoTab() {
     }
   };
 
+  // Password modal handlers
+  const handleOpenPasswordModal = () => {
+    setIsPasswordModalOpen(true);
+  };
+
+  const handleClosePasswordModal = () => {
+    setIsPasswordModalOpen(false);
+  };
+
+  const handleChangePassword = async (currentPassword: string, newPassword: string): Promise<boolean> => {
+    try {
+      const success = await UserService.changePassword(currentPassword, newPassword);
+      
+      if (success) {
+        setSuccessMessage('Đổi mật khẩu thành công! Trang sẽ được tải lại...');
+        
+        // Reload page after 1.5 seconds to show success message
+        setTimeout(() => {
+          window.location.reload();
+        }, 1500);
+        
+        return true;
+      }
+      
+      return false;
+    } catch (error: any) {
+      throw new Error(error.message || 'Đổi mật khẩu thất bại!');
+    }
+  };
+
   if (!userProfile) {
     return (
       <div className="text-center py-12">
@@ -220,30 +253,20 @@ export default function InfoTab() {
               />
             </div>
 
-            <button
-                onClick={handleEditProfileToggle}
-                disabled={loading}
-                className={`px-6 py-2.5 font-bold text-sm mt-8 rounded-lg transition ${
-                  isEditingProfile 
-                    ? 'bg-gray-600 text-white hover:bg-gray-700'
-                    : 'bg-(--gradient-primary-start) text-white hover:bg-(--gradient-primary-start)/80'
-                } disabled:opacity-50`}
-              >
-                {isEditingProfile ? 'Hủy' : 'Chỉnh sửa'}
-            </button>
-
-            <div className='flex items-center space-x-1 mt-5 text-gray-300'>
-              <div>Để thay đổi mật khẩu, nhấp vào</div>
-              <button className='text-(--hover) font-bold hover:text-(--primary)'>đây</button>
-            </div>
-
-            {/* Save Button */}
-            {isEditingProfile && (
-              <div className="flex justify-end space-x-3 pt-4">
+            {/* Action Buttons */}
+            {isEditingProfile ? (
+              <div className="flex space-x-3 mt-10">
+                <button
+                  onClick={handleEditProfileToggle}
+                  disabled={loading}
+                  className="px-7 py-3 font-bold text-sm rounded-lg transition bg-gray-600 text-white hover:bg-gray-700 disabled:opacity-50"
+                >
+                  Hủy
+                </button>
                 <button
                   onClick={handleSaveProfile}
                   disabled={loading}
-                  className="px-6 py-3 bg-(--primary) text-white rounded-lg hover:bg-(--primary)/80 transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-2"
+                  className="px-7 py-3 font-bold text-sm rounded-lg transition bg-(--gradient-primary-start) text-white hover:bg-(--gradient-primary-start)/80 disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-2"
                 >
                   {loading ? (
                     <>
@@ -263,7 +286,27 @@ export default function InfoTab() {
                   )}
                 </button>
               </div>
+            ) : (
+              <button
+                onClick={handleEditProfileToggle}
+                disabled={loading}
+                className="px-7 py-3 font-bold text-sm mt-10 rounded-lg transition bg-(--gradient-primary-start) text-white hover:bg-(--gradient-primary-start)/80 disabled:opacity-50"
+              >
+                Chỉnh sửa
+              </button>
             )}
+
+            <div className='flex items-center space-x-1 mt-4 text-gray-300'>
+              <div>Để thay đổi mật khẩu, nhấp vào</div>
+              <button 
+                className='text-(--hover) font-bold hover:text-(--primary) transition-colors'
+                onClick={handleOpenPasswordModal}
+              >
+                đây
+              </button>
+            </div>
+
+            {/* Remove the old Save Button section - it's now integrated above */}
           </div>
         </div>
         {/* Avatar Section - Left Column */}
@@ -272,7 +315,7 @@ export default function InfoTab() {
             <div className="text-center">
               <h3 className="text-xl font-semibold text-white mb-4 mt-2">Ảnh đại diện</h3>
               
-              <div className="flex flex-col items-center space-y-4">
+              <div className="flex flex-col items-center space-y-4 mb-4">
                 <div className="relative">
                   <div>
                     {previewUrl ? (
@@ -288,7 +331,7 @@ export default function InfoTab() {
                     ) : null}
                     <div className={previewUrl ? 'hidden' : ''}>
                       <GradientAvatar 
-                        initial={getUserAvatarText(userProfile?.fullName)} 
+                          initial={getUserAvatarText(userProfile?.userName || userProfile?.fullName)} 
                         size="w-56 h-56 text-6xl"
                       />
                     </div>
@@ -357,6 +400,13 @@ export default function InfoTab() {
           </div>
         </div>
       </div>
+
+      {/* Change Password Modal */}
+      <ChangePasswordModal
+        isOpen={isPasswordModalOpen}
+        onClose={handleClosePasswordModal}
+        onChangePassword={handleChangePassword}
+      />
     </div>
   );
 }

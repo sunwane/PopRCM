@@ -182,7 +182,10 @@ export default function PageHeader() {
           <div className="flex items-center space-x-3">
             {isAuthenticated ? (
               <>
-                <button className="p-2 text-white hover:text-(--primary) transition">
+                <button 
+                  className="p-2 text-white hover:text-(--primary) transition"
+                  onClick={() => route.push("/myaccount?tab=notifications")}
+                >
                   <img src="/icons/Bell.png" alt="Notifications" className="w-6 h-6" />
                 </button>
                 <AccountButton />
@@ -241,7 +244,10 @@ export default function PageHeader() {
           <div className="flex items-center space-x-3">
             {/* Notification icon - chỉ hiển thị khi đăng nhập và không search */}
             {isAuthenticated && !showMobileSearch && (
-              <button className="p-2 text-white hover:text-(--primary) transition">
+              <button 
+                className="p-2 text-white hover:text-(--primary) transition"
+                onClick={() => route.push("/myaccount?tab=notifications")}
+              >
                 <img src="/icons/Bell.png" alt="Notifications" className="lg:w-7 lg:h-7 md:w-6 md:h-6 sm:w-5 sm:h-5 w-5 h-5" />
               </button>
             )}

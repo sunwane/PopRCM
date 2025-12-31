@@ -128,7 +128,7 @@ export default function Home() {
               ) : (
               <div>
                 <MoviesDisplayGrid
-                  title="Top 10 phim bộ tuần này"
+                  title="Top 10 phim lẻ tuần này"
                   moviesList={singleTopList}
                   loading={singleTopLoading}
                   type="top"

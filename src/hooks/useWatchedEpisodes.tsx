@@ -4,6 +4,31 @@ import { FavoritesHistoryService } from '@/services/FavoritesHistoryService';
 import { WatchHistory } from '@/types/User';
 import { useAuth } from './useAuth';
 
+/**
+ * Hook useWatchedEpisodes - Quản lý danh sách tập phim đã xem của một bộ phim
+ * 
+ * Chức năng chính:
+ * - Lấy danh sách tất cả tập đã xem của một bộ phim từ server
+ * - Chỉ hoạt động khi user đã đăng nhập (guest không có lịch sử cá nhân)
+ * - Cung cấp thông tin tiến trình xem của từng tập
+ * - Hỗ trợ đánh dấu tập đã xem trong UI (playlist, episode list)
+ * - Cung cấp các hàm tiện ích để kiểm tra và cập nhật trạng thái
+ * 
+ * Input: movieId (string) - ID của bộ phim cần lấy lịch sử xem
+ * 
+ * Output:
+ * - watchedEpisodes (Array): Danh sách ID các tập đã xem (dạng mảng)
+ * - watchedEpisodesSet (Set): Danh sách ID các tập đã xem (dạng Set để tìm kiếm nhanh)
+ * - watchedEpisodesProgress (Object): Tiến trình xem của từng tập {episodeId: currentTime}
+ * - loading (boolean): Trạng thái đang tải dữ liệu
+ * - isEpisodeWatched (function): Kiểm tra tập có được xem chưa
+ * - getEpisodeProgress (function): Lấy tiến trình của một tập cụ thể
+ * - markEpisodeAsWatched (function): Đánh dấu tập đã xem (local update)
+ * - refreshWatchedEpisodes (function): Làm mới danh sách từ server
+ * 
+ * Sử dụng: Trong playlist, episode list để hiển thị trạng thái đã xem
+ */
+
 export const useWatchedEpisodes = (movieId?: string) => {
   const { isAuthenticated } = useAuth();
   const [watchedEpisodes, setWatchedEpisodes] = useState<Set<string>>(new Set());

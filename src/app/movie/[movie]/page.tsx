@@ -17,6 +17,7 @@ import { CmtReviewSection } from "@/components/feature/commentReview/CmtReviewSe
 import { AuthBackground } from "@/components/feature/auth/AuthBackground";
 import { ReviewPopup } from "@/components/feature/commentReview/ReviewPopup";
 import { useState, Suspense } from "react";
+import { useWatchedEpisodes } from "@/hooks/useWatchedEpisodes";
 
 export default function MoviesPage() {
   return (
@@ -41,6 +42,13 @@ function MoviePageContent() {
   const { seriesInfo } = useSeriesDataByMovieId(movie?.toString() ?? "");
   const { recommendedMovies } = useRecommendedMovies(movie?.toString() || "");
   console.log("Movie Info:", movieInfo);
+
+  // Watched episodes tracking
+  const { 
+    watchedEpisodesSet, 
+    isEpisodeWatched, 
+    refreshWatchedEpisodes 
+  } = useWatchedEpisodes(movieInfo?.id || '');
 
   if (loading) {
     return (
@@ -241,6 +249,7 @@ function MoviePageContent() {
                   seriesInfo={seriesInfo ?? undefined} 
                   recommendations={recommendedMovies} 
                   currentEpisode={undefined}
+                  watchedEpisodes={watchedEpisodesSet}
                 />
               </div>
 

@@ -123,8 +123,8 @@ export default function AISuggestPage() {
           </div>
 
           {/* Chat input full width, không bo góc */}
-          <div className="w-full border-t border-(--border-blue)/20 bg-(--surface)">
-            <div className="w-full px-4 pt-2">
+          <div className="w-full border-t border-(--border-blue)/40 bg-(--surface)">
+            <div className="w-full px-4 pt-1">
               <ChatInput onSendMessage={sendMessage} isLoading={isLoading} />
             </div>
           </div>

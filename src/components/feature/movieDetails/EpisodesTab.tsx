@@ -70,6 +70,13 @@ export function EpisodesTab({ movieInfo, seriesInfo, currentEpisode, loading, wa
     }
   }, [serverNames, selectedServer]);
 
+  // Auto-set server based on current episode and navigate to correct page
+  useEffect(() => {
+    if (currentEpisode && currentEpisode.serverName && serverNames.includes(currentEpisode.serverName)) {
+      setSelectedServer(currentEpisode.serverName);
+    }
+  }, [currentEpisode, serverNames]);
+
   // Lọc episodes theo server được chọn
   const filteredEpisodes = useMemo(() => {
     if (!getCurrentMovieWithSeason.episodes || !selectedServer) return [];
@@ -78,6 +85,17 @@ export function EpisodesTab({ movieInfo, seriesInfo, currentEpisode, loading, wa
       .filter(ep => ep.serverName === selectedServer)
       .sort((a, b) => a.episodeNumber - b.episodeNumber);
   }, [getCurrentMovieWithSeason.episodes, selectedServer]);
+
+  // Auto-navigate to page containing current episode
+  useEffect(() => {
+    if (currentEpisode && filteredEpisodes.length > 0) {
+      const currentEpisodeIndex = filteredEpisodes.findIndex(ep => ep.id === currentEpisode.id);
+      if (currentEpisodeIndex !== -1) {
+        const targetPage = Math.floor(currentEpisodeIndex / EPISODES_PER_PAGE) + 1;
+        setCurrentPage(targetPage);
+      }
+    }
+  }, [currentEpisode, filteredEpisodes]);
 
   // Calculate pagination based on filtered episodes
   const totalPages = Math.ceil(filteredEpisodes.length / EPISODES_PER_PAGE);
@@ -99,7 +117,21 @@ export function EpisodesTab({ movieInfo, seriesInfo, currentEpisode, loading, wa
   // Handle server change and reset page
   const handleServerChange = (serverName: string) => {
     setSelectedServer(serverName);
-    setCurrentPage(1); // Reset to first page when server changes
+    // Don't reset to first page when server changes if current episode is in new server
+    if (currentEpisode && currentEpisode.serverName === serverName) {
+      const newFilteredEpisodes = getCurrentMovieWithSeason.episodes
+        ?.filter(ep => ep.serverName === serverName)
+        .sort((a, b) => a.episodeNumber - b.episodeNumber) || [];
+      const currentEpisodeIndex = newFilteredEpisodes.findIndex(ep => ep.id === currentEpisode.id);
+      if (currentEpisodeIndex !== -1) {
+        const targetPage = Math.floor(currentEpisodeIndex / EPISODES_PER_PAGE) + 1;
+        setCurrentPage(targetPage);
+      } else {
+        setCurrentPage(1);
+      }
+    } else {
+      setCurrentPage(1); // Reset to first page when server changes
+    }
   };
 
   // Handle page change

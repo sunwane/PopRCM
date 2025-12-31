@@ -23,7 +23,7 @@ export default function ChatInput({ onSendMessage, isLoading }: ChatInputProps) 
   };
 
   return (
-    <div className="border-t border-(--border-blue)/20 bg-(--surface) p-4">
+    <div className="bg-(--surface) p-4">
       {/* Input Area */}
       <div className="flex items-end gap-3">
         <div className="flex-1 relative">

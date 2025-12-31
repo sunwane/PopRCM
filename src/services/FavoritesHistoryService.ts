@@ -337,7 +337,7 @@ export class FavoritesHistoryService {
   }
 
   /**
-   * POST /api/history/episode/{episodeId} - Cập nhật tiến trình xem
+   * POST /api/history/episode/{episodeId} - Cập nhật tiến trình xem (user đã đăng nhập)
    */
   static async updateWatchProgress(episodeId: string, currentTime: number): Promise<boolean> {
     if (!this.isServiceAvailable()) {
@@ -349,15 +349,7 @@ export class FavoritesHistoryService {
     try {
       const token = this.getAuthToken();
       if (!token) {
-        // Public endpoint for non-authenticated users
-        const response = await fetch(`${this.API_BASE_URL}/history/public/episode/${episodeId}`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({ currentTime })
-        });
-        return response.ok;
+        throw new Error('Authentication required for this endpoint');
       }
 
       const response = await fetch(`${this.API_BASE_URL}/history/episode/${episodeId}`, {

@@ -1,6 +1,8 @@
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Comment } from '@/types/Comment';
 import AuthService from '@/services/AuthService';
+import { useConfirmModal } from '@/hooks/useConfirmModal';
+import ConfirmModal from '@/components/ui/ConfirmModal';
 
 export interface OneCommentProps {
   comment: Comment;
@@ -27,10 +29,30 @@ export function OneComment({
   const [replyContent, setReplyContent] = useState('');
   const [showReplies, setShowReplies] = useState(true);
   const [imageError, setImageError] = useState(false);
+  const [showDetailsPopup, setShowDetailsPopup] = useState(false);
+  const popupRef = useRef<HTMLDivElement>(null);
+  const confirmModal = useConfirmModal();
 
   const currentUser = AuthService.getUser();
   const isOwnComment = currentUser?.id === comment.user.id;
   const isAuthenticated = !!currentUser;
+
+  // Close popup when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (popupRef.current && !popupRef.current.contains(event.target as Node)) {
+        setShowDetailsPopup(false);
+      }
+    };
+
+    if (showDetailsPopup) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [showDetailsPopup]);
 
   const handleEdit = () => {
     if (onEdit) {
@@ -55,6 +77,28 @@ export function OneComment({
     onToggleLike?.(comment.id);
   };
 
+  const handleDeleteComment = async () => {
+    const confirmed = await confirmModal.openConfirm({
+      title: 'Xóa bình luận',
+      message: 'Bạn có chắc chắn muốn xóa bình luận này? Hành động này không thể hoàn tác.',
+      confirmText: 'Xóa bình luận',
+      cancelText: 'Hủy bỏ',
+      confirmButtonType: 'danger'
+    });
+
+    if (confirmed) {
+      confirmModal.setLoadingState(true);
+      try {
+        onDelete?.(comment.id);
+        setShowDetailsPopup(false);
+      } catch (error) {
+        console.error('Error deleting comment:', error);
+      } finally {
+        confirmModal.setLoadingState(false);
+      }
+    }
+  };
+
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
     const now = new Date();
@@ -62,10 +106,22 @@ export function OneComment({
     const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
     const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
 
-    if (diffHours < 1) return 'Vừa xong';
+    if (diffMs < 60000) return 'Vừa xong';
+    if (diffMs < 3600000) return `${Math.floor(diffMs / 60000)} phút trước`;
     if (diffHours < 24) return `${diffHours} giờ trước`;
     if (diffDays < 7) return `${diffDays} ngày trước`;
     return date.toLocaleDateString('vi-VN');
+  };
+
+  const formatFullDate = (dateString: string) => {
+    const date = new Date(dateString);
+    return date.toLocaleString('vi-VN', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
   };
 
   const marginLeft = level > 0 ? `ml-${Math.min(level * 8, 32)}` : '';
@@ -75,24 +131,31 @@ export function OneComment({
       <div className="flex gap-3">
         {/* User Avatar */}
         <div>
-          {comment.user.avatar && !imageError ? (
+          {comment.user.avatarUrl && !imageError ? (
             <img
-              src={comment.user.avatar}
+              src={comment.user.avatarUrl}
               alt={comment.user.fullName || comment.user.fullName || 'User Avatar'}
               className="w-10 h-10 rounded-full object-cover shrink-0"
               onError={() => setImageError(true)}
             />
           ) : (
             <div className="w-10 h-10 rounded-full bg-gray-600 flex items-center justify-center text-white text-sm shrink-0">
-              {comment.user.fullName ? comment.user.fullName.charAt(0).toUpperCase() : 'U'}
+              {comment.user.userName ? comment.user.userName.charAt(0).toUpperCase() : comment.user.fullName ? comment.user.fullName.charAt(0).toUpperCase() : 'U'}
             </div>
           )}
         </div>
 
         <div className="flex-1">
           {/* User info and timestamp */}
-          <div className="flex items-center gap-2 mb-1">
-            <span className="font-semibold text-white text-sm">{comment.user.fullName}</span>
+          <div className="flex items-center gap-1 mb-1">
+            <span className="font-semibold text-white text-sm">{comment.user.userName || comment.user.fullName}</span>
+            {comment.user.gender && (
+              <img 
+                src={`/icons/${comment.user.gender === 'male' ? 'Male' : 'Female'}.png`} 
+                alt={comment.user.gender} 
+                className="w-4 h-4 mr-1" 
+              />
+            )}
             <span className="text-gray-400 text-xs">{formatDate(comment.createdAt)}</span>
             {comment.updatedAt !== comment.createdAt && (
               <span className="text-gray-500 text-xs">(đã chỉnh sửa)</span>
@@ -143,7 +206,7 @@ export function OneComment({
               <svg className="w-4 h-4" fill={comment.likedByCurrentUser ? "currentColor" : "none"} stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
               </svg>
-              <span>{comment.likeCount}</span>
+              <span>{comment.likeCount} lượt thích</span>
             </button>
 
             {level < 2 && (
@@ -155,28 +218,73 @@ export function OneComment({
                   }
                   setIsReplying(!isReplying);
                 }}
-                className="text-gray-400 hover:text-white transition-colors"
+                className="flex items-center gap-1 text-gray-400 hover:text-white transition-colors"
               >
-                Trả lời
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6" />
+                </svg>
+                <span>Trả lời</span>
               </button>
             )}
 
-            {isOwnComment && (
-              <>
-                <button
-                  onClick={() => setIsEditing(true)}
-                  className="text-gray-400 hover:text-white transition-colors"
-                >
-                  Chỉnh sửa
-                </button>
-                <button
-                  onClick={() => onDelete?.(comment.id)}
-                  className="text-gray-400 hover:text-red-400 transition-colors"
-                >
-                  Xóa
-                </button>
-              </>
-            )}
+            {/* Details button with popup */}
+            <div className="relative" ref={popupRef}>
+              <button
+                onClick={() => setShowDetailsPopup(!showDetailsPopup)}
+                className="flex items-center gap-1 text-gray-400 hover:text-white transition-colors"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z" />
+                </svg>
+                <span>Chi tiết</span>
+              </button>
+
+              {/* Details popup */}
+              {showDetailsPopup && (
+                <div className="absolute top-full right-0 mt-1 bg-(--surface) border border-(--border-blue) rounded-lg shadow-lg z-20 min-w-[200px]">
+
+                  {/* Actions for own comment only */}
+                  {isOwnComment && (
+                    <div className="py-2 px-1">
+                      <button
+                        onClick={() => {
+                          setIsEditing(true);
+                          setShowDetailsPopup(false);
+                        }}
+                        className="flex items-center gap-2 w-full text-left px-3 py-2 text-white hover:bg-(--primary)/20 rounded transition-colors"
+                      >
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                        </svg>
+                        <span>Chỉnh sửa</span>
+                      </button>
+                      <button
+                        onClick={handleDeleteComment}
+                        className="flex items-center gap-2 w-full text-left px-3 py-2 text-red-400 hover:bg-red-500/20 rounded transition-colors"
+                      >
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                        </svg>
+                        <span>Xóa</span>
+                      </button>
+                    </div>
+                  )}
+                  {/* Date information - always show for all comments */}
+                  <div className="py-2 px-4 text-xs border-t border-gray-600">
+                    <div className="mb-2">
+                      <span className="text-gray-400">Ngày tạo:</span>
+                      <p className="text-white">{formatFullDate(comment.createdAt)}</p>
+                    </div>
+                    {comment.updatedAt !== comment.createdAt && (
+                      <div>
+                        <span className="text-gray-400">Cập nhật lần cuối:</span>
+                        <p className="text-white">{formatFullDate(comment.updatedAt)}</p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
 
           {/* Reply input */}
@@ -248,6 +356,19 @@ export function OneComment({
           )}
         </div>
       </div>
+      
+      {/* Confirm Modal */}
+      <ConfirmModal
+        isOpen={confirmModal.isOpen}
+        title={confirmModal.options.title}
+        message={confirmModal.options.message}
+        confirmText={confirmModal.options.confirmText}
+        cancelText={confirmModal.options.cancelText}
+        confirmButtonType={confirmModal.options.confirmButtonType}
+        onConfirm={confirmModal.handleConfirm}
+        onCancel={confirmModal.handleCancel}
+        isLoading={confirmModal.isLoading}
+      />
     </div>
   );
 }

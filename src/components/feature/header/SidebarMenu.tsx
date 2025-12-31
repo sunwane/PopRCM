@@ -87,13 +87,13 @@ export default function SidebarMenu({ isOpen, onClose, onOpenAuth }: SidebarMenu
                   ) : null}
                   <div className={userProfile.avatarUrl ? 'hidden' : ''}>
                     <GradientAvatar 
-                      initial={getUserAvatarText(userProfile.fullName)} 
+                      initial={getUserAvatarText(userProfile?.userName || userProfile?.fullName)} 
                       size="w-12 h-12 lg:text-lg md:text-lg sm:text-base text-sm"
                     />
                   </div>
                   <div className="flex-1">
                     <p className="text-white font-semibold lg:text-base md:text-base sm:text-sm text-xs flex items-center gap-1.5">
-                      {userProfile.fullName || userProfile.userName}
+                      {userProfile.userName || userProfile.fullName}
                       {userProfile.gender && (
                         <img 
                           src={`/icons/${userProfile.gender === 'male' ? 'Male' : 'Female'}.png`} 
