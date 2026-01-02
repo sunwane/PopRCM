@@ -160,7 +160,7 @@ export function ReviewTab({ movieId, movieTitle, onOpenAuth }: ReviewTabProps) {
       )}
 
       {/* Reviews list */}
-      <div>
+      <div className='px-4'>
         {loading && (
           <div className="text-center py-8">
             <LoadingEffect message="Đang tải đánh giá..." />

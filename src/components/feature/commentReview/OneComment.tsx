@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { Comment } from '@/types/Comment';
 import AuthService from '@/services/AuthService';
 import { useConfirmModal } from '@/hooks/useConfirmModal';
+import { useCommentLike } from '@/hooks/useCommentLike';
 import ConfirmModal from '@/components/ui/ConfirmModal';
 
 export interface OneCommentProps {
@@ -32,6 +33,13 @@ export function OneComment({
   const [showDetailsPopup, setShowDetailsPopup] = useState(false);
   const popupRef = useRef<HTMLDivElement>(null);
   const confirmModal = useConfirmModal();
+  
+  // Use the comment like hook
+  const { isLiked, likeCount, toggleLike } = useCommentLike(
+    comment.id, 
+    comment.likedByCurrentUser, 
+    comment.likeCount
+  );
 
   const currentUser = AuthService.getUser();
   const isOwnComment = currentUser?.id === comment.user.id;
@@ -74,7 +82,13 @@ export function OneComment({
       onOpenAuth?.();
       return;
     }
-    onToggleLike?.(comment.id);
+    
+    // Try to toggle like using the hook
+    const success = toggleLike();
+    if (success) {
+      // Call parent handler for API sync
+      onToggleLike?.(comment.id);
+    }
   };
 
   const handleDeleteComment = async () => {
@@ -198,15 +212,15 @@ export function OneComment({
             <button
               onClick={handleLike}
               className={`flex items-center gap-1 transition-colors ${
-                comment.likedByCurrentUser 
+                isLiked 
                   ? 'text-(--primary)' 
                   : 'text-gray-400 hover:text-(--primary)'
               }`}
             >
-              <svg className="w-4 h-4" fill={comment.likedByCurrentUser ? "currentColor" : "none"} stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="w-4 h-4" fill={isLiked ? "currentColor" : "none"} stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
               </svg>
-              <span>{comment.likeCount} lượt thích</span>
+              <span>{likeCount} lượt thích</span>
             </button>
 
             {level < 2 && (

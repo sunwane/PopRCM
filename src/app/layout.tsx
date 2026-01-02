@@ -3,6 +3,7 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import ServiceChecker from "@/services/ServiceChecker";
 import { AuthProvider } from "@/providers/AuthProvider";
+import { GoogleOAuthProvider } from '@react-oauth/google';
 import { ClientLayout } from "@/components/layout/ClientLayout";
 
 const geistInter = Inter({
@@ -28,14 +29,19 @@ export default async function RootLayout({
   const checked = await ServiceChecker.checkServiceAvailability();
   console.log("Service availability:", checked);
 
+  // Lấy Google Client ID từ environment
+  const googleClientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || '';
+
   return (
     <html lang="en">
       <body className={`${geistInter.variable} antialiased mx-auto max-w-[2000px]`}>
-        <AuthProvider>
-          <ClientLayout>
-            {children}
-          </ClientLayout>
-        </AuthProvider>
+        <GoogleOAuthProvider clientId={googleClientId}>
+          <AuthProvider>
+            <ClientLayout>
+              {children}
+            </ClientLayout>
+          </AuthProvider>
+        </GoogleOAuthProvider>
       </body>
     </html>
   );

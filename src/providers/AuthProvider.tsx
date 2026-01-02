@@ -16,6 +16,7 @@ interface AuthContextType {
   
   // Actions
   login: (credentials: LoginRequest) => Promise<AuthResponse>;
+  loginWithGoogle: (idToken: string) => Promise<AuthResponse>;
   logout: () => Promise<void>;
   updateUser: (updatedUser: Omit<User, "password">) => void;
   
@@ -128,6 +129,34 @@ export function AuthProvider({ children }: AuthProviderProps) {
     }
   };
 
+  const loginWithGoogle = async (idToken: string): Promise<AuthResponse> => {
+    try {
+      setAuthLoading(true);
+      setAuthError('');
+      
+      const response = await AuthService.loginWithGoogle(idToken);
+      console.log('Google login response:', response);
+      
+      if (response.token && response.user) {
+        // Lưu vào localStorage và bắt đầu auto refresh
+        AuthService.setAuth(response.token, response.user, response.refreshToken);
+        
+        // Cập nhật state
+        setIsAuthenticated(true);
+        setUser(response.user);
+      }
+      
+      return response;
+    } catch (error) {
+      setAuthError((error as Error).message || 'Đăng nhập Google thất bại');
+      setIsAuthenticated(false);
+      setUser(null);
+      throw error;
+    } finally {
+      setAuthLoading(false);
+    }
+  };
+
   const logout = async () => {
     try {
       setLoading(true);
@@ -225,6 +254,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     
     // Actions
     login,
+    loginWithGoogle,
     logout,
     updateUser,
     
