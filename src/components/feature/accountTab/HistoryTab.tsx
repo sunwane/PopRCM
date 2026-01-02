@@ -1,12 +1,12 @@
 "use client";
-"use client";
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { useFavoritesHistoryData } from '@/hooks/useData/useFavoritesHistoryData';
 import { Movie } from '@/types/Movies';
 import MoviesGridLayout from '@/components/feature/movies/MoviesGridLayout';
 import { LoadingEffect } from '@/components/ui/LoadingEffect';
 import NotFoundDiv from '@/components/ui/NotFoundDiv';
 import Message from '@/components/ui/Message';
+import { getVideoDuration } from '@/utils/timeUtils';
 
 export default function HistoryTab() {
   const { 
@@ -20,25 +20,94 @@ export default function HistoryTab() {
 
   // Message state for global notifications
   const [message, setMessage] = useState<{ text: string; type: 'success' | 'error' } | null>(null);
+  
+  // 🎬 State để lưu thời lượng video thực tế
+  const [videoDurations, setVideoDurations] = useState<{ [episodeId: string]: number }>({});
+  const [loadingDurations, setLoadingDurations] = useState<Set<string>>(new Set());
 
   // Handle message from MovieCard
   const handleMessage = (content: string, type: 'success' | 'error') => {
     setMessage({ text: content, type });
   };
 
+  // 🎬 Hàm lấy thời lượng video thực tế từ URL
+  const fetchVideoDuration = useCallback(async (episodeId: string, videoUrl?: string, m3u8Url?: string) => {
+    // Nếu đã có duration hoặc đang loading thì skip
+    if (videoDurations[episodeId] || loadingDurations.has(episodeId)) {
+      return;
+    }
+
+    // Chọn URL để lấy duration (ưu tiên m3u8)
+    const urlToCheck = (m3u8Url && m3u8Url.trim() !== '') ? m3u8Url : videoUrl;
+    
+    if (!urlToCheck || urlToCheck.trim() === '') {
+      console.log(`No valid video URL for episode ${episodeId}`);
+      return;
+    }
+
+    try {
+      // Set loading state
+      setLoadingDurations(prev => new Set([...prev, episodeId]));
+      
+      console.log(`🎬 Fetching duration for episode ${episodeId} from: ${urlToCheck}`);
+      const duration = await getVideoDuration(urlToCheck);
+      
+      console.log(`✅ Got duration for episode ${episodeId}: ${duration}s`);
+      
+      // Lưu duration vào state
+      setVideoDurations(prev => ({
+        ...prev,
+        [episodeId]: duration
+      }));
+      
+    } catch (error) {
+      console.warn(`⚠️ Failed to get duration for episode ${episodeId}:`, error);
+      // Fallback về 45 phút nếu không lấy được
+      setVideoDurations(prev => ({
+        ...prev,
+        [episodeId]: 2700 // 45 minutes
+      }));
+    } finally {
+      // Remove loading state
+      setLoadingDurations(prev => {
+        const newSet = new Set(prev);
+        newSet.delete(episodeId);
+        return newSet;
+      });
+    }
+  }, [videoDurations, loadingDurations]);
+
+  // Load video durations khi có watchHistory
+  useEffect(() => {
+    if (watchHistory.length > 0) {
+      watchHistory.forEach(history => {
+        // Cần lấy videoUrl và m3u8Url từ episode data
+        // Giả sử episode object có chứa các URL này
+        fetchVideoDuration(
+          history.episode.id,
+          history.episode.videoUrl,
+          history.episode.m3u8Url
+        );
+      });
+    }
+  }, [watchHistory, fetchVideoDuration]);
+
   // Load data on component mount
   useEffect(() => {
     refreshData();
   }, []);
 
-  // Calculate progress percentage (assuming 45 minutes = 2700 seconds per episode)
-  const getProgressInfo = (currentTime: number) => {
-    const assumedDuration = 2700; // 45 minutes in seconds
-    const progressPercent = (currentTime / assumedDuration) * 100;
+  // Calculate progress percentage với thời lượng thực tế
+  const getProgressInfo = (currentTime: number, episodeId: string) => {
+    // Lấy thời lượng thực tế từ state, fallback về 45 phút (2700s)
+    const actualDuration = videoDurations[episodeId] || 2700;
+    const progressPercent = (currentTime / actualDuration) * 100;
+    
     return {
       progressPercent: Math.min(100, progressPercent),
       currentTime: Math.floor(currentTime),
-      totalDuration: assumedDuration
+      totalDuration: actualDuration,
+      isLoadingDuration: loadingDurations.has(episodeId)
     };
   };
 
@@ -80,12 +149,13 @@ export default function HistoryTab() {
   // Create movie extra data with progress info
   const movieExtraData: { [movieId: string]: any } = {};
   watchHistory.forEach(history => {
-    const progressInfo = getProgressInfo(history.currentTime);
+    const progressInfo = getProgressInfo(history.currentTime, history.episode.id);
     movieExtraData[history.episode.movieId] = {
       showProgress: true,
       progressPercent: progressInfo.progressPercent,
       currentTime: progressInfo.currentTime,
       totalDuration: progressInfo.totalDuration,
+      isLoadingDuration: progressInfo.isLoadingDuration,
       // Episode information for navigation and display
       episodeId: history.episode.id,
       episodeNumber: history.episode.episodeNumber,
@@ -135,6 +205,12 @@ export default function HistoryTab() {
         </div>
         
         <div className="flex items-center space-x-4">
+          <div className="text-sm text-gray-400">
+            {loadingDurations.size > 0 && (
+              <span>🔄 Đang tải thời lượng video ({loadingDurations.size})...</span>
+            )}
+          </div>
+          
           <button
             onClick={refreshData}
             disabled={historyLoading}

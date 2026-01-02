@@ -2,11 +2,19 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 
-const LIKE_STORAGE_KEY = 'comment_likes';
+const LIKE_COUNT_STORAGE_KEY = 'comment_like_counts';
 
 interface CommentLikeState {
   isLiked: boolean;
   likeCount: number;
+}
+
+interface CommentLikeData {
+  [commentId: string]: {
+    isLiked: boolean;
+    likeCount: number;
+    lastUpdated: number;
+  };
 }
 
 export function useCommentLike(commentId: string, initialLiked: boolean, initialCount: number) {
@@ -16,48 +24,50 @@ export function useCommentLike(commentId: string, initialLiked: boolean, initial
     likeCount: initialCount
   });
 
-  // Get liked comments from localStorage
-  const getLikedComments = (): Set<string> => {
+  // Get comment like data from localStorage
+  const getCommentLikeData = (): CommentLikeData => {
     try {
-      const stored = localStorage.getItem(LIKE_STORAGE_KEY);
-      return new Set(stored ? JSON.parse(stored) : []);
+      const stored = localStorage.getItem(LIKE_COUNT_STORAGE_KEY);
+      return stored ? JSON.parse(stored) : {};
     } catch {
-      return new Set();
+      return {};
     }
   };
 
   // Save comment like state to localStorage
-  const setCommentLiked = (liked: boolean) => {
+  const setCommentLikeData = (isLiked: boolean, likeCount: number) => {
     try {
-      const likedComments = getLikedComments();
-      if (liked) {
-        likedComments.add(commentId);
-      } else {
-        likedComments.delete(commentId);
-      }
-      localStorage.setItem(LIKE_STORAGE_KEY, JSON.stringify([...likedComments]));
+      const allData = getCommentLikeData();
+      allData[commentId] = {
+        isLiked,
+        likeCount,
+        lastUpdated: Date.now()
+      };
+      localStorage.setItem(LIKE_COUNT_STORAGE_KEY, JSON.stringify(allData));
     } catch (error) {
-      console.error('Error saving like state to localStorage:', error);
+      console.error('Error saving like data to localStorage:', error);
     }
   };
 
   // Initialize and sync like state from localStorage
   useEffect(() => {
     if (isAuthenticated && user) {
-      const likedComments = getLikedComments();
-      const isLikedLocally = likedComments.has(commentId);
+      const allData = getCommentLikeData();
+      const localData = allData[commentId];
       
-      // If there's a discrepancy between local and server state, use local state
-      if (isLikedLocally !== initialLiked) {
+      if (localData) {
+        // Sử dụng dữ liệu từ localStorage nếu có
         setLikeState({
-          isLiked: isLikedLocally,
-          likeCount: initialCount + (isLikedLocally ? 1 : -1)
+          isLiked: localData.isLiked,
+          likeCount: localData.likeCount
         });
       } else {
+        // Nếu chưa có dữ liệu local, sử dụng dữ liệu từ server và lưu vào localStorage
         setLikeState({
           isLiked: initialLiked,
           likeCount: initialCount
         });
+        setCommentLikeData(initialLiked, initialCount);
       }
     } else {
       // Not authenticated, use server state
@@ -75,15 +85,16 @@ export function useCommentLike(commentId: string, initialLiked: boolean, initial
     }
     
     const newLikedState = !likeState.isLiked;
+    const newLikeCount = likeState.likeCount + (newLikedState ? 1 : -1);
     
     // Optimistic update
     setLikeState(prev => ({
       isLiked: newLikedState,
-      likeCount: prev.likeCount + (newLikedState ? 1 : -1)
+      likeCount: newLikeCount
     }));
     
-    // Save to localStorage
-    setCommentLiked(newLikedState);
+    // Save to localStorage với count mới
+    setCommentLikeData(newLikedState, newLikeCount);
     
     return true; // Successfully toggled
   };

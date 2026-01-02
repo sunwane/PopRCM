@@ -55,30 +55,41 @@ function WatchPageContent() {
   const { seriesInfo } = useSeriesDataByMovieId(movieId);
   const { recommendedMovies } = useRecommendedMovies(movieId || "");
 
-  // Watch progress tracking hooks
+  // 📊 HOOK LƯU LỊCH SỬ XEM: Tự động lưu thời gian xem hiện tại vào localStorage
+  // Mỗi khi user xem video, nó sẽ lưu currentTime để lần sau tiếp tục từ đó
   const { isTracking } = useWatchProgress({
-    episodeId: episodeData?.id || '',
-    movieId: movieId || '',
-    videoElement: videoRef.current
+    episodeId: episodeData?.id || '', // ID của episode đang xem
+    movieId: movieId || '',           // ID của movie
+    videoElement: videoRef.current    // Element video để track progress
   });
 
-  // Watched episodes tracking
+  // 📚 HOOK THEO DÕI CÁC TẬP ĐÃ XEM: Lưu danh sách các tập đã xem hoàn thành
+  // Đánh dấu tập nào đã xem xong để hiển thị trạng thái "đã xem" trong playlist
   const { 
-    watchedEpisodesSet, 
-    isEpisodeWatched, 
-    refreshWatchedEpisodes 
+    watchedEpisodesSet,      // Set chứa ID các tập đã xem xong
+    isEpisodeWatched,        // Function kiểm tra tập có được xem xong chưa
+    refreshWatchedEpisodes   // Function refresh lại danh sách đã xem
   } = useWatchedEpisodes(movieId || '');
 
-  // Episode progress for auto-resume
+  // ⏰ HOOK LẤY LỊCH SỬ THỜI GIAN XEM: Lấy thời điểm đã lưu của tập hiện tại
+  // Dùng để auto-resume từ vị trí đã xem trước đó
   const { 
-    savedProgress, 
-    hasProgress, 
-    loading: progressLoading 
+    savedProgress,    // Thời gian đã lưu (số giây) - VD: 1250 (tức 20:50)
+    hasProgress,      // Boolean: có lịch sử hay không
+    loading: progressLoading  // Loading state khi đang load lịch sử
   } = useEpisodeProgress(episodeData?.id || '');
 
   // Set video ref when video element is available và auto-play/resume
   useEffect(() => {
     if (!episodeData) return;
+
+    // 📋 DEBUG: Log thông tin lịch sử xem
+    console.log('🔍 Episode Progress Info:', {
+      episodeId: episodeData.id,
+      hasProgress,
+      savedProgress,
+      progressLoading
+    });
 
     // Kiểm tra cả 2 link có rỗng không
     const hasValidVideoUrl = episodeData.videoUrl && episodeData.videoUrl.trim() !== '';
@@ -100,18 +111,44 @@ function WatchPageContent() {
       const handleLoadedMetadata = () => {
         console.log('Video metadata loaded');
         
-        // Auto-resume from saved progress if available
+        // 🎬 XỬ LÝ LỊCH SỬ XEM: Phân ra 2 trường hợp rõ ràng
         if (hasProgress && savedProgress > 0) {
-          console.log(`Resuming from saved progress: ${savedProgress}s`);
+          console.log(`📍 TRƯỜNG HỢP 1: Có lịch sử xem - Resume từ ${savedProgress}s`);
+          
+          // Đặt thời điểm phát từ lịch sử
           video.currentTime = savedProgress;
+          
+          // 🎯 Chờ seeked event để đảm bảo video đã jump đến đúng vị trí
+          const handleSeeked = () => {
+            console.log(`✅ Video đã seek đến ${video.currentTime}s, bắt đầu auto-play`);
+            
+            // Bây giờ mới auto-play từ vị trí đúng
+            video.play().then(() => {
+              console.log('✅ Video resumed from saved position and auto-playing');
+            }).catch((error) => {
+              console.log("⚠️ Resume auto-play failed:", error);
+            });
+            
+            // Remove listener sau khi xử lý xong
+            video.removeEventListener('seeked', handleSeeked);
+          };
+          
+          // Listen for seeked event
+          video.addEventListener('seeked', handleSeeked);
+          
+        } else {
+          console.log('🆕 TRƯỜNG HỢP 2: Chưa có lịch sử - Bắt đầu từ giây 0 và auto-play');
+          
+          // Đặt về đầu video (đảm bảo)
+          video.currentTime = 0;
+          
+          // 🚀 Tự động phát từ đầu luôn (không cần chờ seek vì đã ở vị trí 0)
+          video.play().then(() => {
+            console.log('✅ Video started from beginning and auto-playing');
+          }).catch((error) => {
+            console.log("⚠️ Auto-play from beginning failed (user interaction required):", error);
+          });
         }
-        
-        // Auto-play video (cứ vào page là tự phát)
-        video.play().then(() => {
-          console.log('Video auto-play started');
-        }).catch((error) => {
-          console.log("Auto-play failed (user interaction required):", error);
-        });
       };
 
       const handleLoadedData = () => {

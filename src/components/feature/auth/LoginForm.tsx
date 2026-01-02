@@ -1,6 +1,6 @@
 "use client";
 import { useState } from "react";
-import { GoogleLogin } from '@react-oauth/google';
+import { GoogleLogin} from '@react-oauth/google';
 import { FormInput } from "@/components/ui/FormInput";
 import { useAuth } from "@/hooks/useAuth";
 import { LoginRequest } from "@/types/Auth";
@@ -126,17 +126,18 @@ export function LoginForm({ onSwitchToRegister, onSwitchToForgotPassword, onSucc
           </button>
         </div>
 
-        {/* Google Login Button */}
+        {/* Google Login Button - Phiên bản mặc định với CSS tùy chỉnh */}
         <div className="w-full">
           <GoogleLogin
             onSuccess={handleGoogleSuccess}
             onError={handleGoogleError}
             useOneTap={false}
-            theme="filled_blue"
-            shape="rectangular"
+            theme="outline"
+            shape="pill"
             size="large"
             width="100%"
             text="signin_with"
+            logo_alignment="left"
           />
         </div>
       </form>
