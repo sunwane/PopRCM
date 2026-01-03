@@ -4,6 +4,26 @@ import { FavoritesHistoryService } from '@/services/FavoritesHistoryService';
 import { WatchHistory } from '@/types/User';
 import { useAuth } from './useAuth';
 
+/**
+ * Hook useEpisodeProgress - Quản lý tiến trình xem của một tập phim cụ thể
+ * 
+ * Chức năng chính:
+ * - Lấy tiến trình đã lưu từ server cho một tập phim cụ thể (auto-resume)
+ * - Chỉ hoạt động khi user đã đăng nhập (guest không có lịch sử cá nhân)
+ * - Hỗ trợ tự động phát tiếp từ thời điểm đã xem trước đó
+ * - Cung cấp loading state để UI hiển thị trạng thái tải
+ * 
+ * Input: episodeId (string) - ID của tập phim cần lấy tiến trình
+ * 
+ * Output:
+ * - savedProgress (number): Thời gian đã xem (giây) từ lần trước
+ * - hasProgress (boolean): Có tiến trình đã lưu hay không
+ * - loading (boolean): Trạng thái đang tải dữ liệu
+ * - refreshProgress (function): Hàm làm mới dữ liệu tiến trình
+ * 
+ * Sử dụng: Trong trang xem phim để tự động phát tiếp từ vị trí đã dừng
+ */
+
 export const useEpisodeProgress = (episodeId: string) => {
   const { isAuthenticated } = useAuth();
   const [savedProgress, setSavedProgress] = useState<number>(0);

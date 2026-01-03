@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { Episode } from '@/types/Movies';
 import { Movie } from '@/types/Movies';
 import { LoadingEffect } from '@/components/ui/LoadingEffect';
@@ -43,6 +43,24 @@ export function PlayList({ movie, episodes, currentEpisode, onEpisodeSelect, loa
     return episodes.filter(episode => episode.serverName === selectedServer);
   }, [episodes, selectedServer]);
 
+  // Auto-navigate to page containing current episode
+  useEffect(() => {
+    if (currentEpisode && filteredEpisodes.length > 0) {
+      const currentEpisodeIndex = filteredEpisodes.findIndex(ep => ep.id === currentEpisode.id);
+      if (currentEpisodeIndex !== -1) {
+        const targetPage = Math.floor(currentEpisodeIndex / EPISODES_PER_PAGE) + 1;
+        setCurrentPage(targetPage);
+      }
+    }
+  }, [currentEpisode, filteredEpisodes]);
+
+  // Auto-set server based on current episode
+  useEffect(() => {
+    if (currentEpisode && currentEpisode.serverName && availableServers.includes(currentEpisode.serverName)) {
+      setSelectedServer(currentEpisode.serverName);
+    }
+  }, [currentEpisode, availableServers]);
+
   // Calculate pagination based on filtered episodes
   const totalPages = Math.ceil(filteredEpisodes.length / EPISODES_PER_PAGE);
   const startIndex = (currentPage - 1) * EPISODES_PER_PAGE;
@@ -62,7 +80,19 @@ export function PlayList({ movie, episodes, currentEpisode, onEpisodeSelect, loa
 
   const handleServerSelect = (serverName: string) => {
     setSelectedServer(serverName);
-    setCurrentPage(1); // Reset to first page when server changes
+    // Don't reset to first page when server changes if current episode is in new server
+    if (currentEpisode && currentEpisode.serverName === serverName) {
+      const newFilteredEpisodes = episodes.filter(episode => episode.serverName === serverName);
+      const currentEpisodeIndex = newFilteredEpisodes.findIndex(ep => ep.id === currentEpisode.id);
+      if (currentEpisodeIndex !== -1) {
+        const targetPage = Math.floor(currentEpisodeIndex / EPISODES_PER_PAGE) + 1;
+        setCurrentPage(targetPage);
+      } else {
+        setCurrentPage(1);
+      }
+    } else {
+      setCurrentPage(1); // Reset to first page when server changes
+    }
     setIsServerDropdownOpen(false);
   };
 

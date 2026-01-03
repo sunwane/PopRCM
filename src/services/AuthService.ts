@@ -4,7 +4,6 @@ import {
   APIAuthResponse,
 } from '@/types/Auth';
 import { UserService } from './UserService';
-import TokenManager from './TokenManager';
 
 class AuthService {
   private baseURL = 'https://poprcm-be.onrender.com/api/auth';
@@ -81,6 +80,105 @@ class AuthService {
 
     // Nếu không khớp với bất kỳ tài khoản nào, ném lỗi
     throw new Error('Email hoặc mật khẩu không đúng');
+  }
+
+  // Google Login method - chỉ nhận idToken từ Google Identity Services
+  async loginWithGoogle(idToken: string): Promise<AuthResponse> {
+    if (localStorage.getItem('serviceAvailable') === 'false') {
+      console.log('Using mock Google login data due to service unavailability');
+      return this.mockGoogleLogin(idToken);
+    }
+
+    try {
+      console.log('Attempting to call real API for Google login...');
+      const response = await fetch(`${this.baseURL}/login/google`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          idToken: idToken  // Chỉ gửi idToken, backend sẽ verify và extract thông tin
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Đăng nhập Google thất bại từ API');
+      }
+
+      const apiResponse: APIAuthResponse = await response.json();
+      console.log('✅ Google login successful with real API');
+      
+      // Lấy thông tin user từ API /users/me
+      if (apiResponse.result) {
+        console.log('Fetching user data from /users/me...');
+        const user = await UserService.getCurrentUser(apiResponse.result.token);
+        console.log('Fetched user data from /users/me:', user);
+        return {
+          token: apiResponse.result.token,
+          userId: apiResponse.result.userId,
+          user: user || undefined,
+          refreshToken: apiResponse.result.refreshToken,
+          authenticated: apiResponse.result.authenticated
+        };
+      }
+
+      throw new Error('Invalid API response structure');
+    } catch (error: any) {
+      console.warn('❌ Google login API failed:', error.message);
+      console.log('Falling back to mock Google login...');
+      return this.mockGoogleLogin(idToken);
+    }
+  }
+
+  // Mock Google login for fallback - sử dụng idToken để tạo user giả
+  private async mockGoogleLogin(idToken: string): Promise<AuthResponse> {
+    // Simulate API delay
+    await new Promise(resolve => setTimeout(resolve, 1000));
+
+    // Decode idToken để lấy thông tin (chỉ cho mock, backend sẽ làm điều này)
+    let userInfo: any = {
+      email: 'google.user@gmail.com',
+      name: 'Google User',
+      picture: '/placeholder/avatar.png'
+    };
+
+    try {
+      // Parse JWT payload để lấy thông tin user cho mock
+      const payload = JSON.parse(atob(idToken.split('.')[1]));
+      userInfo = {
+        email: payload.email || 'google.user@gmail.com',
+        name: payload.name || 'Google User',
+        picture: payload.picture || '/placeholder/avatar.png'
+      };
+    } catch (error) {
+      console.log('Could not parse idToken for mock, using default user info');
+    }
+
+    // Mock user based on idToken data
+    const mockUser = {
+      id: 'google-' + (userInfo.email || 'user'),
+      email: userInfo.email,
+      userName: userInfo.name,
+      fullName: userInfo.name,
+      avatarUrl: userInfo.picture,
+      gender: 'male' as const,
+      dateOfBirth: '1990-01-01',
+      bio: 'Đăng nhập bằng Google',
+      createdAt: new Date(),
+      updatedAt: new Date()
+    };
+
+    const mockToken = 'mock-google-token-' + Date.now();
+    const mockRefreshToken = 'mock-google-refresh-token-' + Date.now();
+
+    return {
+      token: mockToken,
+      userId: mockUser.id,
+      user: mockUser,
+      refreshToken: mockRefreshToken,
+      authenticated: true
+    };
   }
 
   // Thêm method refresh token
@@ -211,10 +309,8 @@ class AuthService {
       localStorage.removeItem('authToken');
       localStorage.removeItem('refreshToken');
       localStorage.removeItem('user');
+      localStorage.removeItem('comment_likes'); // Clear comment like states
       console.log('Auth data cleared from localStorage');
-      
-      // Dừng auto refresh token
-      this.stopAutoTokenRefresh();
       
       // Dispatch event for same tab
       window.dispatchEvent(new Event('authChanged'));
@@ -284,9 +380,6 @@ class AuthService {
       } else {
         localStorage.removeItem('user');
       }  
-
-      // Bắt đầu auto refresh token
-      this.startAutoTokenRefresh();
 
       // Dispatch event for same tab
       window.dispatchEvent(new Event('authChanged'));
@@ -426,47 +519,6 @@ class AuthService {
     }
   }
 
-  /**
-   * Bắt đầu auto refresh token mỗi 50 phút
-   */
-  startAutoTokenRefresh(): void {
-    TokenManager.startAutoRefresh(
-      // onRefreshSuccess callback
-      (newToken: string) => {
-        console.log('✅ Auto token refresh successful');
-        // Dispatch event để các component biết token đã được refresh
-        window.dispatchEvent(new CustomEvent('tokenRefreshed', { 
-          detail: { token: newToken } 
-        }));
-      },
-      // onRefreshFailed callback  
-      () => {
-        console.warn('❌ Auto token refresh failed, clearing auth data');
-        this.clearAuthData();
-      }
-    );
-  }
-
-  /**
-   * Dừng auto refresh token
-   */
-  stopAutoTokenRefresh(): void {
-    TokenManager.stopAutoRefresh();
-  }
-
-  /**
-   * Kiểm tra xem auto refresh có đang chạy không
-   */
-  isAutoRefreshActive(): boolean {
-    return TokenManager.isAutoRefreshActive();
-  }
-
-  /**
-   * Manual refresh token - gọi trực tiếp khi cần
-   */
-  async manualRefreshToken(): Promise<string | null> {
-    return await TokenManager.manualRefresh();
-  }
 }
 
 export default new AuthService();

@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import HeaderDropdown from "../feature/header/HeaderDropdown";
 import SidebarMenu from "../feature/header/SidebarMenu";
 import AccountButton from "../feature/header/AccountButton";
+import NotificationBadge from "../ui/NotificationBadge";
 import { useHeaderDropdownItems, useHeaderState } from "@/hooks/useHeader";
 import { useSearchQuery } from "@/hooks/useSearch";
 import ServiceChecker from "@/services/ServiceChecker";
@@ -182,9 +183,14 @@ export default function PageHeader() {
           <div className="flex items-center space-x-3">
             {isAuthenticated ? (
               <>
-                <button className="p-2 text-white hover:text-(--primary) transition">
-                  <img src="/icons/Bell.png" alt="Notifications" className="w-6 h-6" />
-                </button>
+                <NotificationBadge>
+                  <button 
+                    className="p-2 text-white hover:text-(--primary) transition"
+                    onClick={() => route.push("/myaccount?tab=notifications")}
+                  >
+                    <img src="/icons/Bell.png" alt="Notifications" className="w-6 h-6" />
+                  </button>
+                </NotificationBadge>
                 <AccountButton />
               </>
             ) : (
@@ -241,9 +247,14 @@ export default function PageHeader() {
           <div className="flex items-center space-x-3">
             {/* Notification icon - chỉ hiển thị khi đăng nhập và không search */}
             {isAuthenticated && !showMobileSearch && (
-              <button className="p-2 text-white hover:text-(--primary) transition">
-                <img src="/icons/Bell.png" alt="Notifications" className="lg:w-7 lg:h-7 md:w-6 md:h-6 sm:w-5 sm:h-5 w-5 h-5" />
-              </button>
+              <NotificationBadge>
+                <button 
+                  className="p-2 text-white hover:text-(--primary) transition"
+                  onClick={() => route.push("/myaccount?tab=notifications")}
+                >
+                  <img src="/icons/Bell.png" alt="Notifications" className="lg:w-7 lg:h-7 md:w-6 md:h-6 sm:w-5 sm:h-5 w-5 h-5" />
+                </button>
+              </NotificationBadge>
             )}
 
             {/* Search button */}

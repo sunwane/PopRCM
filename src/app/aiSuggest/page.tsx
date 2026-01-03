@@ -44,37 +44,37 @@ export default function AISuggestPage() {
             <div className="mb-4 text-sm font-medium text-(--text-primary)">🚀 Gợi ý nhanh</div>
             <div className="flex flex-col gap-3">
               <button 
-                onClick={() => sendMessage("Gợi ý phim hay hôm nay")}
+                onClick={() => sendMessage("Tìm phim buồn")}
                 disabled={isLoading}
                 className="text-left text-sm px-4 py-3 bg-(--background-secondary)/30 hover:bg-(--background-secondary)/60 text-(--text-focus) border border-(--border-blue)/20 rounded-xl transition-all duration-200 hover:border-(--primary)/30 hover:shadow-lg disabled:opacity-50"
               >
                 <div className="flex items-center gap-3">
                   <span className="text-lg">🎬</span>
-                  <span>Gợi ý phim hay hôm nay</span>
+                  <span>Tìm phim theo tâm trạng</span>
                 </div>
               </button>
               <button 
-                onClick={() => sendMessage("Anime nào đang hot?")}
+                onClick={() => sendMessage("Gợi ý phim xem với gia đình")}
                 disabled={isLoading}
                 className="text-left text-sm px-4 py-3 bg-(--background-secondary)/30 hover:bg-(--background-secondary)/60 text-(--text-focus) border border-(--border-blue)/20 rounded-xl transition-all duration-200 hover:border-(--primary)/30 hover:shadow-lg disabled:opacity-50"
               >
                 <div className="flex items-center gap-3">
                   <span className="text-lg">📺</span>
-                  <span>Anime nào đang hot?</span>
+                  <span>Gợi ý phim xem với gia đình</span>
                 </div>
               </button>
               <button 
-                onClick={() => sendMessage("Top phim được xem nhiều nhất")}
+                onClick={() => sendMessage("Gợi ý phim theo quốc gia Nhật Bản")}
                 disabled={isLoading}
                 className="text-left text-sm px-4 py-3 bg-(--background-secondary)/30 hover:bg-(--background-secondary)/60 text-(--text-focus) border border-(--border-blue)/20 rounded-xl transition-all duration-200 hover:border-(--primary)/30 hover:shadow-lg disabled:opacity-50"
               >
                 <div className="flex items-center gap-3">
                   <span className="text-lg">⭐</span>
-                  <span>Phim được xem nhiều nhất?</span>
+                  <span>Gợi ý phim theo quốc gia</span>
                 </div>
               </button>
               <button 
-                onClick={() => sendMessage("Tìm phim theo thể loại")}
+                onClick={() => sendMessage("Tìm phim theo thể loại Hành động")}
                 disabled={isLoading}
                 className="text-left text-sm px-4 py-3 bg-(--background-secondary)/30 hover:bg-(--background-secondary)/60 text-(--text-focus) border border-(--border-blue)/20 rounded-xl transition-all duration-200 hover:border-(--primary)/30 hover:shadow-lg disabled:opacity-50"
               >
@@ -123,8 +123,8 @@ export default function AISuggestPage() {
           </div>
 
           {/* Chat input full width, không bo góc */}
-          <div className="w-full border-t border-(--border-blue)/20 bg-(--surface)">
-            <div className="w-full px-4 pt-2">
+          <div className="w-full border-t border-(--border-blue)/40 bg-(--surface)">
+            <div className="w-full px-4 pt-1">
               <ChatInput onSendMessage={sendMessage} isLoading={isLoading} />
             </div>
           </div>

@@ -11,6 +11,7 @@ export interface ReviewPopupProps {
   movieId?: string;
   movieTitle?: string;
   existingReview?: Review | null;
+  onSuccess?: () => void; // Callback để refresh data
 }
 
 export function ReviewPopup({ 
@@ -20,7 +21,8 @@ export function ReviewPopup({
   onOpenAuth, 
   movieId,
   movieTitle,
-  existingReview 
+  existingReview,
+  onSuccess 
 }: ReviewPopupProps) {
   const [rating, setRating] = useState(0);
   const [hoveredRating, setHoveredRating] = useState(0);
@@ -54,6 +56,9 @@ export function ReviewPopup({
           content: content.trim() 
         });
       }
+      
+      // Call success callback to refresh data
+      onSuccess?.();
       onClose();
     } catch (error) {
       console.error('Error submitting review:', error);

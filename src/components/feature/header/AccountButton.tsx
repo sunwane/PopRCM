@@ -61,7 +61,7 @@ export default function AccountButton() {
         ) : null}
         <div className={userProfile.avatarUrl ? 'hidden' : ''}>
           <GradientAvatar 
-            initial={getUserAvatarText(userProfile.fullName)} 
+            initial={getUserAvatarText(userProfile?.userName || userProfile?.fullName)} 
             size="w-8 h-8 text-sm border-2 border-(--border-blue)"
           />
         </div>

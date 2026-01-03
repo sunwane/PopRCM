@@ -25,6 +25,7 @@ export class CommentService {
       }
 
       const apiResponse = await response.json();
+      console.log('API Response for getCommentsByEpisodeId:', apiResponse);
       
       if (apiResponse.result) {
         return apiResponse.result;

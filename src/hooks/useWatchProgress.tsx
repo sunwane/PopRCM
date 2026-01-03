@@ -3,6 +3,31 @@ import { useEffect, useRef, useCallback } from 'react';
 import { FavoritesHistoryService } from '@/services/FavoritesHistoryService';
 import { useAuth } from './useAuth';
 
+/**
+ * Hook useWatchProgress - Theo dõi và lưu tiến trình xem phim theo thời gian thực
+ * 
+ * Chức năng chính:
+ * - Tự động lưu tiến trình xem mỗi 10 giây khi video đang phát
+ * - CHỈ hoạt động cho user đã đăng nhập (guest sẽ không có tracking)
+ * - Lưu vào lịch sử cá nhân của user (endpoint private)
+ * - Lưu tiến trình khi pause, kết thúc video, hoặc thoát trang
+ * - Tối ưu hiệu suất: chỉ lưu khi thay đổi ít nhất 5 giây
+ * - Tự động setup/cleanup event listeners cho video element
+ * 
+ * Input Props:
+ * - episodeId (string): ID của tập phim đang xem
+ * - movieId (string): ID của bộ phim
+ * - videoElement (HTMLVideoElement): DOM element của video player
+ * 
+ * Output:
+ * - saveProgress (function): Hàm lưu tiến trình thủ công
+ * - isTracking (boolean): Có đang theo dõi tiến trình không
+ * - startTracking (function): Bắt đầu theo dõi tiến trình
+ * - stopTracking (function): Dừng theo dõi tiến trình
+ * 
+ * Lưu ý: Guest không đăng nhập sẽ không có tracking để tối ưu performance
+ */
+
 interface UseWatchProgressProps {
   episodeId: string;
   movieId: string;
@@ -29,6 +54,7 @@ export const useWatchProgress = ({ episodeId, movieId, videoElement }: UseWatchP
     try {
       console.log(`💾 Saving watch progress: Episode ${episodeId}, Time: ${currentTime}s`);
       
+      // Chỉ lưu cho user đã đăng nhập - sử dụng endpoint private
       const success = await FavoritesHistoryService.updateWatchProgress(episodeId, currentTime);
       
       if (success) {
@@ -42,20 +68,20 @@ export const useWatchProgress = ({ episodeId, movieId, videoElement }: UseWatchP
     }
   }, [episodeId, isAuthenticated]);
 
-  // Khởi tạo interval để lưu progress mỗi 30 giây
+  // Khởi tạo interval để lưu progress mỗi 10 giây
   const startProgressTracking = useCallback(() => {
     if (!isAuthenticated || !videoElement || intervalRef.current) {
       return;
     }
 
-    console.log('🎬 Starting watch progress tracking...');
+    console.log('🎬 Starting watch progress tracking for authenticated user...');
 
     intervalRef.current = setInterval(() => {
       if (videoElement && !videoElement.paused && !videoElement.ended) {
         const currentTime = Math.floor(videoElement.currentTime);
         saveProgress(currentTime);
       }
-    }, 10000); // Lưu mỗi 30 giây
+    }, 10000); // Lưu mỗi 10 giây
 
     isInitialized.current = true;
   }, [isAuthenticated, videoElement, saveProgress]);
@@ -146,7 +172,7 @@ export const useWatchProgress = ({ episodeId, movieId, videoElement }: UseWatchP
         startProgressTracking();
       }, 1000);
     }
-  }, [episodeId, movieId]);
+  }, [episodeId, movieId, isAuthenticated, videoElement, startProgressTracking, stopProgressTracking]);
 
   return {
     saveProgress: saveCurrentProgress,

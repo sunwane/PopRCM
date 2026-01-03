@@ -1,4 +1,5 @@
 "use client";
+import { read } from "fs";
 import { useState, InputHTMLAttributes, FC } from "react";
 
 interface FormInputProps extends InputHTMLAttributes<HTMLInputElement> {
@@ -33,12 +34,13 @@ export const FormInput: FC<FormInputProps> = ({
         <div className={`flex gap-2 ${customLabelStyle ? "mt-2" : 'mt-1'}`}>
           <button
             type="button"
-            onClick={() => onGenderChange?.("male")}
+            onClick={() => !props.disabled && onGenderChange?.("male")}
+            disabled={props.disabled}
             className={`flex-1 px-4 py-3.5 lg:text-sm md:text-sm text-xs rounded-md font-medium transition-colors border-2 ${
               genderValue === "male"
                 ? "bg-(--primary)/15 border-(--border-blue) text-white"
                 : "bg-white/15 border-gray-600 text-gray-400 hover:text-white hover:border-gray-500"
-            }`}
+            } ${props.disabled ? "opacity-50 cursor-not-allowed" : ""}`}
           >
             <div className="flex items-center justify-center gap-1.5">
               NAM
@@ -47,12 +49,13 @@ export const FormInput: FC<FormInputProps> = ({
           </button>
           <button
             type="button"
-            onClick={() => onGenderChange?.("female")}
+            onClick={() => !props.disabled && onGenderChange?.("female")}
+            disabled={props.disabled}
             className={`flex-1 px-4 py-3.5 lg:text-sm md:text-sm text-xs rounded-md font-medium transition-colors border-2 ${
               genderValue === "female"
                 ? "bg-(--primary)/15 border-(--border-blue) text-whit"
                 : "bg-white/15 border-gray-600 text-gray-400 hover:text-white hover:border-gray-500"
-            }`}
+            } ${props.disabled ? "opacity-50 cursor-not-allowed" : ""}`}
           >
             <div className="flex items-center justify-center gap-1.5">
               NỮ

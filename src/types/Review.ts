@@ -1,9 +1,4 @@
-export interface User {
-  id: string;
-  email: string;
-  fullName: string;
-  avatar?: string;
-}
+import { User } from './User';
 
 export interface Review {
   id: string;

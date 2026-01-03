@@ -16,7 +16,9 @@ import Message from "@/components/ui/Message";
 import { CmtReviewSection } from "@/components/feature/commentReview/CmtReviewSection";
 import { AuthBackground } from "@/components/feature/auth/AuthBackground";
 import { ReviewPopup } from "@/components/feature/commentReview/ReviewPopup";
+import TrailerPopup from "@/components/feature/movieDetails/TrailerPopup";
 import { useState, Suspense } from "react";
+import { useWatchedEpisodes } from "@/hooks/useWatchedEpisodes";
 
 export default function MoviesPage() {
   return (
@@ -31,6 +33,7 @@ function MoviePageContent() {
   const movie = params.movie;
   const [showAuthOverlay, setShowAuthOverlay] = useState(false);
   const [showReviewPopup, setShowReviewPopup] = useState(false);
+  const [showTrailerPopup, setShowTrailerPopup] = useState(false);
 
   const route = useRouter();
   
@@ -41,6 +44,13 @@ function MoviePageContent() {
   const { seriesInfo } = useSeriesDataByMovieId(movie?.toString() ?? "");
   const { recommendedMovies } = useRecommendedMovies(movie?.toString() || "");
   console.log("Movie Info:", movieInfo);
+
+  // Watched episodes tracking
+  const { 
+    watchedEpisodesSet, 
+    isEpisodeWatched, 
+    refreshWatchedEpisodes 
+  } = useWatchedEpisodes(movieInfo?.id || '');
 
   if (loading) {
     return (
@@ -120,17 +130,28 @@ function MoviePageContent() {
                 
                 {/* Nút nằm giữa poster */}
                 <div 
-                  className="flex items-center space-x-2 absolute left-1/2 transform -translate-x-1/2 translate-y-1/2 
-                  bg-linear-to-b from-(--gradient-secondary-start) to-(--gradient-secondary-end)
+                  className={`flex items-center space-x-2 absolute left-1/2 transform -translate-x-1/2 translate-y-1/2 
+                  ${movieInfo.trailerUrl 
+                    ? 'bg-linear-to-b from-(--gradient-secondary-start) to-(--gradient-secondary-end) hover:bg-linear-to-b hover:from-blue-500 hover:to-blue-800 cursor-pointer' 
+                    : 'bg-gray-600 cursor-not-allowed opacity-70'
+                  }
                   text-white lg:px-6 lg:py-2.5 md:px-5 md:py-2 sm:px-4 sm:py-1.5 px-4 py-1.5 
-                  rounded-lg shadow-lg cursor-pointer lg:-mt-10 md:-mt-8 sm:-mt-6 -mt-6 
-                  hover:bg-linear-to-b hover:from-blue-500 hover:to-blue-800 transition w-fit justify-center"
+                  rounded-lg shadow-lg lg:-mt-10 md:-mt-8 sm:-mt-6 -mt-6 
+                  transition w-fit justify-center`}
                   onClick={() => {
-                    console.log("Xem trailer clicked");
+                    if (movieInfo.trailerUrl) {
+                      console.log("Xem trailer clicked:", movieInfo.trailerUrl);
+                      setShowTrailerPopup(true);
+                    } else {
+                      console.log("No trailer available");
+                    }
                   }}
+                  title={movieInfo.trailerUrl ? "Xem trailer phim" : "Trailer chưa có sẵn"}
                 >
                   <img src="/icons/Play.png" alt="Play" className="lg:w-5 lg:h-5 md:h-4 md:w-4 sm:w-3 sm:h-3 w-3 h-3" />
-                  <div className="text-nowrap uppercase font-bold lg:text-sm md:text-sm sm:text-xs text-[10px]">Xem Trailer</div>
+                  <div className="text-nowrap uppercase font-bold lg:text-sm md:text-sm sm:text-xs text-[10px]">
+                    {movieInfo.trailerUrl ? 'Xem Trailer' : 'Chưa có Trailer'}
+                  </div>
                 </div>
               </div>
                 
@@ -241,6 +262,7 @@ function MoviePageContent() {
                   seriesInfo={seriesInfo ?? undefined} 
                   recommendations={recommendedMovies} 
                   currentEpisode={undefined}
+                  watchedEpisodes={watchedEpisodesSet}
                 />
               </div>
 
@@ -381,6 +403,14 @@ function MoviePageContent() {
         movieId={movieInfo.id}
         movieTitle={movieInfo.title}
         onOpenAuth={() => setShowAuthOverlay(true)}
+      />
+
+      {/* Trailer Popup */}
+      <TrailerPopup 
+        isOpen={showTrailerPopup}
+        onClose={() => setShowTrailerPopup(false)}
+        trailerUrl={movieInfo.trailerUrl}
+        movieTitle={movieInfo.title}
       />
 
       <PageFooter />

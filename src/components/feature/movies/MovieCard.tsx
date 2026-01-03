@@ -1,6 +1,7 @@
 import { Movie } from "@/types/Movies";
 import { getStatusLabelColor } from "@/utils/getColorUtils";
 import { getStatusText } from "@/utils/getTextUtils";
+import { formatTimeCompact } from "@/utils/timeUtils";
 import { useFavoritesHistoryData } from "@/hooks/useData/useFavoritesHistoryData";
 import { useState } from "react";
 
@@ -132,13 +133,6 @@ export default function MovieCard({
   // Calculate progress percentage if not provided
   const calculatedProgress = progressPercent || (totalDuration > 0 ? (currentTime / totalDuration) * 100 : 0);
 
-  // Format time display
-  const formatTime = (seconds: number): string => {
-    const minutes = Math.floor(seconds / 60);
-    const remainingSeconds = seconds % 60;
-    return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
-  };
-
   return (
     <div 
       className={`${config.container} group text-white cursor-pointer hover:scale-105 transition-transform`}
@@ -243,7 +237,7 @@ export default function MovieCard({
             <div className="text-gray-300 mb-0.5">•</div>
             {totalDuration > 0 && (
               <div className="text-xs text-white/50 text-center font-medium">
-                {formatTime(currentTime)} / {formatTime(totalDuration)}
+                {formatTimeCompact(currentTime)} / {formatTimeCompact(totalDuration)}
               </div>
             )}
           </div>

@@ -45,6 +45,7 @@ export function useCommentsData(episodeId: string, pageSize: number = 10): UseCo
       );
       
       setComments(data.content);
+      console.log(`✅ Fetched comments for episode ${episodeId}, page ${page}:`, data);
       setPaginationInfo({
         totalPages: data.totalPages,
         currentPage: data.number,

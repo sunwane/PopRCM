@@ -342,4 +342,78 @@ export class UserService {
       return false;
     }
   }
+
+  // Change password (POST /api/users/change-password)
+  static async changePassword(currentPassword: string, newPassword: string): Promise<boolean> {
+    if (!this.isServiceAvailable()) {
+      console.info('API not available, simulating password change');
+      // Mock success for development
+      return new Promise((resolve) => {
+        setTimeout(() => resolve(true), 1000);
+      });
+    }
+
+    try {
+      const authToken = localStorage.getItem('authToken');
+      if (!authToken) {
+        throw new Error('Bạn cần đăng nhập để thực hiện chức năng này');
+      }
+
+      // Debug: Log the request details
+      const requestBody = {
+        oldPassword: currentPassword,
+        newPassword: newPassword
+      };
+      
+      console.log('🔑 Sending change password request...');
+      console.log('URL:', `${this.API_BASE_URL}/change-password`);
+      console.log('Request body keys:', Object.keys(requestBody));
+      console.log('oldPassword length:', currentPassword?.length || 0);
+      console.log('newPassword length:', newPassword?.length || 0);
+
+      const response = await fetch(`${this.API_BASE_URL}/change-password`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${authToken}`
+        },
+        body: JSON.stringify(requestBody)
+      });
+
+      console.log('Response status:', response.status);
+      console.log('Response headers:', response.headers.get('content-type'));
+
+      if (!response.ok) {
+        let errorMessage = 'Đổi mật khẩu thất bại';
+        
+        try {
+          const errorData = await response.json();
+          console.log('Error response:', errorData);
+          errorMessage = errorData.message || errorMessage;
+        } catch (parseError) {
+          console.log('Could not parse error response as JSON');
+          const responseText = await response.text();
+          console.log('Raw error response:', responseText);
+          
+          if (response.status === 401) {
+            errorMessage = 'Mật khẩu hiện tại không đúng';
+          } else if (response.status === 400) {
+            errorMessage = 'Dữ liệu không hợp lệ';
+          } else if (response.status === 403) {
+            errorMessage = 'Không có quyền thực hiện thao tác này';
+          }
+        }
+        
+        throw new Error(errorMessage);
+      }
+
+      const result = await response.json();
+      console.log('✅ Password change successful:', result);
+      return true;
+      
+    } catch (error: any) {
+      console.error('❌ Password change error:', error);
+      throw error;
+    }
+  }
 }

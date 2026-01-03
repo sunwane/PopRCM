@@ -179,7 +179,7 @@ function MyAccountPageContent() {
                       {userProfile?.avatarUrl ? (
                         <img 
                           src={userProfile.avatarUrl} 
-                          alt={userProfile.fullName || userProfile.userName}
+                          alt={userProfile.userName}
                           className="w-10 h-10 rounded-full object-cover border-2 border-slate-600"
                           onError={(e) => {
                             e.currentTarget.style.display = 'none';
@@ -189,7 +189,7 @@ function MyAccountPageContent() {
                       ) : null}
                       <div className={userProfile?.avatarUrl ? 'hidden' : ''}>
                         <GradientAvatar 
-                          initial={getUserAvatarText(userProfile?.fullName)} 
+                          initial={getUserAvatarText(userProfile?.userName || userProfile?.fullName)} 
                           size="w-10 h-10 text-sm"
                         />
                       </div>
@@ -198,7 +198,7 @@ function MyAccountPageContent() {
                     {/* User Details */}
                     <div className="flex-1 min-w-0">
                       <div className="text-white text-sm font-medium truncate">
-                        {userProfile?.fullName || userProfile?.userName || user?.fullName || 'Spiderman'}
+                        {userProfile?.userName || userProfile?.fullName || user?.fullName || 'Không xác định'}
                       </div>
                       <div className="text-gray-400 text-xs truncate">
                         {userProfile?.email || user?.email || 'spideryyyy@gmail.com'}

@@ -6,6 +6,8 @@ import { CommentRequest, CommentUpdateRequest } from '@/types/Comment';
 import AuthService from '@/services/AuthService';
 import GradientAvatar from '@/components/ui/GradientAvatar';
 import { getUserAvatarText } from '@/utils/getTextUtils';
+import { useConfirmModal } from '@/hooks/useConfirmModal';
+import ConfirmModal from '@/components/ui/ConfirmModal';
 
 export interface CommentTabProps {
   episodeId?: string;
@@ -17,6 +19,7 @@ export function CommentTab({ episodeId, showCommentInput = false, onOpenAuth }: 
   const [newComment, setNewComment] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [imageError, setImageError] = useState(false);
+  const confirmModal = useConfirmModal();
   
   const isAuthenticated = !!AuthService.getUser();
   const currentUser = AuthService.getUser();
@@ -77,11 +80,22 @@ export function CommentTab({ episodeId, showCommentInput = false, onOpenAuth }: 
   };
 
   const handleDelete = async (commentId: string) => {
-    if (window.confirm('Bạn có chắc chắn muốn xóa bình luận này?')) {
+    const confirmed = await confirmModal.openConfirm({
+      title: 'Xóa bình luận',
+      message: 'Bạn có chắc chắn muốn xóa bình luận này? Hành động này không thể hoàn tác.',
+      confirmText: 'Xóa bình luận',
+      cancelText: 'Hủy bỏ',
+      confirmButtonType: 'danger'
+    });
+
+    if (confirmed) {
+      confirmModal.setLoadingState(true);
       try {
         await deleteComment(commentId);
       } catch (error) {
         console.error('Error deleting comment:', error);
+      } finally {
+        confirmModal.setLoadingState(false);
       }
     }
   };
@@ -128,8 +142,11 @@ export function CommentTab({ episodeId, showCommentInput = false, onOpenAuth }: 
         <button
           onClick={() => loadPage(currentPage - 1)}
           disabled={!hasPreviousPage}
-          className="px-3 py-1 text-sm bg-(--surface) text-gray-300 rounded hover:bg-(--surface)/80 disabled:opacity-50 disabled:cursor-not-allowed"
+          className="flex items-center gap-1 px-3 py-1 text-sm bg-(--surface) text-gray-300 rounded hover:bg-(--surface)/80 disabled:opacity-50 disabled:cursor-not-allowed"
         >
+          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+          </svg>
           Trước
         </button>
         
@@ -138,9 +155,12 @@ export function CommentTab({ episodeId, showCommentInput = false, onOpenAuth }: 
         <button
           onClick={() => loadPage(currentPage + 1)}
           disabled={!hasNextPage}
-          className="px-3 py-1 text-sm bg-(--surface) text-gray-300 rounded hover:bg-(--surface)/80 disabled:opacity-50 disabled:cursor-not-allowed"
+          className="flex items-center gap-1 px-3 py-1 text-sm bg-(--surface) text-gray-300 rounded hover:bg-(--surface)/80 disabled:opacity-50 disabled:cursor-not-allowed"
         >
           Sau
+          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+          </svg>
         </button>
       </div>
     );
@@ -184,7 +204,7 @@ export function CommentTab({ episodeId, showCommentInput = false, onOpenAuth }: 
                   />
                 ) : (
                   <GradientAvatar
-                    initial={getUserAvatarText(currentUser?.fullName)}
+                    initial={getUserAvatarText(currentUser?.userName || currentUser?.fullName)}
                     size="w-12 h-12"
                   />
                 )}
@@ -192,7 +212,7 @@ export function CommentTab({ episodeId, showCommentInput = false, onOpenAuth }: 
                   <div className='text-sm font-light text-gray-400'>Bình luận dưới tên</div>
                   <div className="flex items-center gap-1">
                     <div>
-                      {currentUser?.fullName || currentUser?.userName || 'Người dùng'}
+                      {currentUser?.userName || currentUser?.fullName ||  'Người dùng'}
                     </div>
                     <div>
                       {currentUser.gender === 'male' ? (
@@ -271,6 +291,19 @@ export function CommentTab({ episodeId, showCommentInput = false, onOpenAuth }: 
           </>
         )}
       </div>
+      
+      {/* Confirm Modal */}
+      <ConfirmModal
+        isOpen={confirmModal.isOpen}
+        title={confirmModal.options.title}
+        message={confirmModal.options.message}
+        confirmText={confirmModal.options.confirmText}
+        cancelText={confirmModal.options.cancelText}
+        confirmButtonType={confirmModal.options.confirmButtonType}
+        onConfirm={confirmModal.handleConfirm}
+        onCancel={confirmModal.handleCancel}
+        isLoading={confirmModal.isLoading}
+      />
     </div>
   );
 }
