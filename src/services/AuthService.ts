@@ -4,7 +4,6 @@ import {
   APIAuthResponse,
 } from '@/types/Auth';
 import { UserService } from './UserService';
-import TokenManager from './TokenManager';
 
 class AuthService {
   private baseURL = 'http://localhost:8088/api/auth';
@@ -313,9 +312,6 @@ class AuthService {
       localStorage.removeItem('comment_likes'); // Clear comment like states
       console.log('Auth data cleared from localStorage');
       
-      // Dừng auto refresh token
-      this.stopAutoTokenRefresh();
-      
       // Dispatch event for same tab
       window.dispatchEvent(new Event('authChanged'));
     }
@@ -384,9 +380,6 @@ class AuthService {
       } else {
         localStorage.removeItem('user');
       }  
-
-      // Bắt đầu auto refresh token
-      this.startAutoTokenRefresh();
 
       // Dispatch event for same tab
       window.dispatchEvent(new Event('authChanged'));
@@ -526,47 +519,6 @@ class AuthService {
     }
   }
 
-  /**
-   * Bắt đầu auto refresh token mỗi 50 phút
-   */
-  startAutoTokenRefresh(): void {
-    TokenManager.startAutoRefresh(
-      // onRefreshSuccess callback
-      (newToken: string) => {
-        console.log('✅ Auto token refresh successful');
-        // Dispatch event để các component biết token đã được refresh
-        window.dispatchEvent(new CustomEvent('tokenRefreshed', { 
-          detail: { token: newToken } 
-        }));
-      },
-      // onRefreshFailed callback  
-      () => {
-        console.warn('❌ Auto token refresh failed, clearing auth data');
-        this.clearAuthData();
-      }
-    );
-  }
-
-  /**
-   * Dừng auto refresh token
-   */
-  stopAutoTokenRefresh(): void {
-    TokenManager.stopAutoRefresh();
-  }
-
-  /**
-   * Kiểm tra xem auto refresh có đang chạy không
-   */
-  isAutoRefreshActive(): boolean {
-    return TokenManager.isAutoRefreshActive();
-  }
-
-  /**
-   * Manual refresh token - gọi trực tiếp khi cần
-   */
-  async manualRefreshToken(): Promise<string | null> {
-    return await TokenManager.manualRefresh();
-  }
 }
 
 export default new AuthService();

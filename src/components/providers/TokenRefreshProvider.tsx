@@ -1,4 +1,5 @@
-"use client";
+'use client';
+
 import { useAuth } from '@/hooks/useAuth';
 import { useEffect } from 'react';
 import AuthService from '@/services/AuthService';
@@ -7,7 +8,7 @@ interface TokenRefreshProviderProps {
   children: React.ReactNode;
 }
 
-export function useAutoTokenRefresh({ children }: TokenRefreshProviderProps) {
+export default function TokenRefreshProvider({ children }: TokenRefreshProviderProps) {
   const { isAuthenticated } = useAuth();
 
   useEffect(() => {
@@ -34,3 +35,5 @@ export function useAutoTokenRefresh({ children }: TokenRefreshProviderProps) {
 
   return <>{children}</>;
 }
+
+export { TokenRefreshProvider };
