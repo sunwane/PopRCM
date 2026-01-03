@@ -1,8 +1,9 @@
 "use client";
-import { useEffect } from 'react';
+import { useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 
-export default function GoogleAuthCallback() {
+// 🔄 Component chính xử lý Google OAuth callback
+function GoogleAuthCallbackContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -54,5 +55,26 @@ export default function GoogleAuthCallback() {
         <p className="text-xs text-gray-400 mt-2">Cửa sổ này sẽ tự động đóng</p>
       </div>
     </div>
+  );
+}
+
+// 🎯 Loading fallback component
+function AuthCallbackLoading() {
+  return (
+    <div className="flex items-center justify-center min-h-screen bg-gray-100">
+      <div className="text-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
+        <p className="text-gray-600">Đang tải...</p>
+      </div>
+    </div>
+  );
+}
+
+// 🚀 Main export với Suspense wrapper
+export default function GoogleAuthCallback() {
+  return (
+    <Suspense fallback={<AuthCallbackLoading />}>
+      <GoogleAuthCallbackContent />
+    </Suspense>
   );
 }
