@@ -209,14 +209,18 @@ class AuthService {
       const apiResponse = await response.json();
       
       if (apiResponse.result) {
-        // Lưu token mới
-        localStorage.setItem('authToken', apiResponse.result.token);
-        if (apiResponse.result.refreshToken) {
-          localStorage.setItem('refreshToken', apiResponse.result.refreshToken);
-        }
+        // Lưu cả token và refreshToken mới với giá trị giống nhau
+        const newToken = apiResponse.result.token;
+        const newRefreshToken = apiResponse.result.refreshToken || newToken; // Sử dụng token làm refreshToken nếu không có
         
-        console.log('✅ Token refreshed successfully');
-        return apiResponse.result.token;
+        localStorage.setItem('authToken', newToken);
+        localStorage.setItem('refreshToken', newRefreshToken);
+        
+        console.log('✅ Token and refresh token updated successfully');
+        console.log('New token:', newToken);
+        console.log('New refresh token:', newRefreshToken);
+        
+        return newToken;
       }
       
       return null;
@@ -369,10 +373,15 @@ class AuthService {
       // Lưu token
       localStorage.setItem('authToken', token);
       
-      // Lưu refresh token nếu có
-      if (refreshToken) {
-        localStorage.setItem('refreshToken', refreshToken);
-      }
+      // Lưu refresh token - nếu không có thì dùng chính token đó
+      const finalRefreshToken = refreshToken || token;
+      localStorage.setItem('refreshToken', finalRefreshToken);
+      
+      console.log('✅ Auth tokens set:', { 
+        token: token.substring(0, 20) + '...', 
+        refreshToken: finalRefreshToken.substring(0, 20) + '...',
+        sameValue: token === finalRefreshToken
+      });
       
       // Chỉ lưu user nếu nó có giá trị hợp lệ
       if (user && user !== undefined && user !== null) {

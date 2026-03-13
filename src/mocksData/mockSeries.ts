@@ -99,7 +99,7 @@ export const mockSeries: Series[] = [
     description: 'Bộ sưu tập những tác phẩm kinh dị xuất sắc của điện ảnh Hàn Quốc, từ zombie đến thriller tâm lý.',
     status: 'Ongoing',
     releaseYear: '2016',
-    posterUrl: 'https://image.tmdb.org/t/p/w780/qAWAULdKb5jAoRdJjRdEg3gJMKH.jpg', // Horizontal thumbnail
+    posterUrl: 'https://m.media-amazon.com/images/M/MV5BYWQyMTAzM2MtYmVmYS00ZTkxLTlhY2ItNjIzMDMwNThkYzEzXkEyXkFqcGc@._V1_.jpg', // Horizontal thumbnail
     seriesMovies: [] // Will be populated by service
   },
   {
