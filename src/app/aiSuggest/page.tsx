@@ -22,7 +22,7 @@ export default function AISuggestPage() {
             <div className="w-16 h-16 bg-linear-to-br from-(--surface) to-(--gradient-secondary-end) rounded-full flex items-center justify-center">
               <span className="flex items-center justify-center">
                 <img
-                  src={"/logoicon.png"}
+                  src={"/logoicon.jpg"}
                   alt="PopRCM Icon"
                   className="h-[60%] w-[60%]"
                 />
@@ -97,7 +97,7 @@ export default function AISuggestPage() {
                   <div className="w-16 h-16 bg-linear-to-br from-(--surface) to-(--gradient-secondary-end) rounded-full flex items-center justify-center">
                     <span className="flex items-center justify-center">
                       <img
-                        src={"/logoicon.png"}
+                        src={"/logoicon.jpg"}
                         alt="PopRCM Icon"
                         className="h-[60%] w-[60%]"
                       />

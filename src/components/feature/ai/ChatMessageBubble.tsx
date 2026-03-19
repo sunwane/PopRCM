@@ -50,7 +50,7 @@ export default function ChatMessageBubble({ message }: ChatMessageBubbleProps) {
     <div className="w-10 h-10 mr-2 bg-linear-to-br from-(--surface) to-(--gradient-secondary-end) rounded-full flex items-center justify-center">
       <span className="flex items-center justify-center">
         <img
-          src={"/logoicon.png"}
+          src={"/logoicon.jpg"}
           alt="PopRCM Icon"
           className="h-[60%] w-[60%]"
         />

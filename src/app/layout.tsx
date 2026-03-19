@@ -16,7 +16,7 @@ export const metadata: Metadata = {
   title: "POPRCM",
   description: "POPRCM - Nền tảng gợi ý phim thông minh",
   icons: {
-    icon: "/logoicon.png",
+    icon: "/logoicon.jpg",
   },
 };
 

@@ -140,7 +140,7 @@ export function ReviewTab({ movieId, movieTitle, onOpenAuth }: ReviewTabProps) {
       {reviews.length > 0 && (
         <div className="flex items-center gap-3 bg-(--surface) rounded-lg p-4 border border-(--border-blue)">
           {/* Logo */}
-          <img src="/logoicon.png" alt="Reviews" className="w-14 h-14 border border-gray-700 shadow-md" />
+          <img src="/logoicon.jpg" alt="Reviews" className="w-14 h-14 border border-gray-700 shadow-md" />
 
           {/* Stats */}
           <div className="flex flex-col justify-center">

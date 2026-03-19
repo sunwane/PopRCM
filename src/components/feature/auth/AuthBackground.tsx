@@ -133,7 +133,7 @@ export function AuthBackground({ isOpen, onClose, initialMode = 'login' }: AuthB
       <div 
         className="absolute top-0 left-0 right-0 bottom-0 bg-cover bg-center bg-no-repeat -rotate-3 scale-110"
         style={{
-          backgroundImage: 'url(/bg/AuthBG.png)',
+          backgroundImage: 'url(/bg/AuthBG.jpg)',
           position: 'absolute',
           inset: 0
         }}

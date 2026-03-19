@@ -7,7 +7,7 @@ export function LoadingEffect( { message = "Đang tải..." }: LoadingEffectProp
     <div className="flex justify-center items-center mx-auto h-[70vh]">
       <div className="animate-pulse items-center flex flex-col">
         <img
-          src="/logoicon.png"
+          src="/logoicon.jpg"
           alt="loading"
           className="w-[10vw] drop-shadow-[0_0_10px_#3080FF]"
         />
