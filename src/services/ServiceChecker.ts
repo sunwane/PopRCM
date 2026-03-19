@@ -87,7 +87,7 @@ class ServiceChecker {
    * Lấy base URL của API
    */
   getBaseURL(): string {
-    return this.baseURL || 'https://poprcm-be.onrender.com/api';
+    return this.baseURL || 'https://poprcm-be.up.railway.app/api';
   }
 }
 

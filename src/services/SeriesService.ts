@@ -321,7 +321,7 @@ export class SeriesService {
 
     try {
       // Gọi API để lấy seriesId từ MovieController
-      const response = await fetch(`https://poprcm-be.onrender.com/api/movies/${movieId}/series`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/movies/${movieId}/series`, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
