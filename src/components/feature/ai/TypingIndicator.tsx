@@ -4,7 +4,7 @@ export default function TypingIndicator() {
       <div className="w-8 h-8 bg-linear-to-br from-(--gradient-secondary-start) to-(--gradient-secondary-end) rounded-full flex items-center justify-center mr-3 mt-1 shrink-0">
         <div className="">
           <img
-            src={"/LogoIcon.png"}
+            src={"/logoicon.png"}
             alt="PopRCM Icon"
             className="h-4 w-4"
           />

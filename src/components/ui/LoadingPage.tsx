@@ -4,7 +4,7 @@ export function LoadingPage() {
       <div className="animate-glow items-center flex flex-col">
         <div className="flex justify-center drop-shadow-[0_0_10px_#3080FF] px-5 py-4 bg-black/30 rounded-lg border-2 border-blue-500/30">
           <img
-            src="/Logo.png"
+            src="/logo.png"
             alt="loading"
             className="h-[15vh]"
           />
