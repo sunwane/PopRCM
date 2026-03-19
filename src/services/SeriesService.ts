@@ -3,7 +3,7 @@ import { mockSeries, mockSeriesMovies } from '@/mocksData/mockSeries';
 import { mockMovies } from '@/mocksData/mockMovies';
 
 export class SeriesService {
-  private static readonly API_BASE_URL = 'https://poprcm-be.onrender.com/api/series';
+  private static readonly API_BASE_URL = `${process.env.NEXT_PUBLIC_API_BASE_URL}/series`;
   private static series: Series[] = [...mockSeries];
 
   // Kiểm tra service availability từ localStorage

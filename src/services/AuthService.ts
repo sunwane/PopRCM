@@ -6,7 +6,7 @@ import {
 import { UserService } from './UserService';
 
 class AuthService {
-  private baseURL = 'https://poprcm-be.onrender.com/api/auth';
+  private baseURL = `${process.env.NEXT_PUBLIC_API_BASE_URL}/auth`;
 
   async login(request: LoginRequest): Promise<AuthResponse> {
 

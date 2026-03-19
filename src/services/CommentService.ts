@@ -1,6 +1,6 @@
 import { Comment, CommentRequest, CommentUpdateRequest, PaginatedComments } from '@/types/Comment';
 
-const API_BASE_URL = 'https://poprcm-be.onrender.com';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 
 export class CommentService {
   // Get comments for an episode (public)

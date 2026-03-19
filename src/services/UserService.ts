@@ -4,7 +4,7 @@ import { mockUsers } from '@/mocksData/mockUser';
 export class UserService {
   private static users: User[] = [];
   private static isDataLoaded = false;
-  private static readonly API_BASE_URL = 'https://poprcm-be.onrender.com/api/users';
+  private static readonly API_BASE_URL = `${process.env.NEXT_PUBLIC_API_BASE_URL}/users`;
 
   // Kiểm tra service availability từ localStorage (giống AuthService)
   private static isServiceAvailable(): boolean {

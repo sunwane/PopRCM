@@ -5,7 +5,7 @@ class AIService {
   static searchMovies(content: string) {
     throw new Error('Method not implemented.');
   }
-  private baseURL = 'https://poprcm-be.onrender.com/api/ai';
+  private baseURL = `${process.env.NEXT_PUBLIC_API_BASE_URL}/ai`;
 
   async searchMovies(query: string): Promise<AISearchResponse> {
     if (localStorage.getItem('serviceAvailable') === 'false') {

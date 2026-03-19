@@ -1,7 +1,7 @@
 class ServiceChecker {
   private static instance: ServiceChecker;
   private serviceAvailable: boolean | null = null;
-  private baseURL = 'https://poprcm-be.onrender.com/api';
+  private baseURL = process.env.NEXT_PUBLIC_API_BASE_URL;
 
   constructor() {
     if (ServiceChecker.instance) {
@@ -87,7 +87,7 @@ class ServiceChecker {
    * Lấy base URL của API
    */
   getBaseURL(): string {
-    return this.baseURL;
+    return this.baseURL || 'https://poprcm-be.onrender.com/api';
   }
 }
 

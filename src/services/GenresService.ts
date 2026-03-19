@@ -5,7 +5,7 @@ import { mockGenres } from '@/mocksData/mockGenres';
 export class GenresService {
   private static genres: Genre[] = [];
   private static isDataLoaded = false;
-  private static readonly API_BASE_URL = 'https://poprcm-be.onrender.com/api/genres';
+  private static readonly API_BASE_URL = `${process.env.NEXT_PUBLIC_API_BASE_URL}/genres`;
 
   // Kiểm tra service availability từ localStorage (giống AuthService)
   private static isServiceAvailable(): boolean {

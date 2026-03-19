@@ -7,7 +7,7 @@ import { Movie } from '@/types/Movies';
 export class ActorService {
   private static actors: Actor[] = [...mockActors];
   private static isDataLoaded = false;
-  private static readonly API_BASE_URL = 'https://poprcm-be.onrender.com/api/actors';
+  private static readonly API_BASE_URL = `${process.env.NEXT_PUBLIC_API_BASE_URL}/actors`;
 
   // Kiểm tra service availability từ localStorage
   private static isServiceAvailable(): boolean {

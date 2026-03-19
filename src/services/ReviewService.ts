@@ -1,6 +1,6 @@
 import { Review, ReviewRequest, PaginatedReviews } from '@/types/Review';
 
-const API_BASE_URL = 'https://poprcm-be.onrender.com';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 
 export class ReviewService {
   // Get reviews for a movie (public)
