@@ -156,7 +156,7 @@ export function AuthBackground({ isOpen, onClose, initialMode = 'login' }: AuthB
         onClick={goHome}
         className="absolute top-6 left-6 z-10 flex items-center cursor-pointer hover:opacity-80 transition-opacity"
       >
-        <img src="/logo.png" alt="PopRCM Logo" className="lg:h-14 md:h-14 sm:h-12 h-10 w-auto" />
+        <img src="/logo.jpg" alt="PopRCM Logo" className="lg:h-14 md:h-14 sm:h-12 h-10 w-auto" />
       </button>
 
       {/* Form Container */}

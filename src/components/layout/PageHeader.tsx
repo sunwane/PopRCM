@@ -100,7 +100,7 @@ export default function PageHeader() {
           onClick={handleClickOutside}
         >
           <button className="flex items-center shrink-0 cursor-pointer" onClick={goHome}>
-            <img src="/logo.png" alt="PopRCM Logo" className="h-14 w-auto" />
+            <img src="/logo.jpg" alt="PopRCM Logo" className="h-14 w-auto" />
           </button>
           <SearchBar onSearch={onSearch} value={query} />
 
@@ -232,7 +232,7 @@ export default function PageHeader() {
               </svg>
             </button>
             <button className={`flex items-center cursor-pointer transition-all duration-300 ${showMobileSearch ? 'opacity-0 pointer-events-none' : 'opacity-100'}`} onClick={goHome}>
-              <img src="/logo.png" alt="PopRCM Logo" className={`lg:h-14 md:h-14 h-12 w-auto`} />
+              <img src="/logo.jpg" alt="PopRCM Logo" className={`lg:h-14 md:h-14 h-12 w-auto`} />
             </button>
           </div>
 

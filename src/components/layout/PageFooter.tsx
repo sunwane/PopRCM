@@ -10,7 +10,7 @@ export default function PageFooter() {
           lg:gap-10 gap-y-5">
           <div className="flex justify-center items-center">
             <img
-              src="/logo.png"
+              src="/logo.jpg"
               alt="PopRCM Logo"
               className="h-16 w-auto"
             />
@@ -29,10 +29,10 @@ export default function PageFooter() {
               <img src="/icons/Facebook.png" alt="Facebook" className="w-4 h-4" />
             </a>
             <a href="/#" className="bg-white/10 p-2.5 rounded-full flex items-center justify-center">
-              <img src="/icons/youtube.png" alt="Youtube" className="w-4 h-4" />
+              <img src="/icons/Youtube.jpg" alt="Youtube" className="w-4 h-4" />
             </a>
             <a href="/#" className="bg-white/10 p-2 rounded-full flex items-center justify-center">
-              <img src="/icons/tiktok.png" alt="Tiktok" className="w-5 h-5" />
+              <img src="/icons/Tiktok.jpg" alt="Tiktok" className="w-5 h-5" />
             </a>
           </div>
         </div>
